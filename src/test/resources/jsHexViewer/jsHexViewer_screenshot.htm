@@ -1,0 +1,370 @@
+<html>
+<head>
+<style>
+    body {
+        font-family: Verdana;
+    }
+
+    .byteWrapper, .linenr, .spacer {
+        display: table-cell;
+    }
+
+    .byteWrapper, .spacer, .spacerRow {
+        cursor: none;
+    }
+
+    .linenr {
+        padding-right: 4px;
+        margin-right: 10px;
+        text-align: right;
+        background-color: #bab398;
+    }
+
+    .selected {
+        background-color: #2929d0;
+        color: white;
+    }
+
+    #filePosition, .row {
+        font-size: 16px;
+    }
+
+    #name {
+        padding-left: 12px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .row {
+        display: table-row;
+    }
+
+    .spacerRow {
+        height: 2px;
+    }
+
+    #hexview, #asciiview {
+        display: table;
+        background-color: #e6dfd3;
+    }
+
+    #hexview {
+        float: left;
+        padding-right: 10px;
+        border-right: 1px solid black;
+    }
+
+    #asciiview {
+        padding-left: 10px;
+    }
+
+    #toolbar #values {
+        font-size: 12px;
+    }
+
+    #toolbar {
+        display: block;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+    }
+
+    #pagesOfInterest button {
+        display: block;
+        width: 140px;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+<script>
+var page = 0;
+var pageSize = 1024;
+var columnCount = 32;
+
+function unpack(buffer, asBigEndian) {
+    if (buffer.length == 1 || buffer.length == 2 || buffer.length == 4 || buffer.length == 6 || buffer.length == 8) {
+         var value = 0;
+         for (var j = 0, i = asBigEndian ? buffer.length - 1 : 0; asBigEndian ? i >= 0 : i < buffer.length; asBigEndian ? i-- : i++, j++) {
+             value |= (buffer[i] & 0xff) << (j * 8);
+         }
+         return value;
+    }
+    return '';
+}
+
+$(function() {
+    $('body').on('mouseenter', '.byte', function(){
+        var position = parseInt($(this).attr('position'));
+        $('.byte[position=' + position +']').each(function(index, value) {
+            $(value).addClass('selected');
+        });
+
+        $('#filePosition').text(toHex(position) + ' / ' + position);
+
+        var definition = getDefinition(parseInt(position)); // TODO int != long
+        if (definition) {
+            $('#name').text(definition[2]);
+
+            getData(definition[0], definition[1], function(buffer) {
+                $('#values #length').text(buffer.length);
+                $('#values #be').text(unpack(buffer, true));
+                $('#values #le').text(unpack(buffer, false));
+            });
+        }
+        else {
+            $('#values #length').empty();
+            $('#values #be').empty();
+            $('#values #le').empty();
+        }
+    }).on('keydown', 'numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
+
+    $('body').on('mouseleave', '.byte', function(){
+        var position = parseInt($(this).attr('position'));
+        $('.byte[position=' + position +']').each(function(index, value){
+            $(value).removeClass('selected');
+        });
+        $('#name').html('&nbsp;')
+        $('#filePosition').html('&nbsp;')
+    });
+
+    $('#prev').click(function(e) {
+        page -= 1;
+        readPage();
+    }).attr("disabled", true);
+
+    $('#next').click(function(e) {
+        page += 1;
+        readPage();
+    });
+
+    var prevPage;
+    $.each(locations, function(index, value) {
+        var page = Math.floor(value / (pageSize / columnCount));
+        if (page !== prevPage) {
+            $('#pagesOfInterest').append($('<button>').text('Page ' + page).attr('page', page));
+            prevPage = page;
+        }
+    });
+
+    $('#pagesOfInterest').on('click', 'button', function() {
+        $('#jumpPage').val($(this).attr('page'));
+        $('#goPage').trigger('click');
+    });
+
+    $('#goPage').click(function() {
+        page = parseInt($('#jumpPage').val());
+        readPage();
+    });
+
+    $('#goOffset').click(function() {
+        var offset = parseInt($('#jumpOffset').val());
+        page = Math.floor(offset / pageSize);
+        readPage();
+    });
+});
+
+var lastDefinition;
+function getDefinition(position) {
+    if (lastDefinition && inRange(lastDefinition, position)) {
+        // Instead of reading all rows above to check if this is part of a multi-row def,
+        // just cache the previous definition and check again.
+        // Note that this only works for drawing the highlights, not for a mouseover event.
+        return lastDefinition;
+    }
+
+    var rowIndex = $.inArray(Math.floor(position / columnCount), locations);
+    if (rowIndex !== -1) {
+        var row = data[rowIndex];
+        for (var i = 0; i < row.length; i++) {
+            var definition = row[i];
+            if (inRange(definition, position)) {
+                lastDefinition = definition;
+                return definition;
+            }
+        }
+    }
+}
+
+function inRange(definition, position) {
+    var offset = definition[0];
+    var size = definition[1];
+    return position >= offset && position < offset + size;
+}
+
+function isStartOrEnd(definition, position) {
+    var offset = definition[0];
+    var size = definition[1];
+    return position === offset || position === offset + size;
+}
+
+function hsv2rgb(h, s, v) {
+    var r, g, b;
+    var i;
+    var f, p, q, t;
+    s /= 100;
+    v /= 100;
+    h /= 60;
+    i = Math.floor(h);
+    f = h - i;
+    p = v * (1 - s);
+    q = v * (1 - s * f);
+    t = v * (1 - s * (1 - f));
+    switch(i) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        default: r = v; g = p; b = q;
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+var flip = true;
+var lastColor = 0;
+var colors = {};
+function getHue(str) {
+    if (!(str in colors)) {
+        lastColor = (lastColor + 12) % 180;
+        colors[str] = flip ? lastColor : 360 - lastColor;
+        flip = !flip;
+    }
+    return colors[str];
+}
+
+var file;
+function readSingleFile(e) {
+    file = e.files[0];
+    if (!file) {
+        return;
+    }
+    readPage();
+}
+
+function toHex(value) {
+    var hex = value.toString(16);
+    hex = (hex.length === 1) ? '0' + hex : hex;
+    return hex;
+}
+
+function getData(offset, size, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var buffer = new Uint8Array(e.target.result);
+        callback(buffer);
+    };
+    var slice = file.slice(offset, offset + size);
+    reader.readAsArrayBuffer(slice);
+}
+
+function readPage() {
+    var pageOffset = page * pageSize;
+    if (page > 0) {
+        $('#prev').removeAttr('disabled');
+    }
+    else {
+        $('#prev').attr('disabled', true);
+    }
+    $("#jumpPage").val(page);
+    $("#jumpOffset").val(pageOffset);
+
+    getData(pageOffset, pageSize, function(buffer) {
+        var pagePosition = 0;
+        $('#hexview').empty();
+        $('#asciiview').empty();
+
+        for (var row = 0; pagePosition < buffer.length; row++) {
+            if (buffer.length - pagePosition < columnCount) {
+                columnCount = buffer.length - pagePosition;
+            }
+
+            var hexNr = (pagePosition + pageOffset).toString(16);
+            var hexRow = $('<div>').addClass('row')
+                .append($('<div>').addClass('linenr').text(hexNr));
+
+            $('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row'));
+
+            var asciiRow = $('<div>').addClass('row');
+            $('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+            for (var column = 0; column < columnCount; column++, pagePosition++) {
+                var filePosition = pageOffset + pagePosition;
+                var definition = getDefinition(filePosition);
+
+                var byte = buffer[pagePosition] & 0xff;
+                var hex = toHex(byte);
+
+                if (column % 2 == 0) {
+                    var spacer = $('<span>').addClass('spacer').html('&nbsp;');
+                    if (definition) {
+                        if (!isStartOrEnd(definition, filePosition)) {
+                            var rgb = hsv2rgb(getHue(definition[2]) % 360, 80, 100);
+                            colorByte(spacer, rgb, filePosition, definition);
+                        }
+                    }
+                    hexRow.append(spacer);
+                }
+                var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(hex);
+                var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
+                hexRow.append(hexByteWrapper);
+
+                var character = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '\u00B7';
+                var asciiByte = $('<span>').addClass('byte').attr('position', filePosition).text(character);
+                var asciiByteWrapper = $('<span>').addClass('byteWrapper').append(asciiByte);
+                asciiRow.append(asciiByteWrapper);
+
+                if (definition) {
+                    var rgb = hsv2rgb(getHue(definition[2]) % 360, 80, 100);
+                    colorByte(hexByteWrapper, rgb, filePosition, definition);
+                    colorByte(asciiByteWrapper, rgb, filePosition, definition);
+                }
+            }
+        }
+    });
+}
+
+function colorByte(wrapper, rgb, filePosition, definition) {
+    wrapper.css('background-color', 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ', .5)');
+
+    var offset = definition[0];
+    var size = definition[1];
+    var border = '1px solid rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+    wrapper.css('border-top', border);
+    wrapper.css('border-bottom', border);
+
+    if (filePosition === offset) {
+        wrapper.css('border-left', border);
+    }
+    if (filePosition === offset + size -1) {
+        wrapper.css('border-right', border);
+    }
+}
+
+</script>
+<body>
+    Select source file:
+    <input type="file" id="fileInput" onChange="readSingleFile(this)"/>
+    <input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump to page</button>
+    <input type="text" size="8" id="jumpOffset" class="numeric" value="0"><button id="goOffset">Jump to offset</button>
+    <button id="prev">Previous page</button>
+    <button id="next">Next page</button><br>
+    <br>
+
+    <span id="filePosition"></span><span id="name">&nbsp;</span><br>
+
+    <div id="hexview"></div>
+    <div id="asciiview"></div>
+    <div id="toolbar">
+        <div id="values">
+            Length: <span id="length"></span><br>
+            Big Endian: <span id="be"></span><br>
+            Little Endian: <span id="le"></span>
+        </div>
+        <div id="pagesOfInterest">Pages of interest:</div>
+    </div>
+
+    <script>
+    var locations = [0, 1, 2, 258, 514, 515, 771, 1027, 1028, 1284, 1540, 1796, 1797, 2053, 2309, 2565, 2566, 2822, 3078, 3079, 3335, 3591, 3847, 3848, 4104, 4360, 4616, 4617, 4873, 5129, 5130, 5386, 5642, 5898, 5899, 6155, 6411, 6667, 6668, 6924, 7180, 7181, 7437, 7693, 7949, 7950, 8206, 8462, 8718, 8719, 8975, 9231, 9232, 9488, 9744, 10000, 10001, 10257, 10513, 10769, 10770, 11026, 11282, 11283, 11539, 11795, 12051, 12052, 12308, 12564, 12820, 12821, 13077, 13333, 13334, 13590, 13846, 14102, 14103, 14359, 14466, 14467];
+    var data = [[[0, 1, 'PNG.PNG.signature.highbit'], [1, 3, 'PNG.PNG.signature.PNG'], [4, 4, 'PNG.PNG.signature.controlchars'], [8, 4, 'PNG.PNG.chunk.length'], [12, 4, 'PNG.PNG.chunk.chunktype'], [16, 13, 'PNG.PNG.chunk.chunkdata'], [29, 4, 'PNG.PNG.chunk.crc32']],[[33, 4, 'PNG.PNG.chunk.length'], [37, 4, 'PNG.PNG.chunk.chunktype'], [41, 9, 'PNG.PNG.chunk.chunkdata'], [50, 4, 'PNG.PNG.chunk.crc32'], [54, 4, 'PNG.PNG.chunk.length'], [58, 4, 'PNG.PNG.chunk.chunktype'], [62, 7, 'PNG.PNG.chunk.chunkdata']],[[69, 4, 'PNG.PNG.chunk.crc32'], [73, 4, 'PNG.PNG.chunk.length'], [77, 4, 'PNG.PNG.chunk.chunktype'], [81, 8192, 'PNG.PNG.chunk.chunkdata']],[[8273, 4, 'PNG.PNG.chunk.crc32'], [8277, 4, 'PNG.PNG.chunk.length'], [8281, 4, 'PNG.PNG.chunk.chunktype'], [8285, 8192, 'PNG.PNG.chunk.chunkdata']],[[16477, 4, 'PNG.PNG.chunk.crc32']],[[16481, 4, 'PNG.PNG.chunk.length'], [16485, 4, 'PNG.PNG.chunk.chunktype'], [16489, 8192, 'PNG.PNG.chunk.chunkdata']],[[24681, 4, 'PNG.PNG.chunk.crc32'], [24685, 4, 'PNG.PNG.chunk.length'], [24689, 4, 'PNG.PNG.chunk.chunktype'], [24693, 8192, 'PNG.PNG.chunk.chunkdata']],[[32885, 4, 'PNG.PNG.chunk.crc32'], [32889, 4, 'PNG.PNG.chunk.length'], [32893, 4, 'PNG.PNG.chunk.chunktype']],[[32897, 8192, 'PNG.PNG.chunk.chunkdata']],[[41089, 4, 'PNG.PNG.chunk.crc32'], [41093, 4, 'PNG.PNG.chunk.length'], [41097, 4, 'PNG.PNG.chunk.chunktype'], [41101, 8192, 'PNG.PNG.chunk.chunkdata']],[[49293, 4, 'PNG.PNG.chunk.crc32'], [49297, 4, 'PNG.PNG.chunk.length'], [49301, 4, 'PNG.PNG.chunk.chunktype'], [49305, 8192, 'PNG.PNG.chunk.chunkdata']],[[57497, 4, 'PNG.PNG.chunk.crc32'], [57501, 4, 'PNG.PNG.chunk.length']],[[57505, 4, 'PNG.PNG.chunk.chunktype'], [57509, 8192, 'PNG.PNG.chunk.chunkdata']],[[65701, 4, 'PNG.PNG.chunk.crc32'], [65705, 4, 'PNG.PNG.chunk.length'], [65709, 4, 'PNG.PNG.chunk.chunktype'], [65713, 8192, 'PNG.PNG.chunk.chunkdata']],[[73905, 4, 'PNG.PNG.chunk.crc32'], [73909, 4, 'PNG.PNG.chunk.length'], [73913, 4, 'PNG.PNG.chunk.chunktype'], [73917, 8192, 'PNG.PNG.chunk.chunkdata']],[[82109, 4, 'PNG.PNG.chunk.crc32']],[[82113, 4, 'PNG.PNG.chunk.length'], [82117, 4, 'PNG.PNG.chunk.chunktype'], [82121, 8192, 'PNG.PNG.chunk.chunkdata']],[[90313, 4, 'PNG.PNG.chunk.crc32'], [90317, 4, 'PNG.PNG.chunk.length'], [90321, 4, 'PNG.PNG.chunk.chunktype'], [90325, 8192, 'PNG.PNG.chunk.chunkdata']],[[98517, 4, 'PNG.PNG.chunk.crc32'], [98521, 4, 'PNG.PNG.chunk.length'], [98525, 4, 'PNG.PNG.chunk.chunktype']],[[98529, 8192, 'PNG.PNG.chunk.chunkdata']],[[106721, 4, 'PNG.PNG.chunk.crc32'], [106725, 4, 'PNG.PNG.chunk.length'], [106729, 4, 'PNG.PNG.chunk.chunktype'], [106733, 8192, 'PNG.PNG.chunk.chunkdata']],[[114925, 4, 'PNG.PNG.chunk.crc32'], [114929, 4, 'PNG.PNG.chunk.length'], [114933, 4, 'PNG.PNG.chunk.chunktype'], [114937, 8192, 'PNG.PNG.chunk.chunkdata']],[[123129, 4, 'PNG.PNG.chunk.crc32'], [123133, 4, 'PNG.PNG.chunk.length']],[[123137, 4, 'PNG.PNG.chunk.chunktype'], [123141, 8192, 'PNG.PNG.chunk.chunkdata']],[[131333, 4, 'PNG.PNG.chunk.crc32'], [131337, 4, 'PNG.PNG.chunk.length'], [131341, 4, 'PNG.PNG.chunk.chunktype'], [131345, 8192, 'PNG.PNG.chunk.chunkdata']],[[139537, 4, 'PNG.PNG.chunk.crc32'], [139541, 4, 'PNG.PNG.chunk.length'], [139545, 4, 'PNG.PNG.chunk.chunktype'], [139549, 8192, 'PNG.PNG.chunk.chunkdata']],[[147741, 4, 'PNG.PNG.chunk.crc32']],[[147745, 4, 'PNG.PNG.chunk.length'], [147749, 4, 'PNG.PNG.chunk.chunktype'], [147753, 8192, 'PNG.PNG.chunk.chunkdata']],[[155945, 4, 'PNG.PNG.chunk.crc32'], [155949, 4, 'PNG.PNG.chunk.length'], [155953, 4, 'PNG.PNG.chunk.chunktype'], [155957, 8192, 'PNG.PNG.chunk.chunkdata']],[[164149, 4, 'PNG.PNG.chunk.crc32'], [164153, 4, 'PNG.PNG.chunk.length'], [164157, 4, 'PNG.PNG.chunk.chunktype']],[[164161, 8192, 'PNG.PNG.chunk.chunkdata']],[[172353, 4, 'PNG.PNG.chunk.crc32'], [172357, 4, 'PNG.PNG.chunk.length'], [172361, 4, 'PNG.PNG.chunk.chunktype'], [172365, 8192, 'PNG.PNG.chunk.chunkdata']],[[180557, 4, 'PNG.PNG.chunk.crc32'], [180561, 4, 'PNG.PNG.chunk.length'], [180565, 4, 'PNG.PNG.chunk.chunktype'], [180569, 8192, 'PNG.PNG.chunk.chunkdata']],[[188761, 4, 'PNG.PNG.chunk.crc32'], [188765, 4, 'PNG.PNG.chunk.length']],[[188769, 4, 'PNG.PNG.chunk.chunktype'], [188773, 8192, 'PNG.PNG.chunk.chunkdata']],[[196965, 4, 'PNG.PNG.chunk.crc32'], [196969, 4, 'PNG.PNG.chunk.length'], [196973, 4, 'PNG.PNG.chunk.chunktype'], [196977, 8192, 'PNG.PNG.chunk.chunkdata']],[[205169, 4, 'PNG.PNG.chunk.crc32'], [205173, 4, 'PNG.PNG.chunk.length'], [205177, 4, 'PNG.PNG.chunk.chunktype'], [205181, 8192, 'PNG.PNG.chunk.chunkdata']],[[213373, 4, 'PNG.PNG.chunk.crc32']],[[213377, 4, 'PNG.PNG.chunk.length'], [213381, 4, 'PNG.PNG.chunk.chunktype'], [213385, 8192, 'PNG.PNG.chunk.chunkdata']],[[221577, 4, 'PNG.PNG.chunk.crc32'], [221581, 4, 'PNG.PNG.chunk.length'], [221585, 4, 'PNG.PNG.chunk.chunktype'], [221589, 8192, 'PNG.PNG.chunk.chunkdata']],[[229781, 4, 'PNG.PNG.chunk.crc32'], [229785, 4, 'PNG.PNG.chunk.length'], [229789, 4, 'PNG.PNG.chunk.chunktype']],[[229793, 8192, 'PNG.PNG.chunk.chunkdata']],[[237985, 4, 'PNG.PNG.chunk.crc32'], [237989, 4, 'PNG.PNG.chunk.length'], [237993, 4, 'PNG.PNG.chunk.chunktype'], [237997, 8192, 'PNG.PNG.chunk.chunkdata']],[[246189, 4, 'PNG.PNG.chunk.crc32'], [246193, 4, 'PNG.PNG.chunk.length'], [246197, 4, 'PNG.PNG.chunk.chunktype'], [246201, 8192, 'PNG.PNG.chunk.chunkdata']],[[254393, 4, 'PNG.PNG.chunk.crc32'], [254397, 4, 'PNG.PNG.chunk.length']],[[254401, 4, 'PNG.PNG.chunk.chunktype'], [254405, 8192, 'PNG.PNG.chunk.chunkdata']],[[262597, 4, 'PNG.PNG.chunk.crc32'], [262601, 4, 'PNG.PNG.chunk.length'], [262605, 4, 'PNG.PNG.chunk.chunktype'], [262609, 8192, 'PNG.PNG.chunk.chunkdata']],[[270801, 4, 'PNG.PNG.chunk.crc32'], [270805, 4, 'PNG.PNG.chunk.length'], [270809, 4, 'PNG.PNG.chunk.chunktype'], [270813, 8192, 'PNG.PNG.chunk.chunkdata']],[[279005, 4, 'PNG.PNG.chunk.crc32']],[[279009, 4, 'PNG.PNG.chunk.length'], [279013, 4, 'PNG.PNG.chunk.chunktype'], [279017, 8192, 'PNG.PNG.chunk.chunkdata']],[[287209, 4, 'PNG.PNG.chunk.crc32'], [287213, 4, 'PNG.PNG.chunk.length'], [287217, 4, 'PNG.PNG.chunk.chunktype'], [287221, 8192, 'PNG.PNG.chunk.chunkdata']],[[295413, 4, 'PNG.PNG.chunk.crc32'], [295417, 4, 'PNG.PNG.chunk.length'], [295421, 4, 'PNG.PNG.chunk.chunktype']],[[295425, 8192, 'PNG.PNG.chunk.chunkdata']],[[303617, 4, 'PNG.PNG.chunk.crc32'], [303621, 4, 'PNG.PNG.chunk.length'], [303625, 4, 'PNG.PNG.chunk.chunktype'], [303629, 8192, 'PNG.PNG.chunk.chunkdata']],[[311821, 4, 'PNG.PNG.chunk.crc32'], [311825, 4, 'PNG.PNG.chunk.length'], [311829, 4, 'PNG.PNG.chunk.chunktype'], [311833, 8192, 'PNG.PNG.chunk.chunkdata']],[[320025, 4, 'PNG.PNG.chunk.crc32'], [320029, 4, 'PNG.PNG.chunk.length']],[[320033, 4, 'PNG.PNG.chunk.chunktype'], [320037, 8192, 'PNG.PNG.chunk.chunkdata']],[[328229, 4, 'PNG.PNG.chunk.crc32'], [328233, 4, 'PNG.PNG.chunk.length'], [328237, 4, 'PNG.PNG.chunk.chunktype'], [328241, 8192, 'PNG.PNG.chunk.chunkdata']],[[336433, 4, 'PNG.PNG.chunk.crc32'], [336437, 4, 'PNG.PNG.chunk.length'], [336441, 4, 'PNG.PNG.chunk.chunktype'], [336445, 8192, 'PNG.PNG.chunk.chunkdata']],[[344637, 4, 'PNG.PNG.chunk.crc32']],[[344641, 4, 'PNG.PNG.chunk.length'], [344645, 4, 'PNG.PNG.chunk.chunktype'], [344649, 8192, 'PNG.PNG.chunk.chunkdata']],[[352841, 4, 'PNG.PNG.chunk.crc32'], [352845, 4, 'PNG.PNG.chunk.length'], [352849, 4, 'PNG.PNG.chunk.chunktype'], [352853, 8192, 'PNG.PNG.chunk.chunkdata']],[[361045, 4, 'PNG.PNG.chunk.crc32'], [361049, 4, 'PNG.PNG.chunk.length'], [361053, 4, 'PNG.PNG.chunk.chunktype']],[[361057, 8192, 'PNG.PNG.chunk.chunkdata']],[[369249, 4, 'PNG.PNG.chunk.crc32'], [369253, 4, 'PNG.PNG.chunk.length'], [369257, 4, 'PNG.PNG.chunk.chunktype'], [369261, 8192, 'PNG.PNG.chunk.chunkdata']],[[377453, 4, 'PNG.PNG.chunk.crc32'], [377457, 4, 'PNG.PNG.chunk.length'], [377461, 4, 'PNG.PNG.chunk.chunktype'], [377465, 8192, 'PNG.PNG.chunk.chunkdata']],[[385657, 4, 'PNG.PNG.chunk.crc32'], [385661, 4, 'PNG.PNG.chunk.length']],[[385665, 4, 'PNG.PNG.chunk.chunktype'], [385669, 8192, 'PNG.PNG.chunk.chunkdata']],[[393861, 4, 'PNG.PNG.chunk.crc32'], [393865, 4, 'PNG.PNG.chunk.length'], [393869, 4, 'PNG.PNG.chunk.chunktype'], [393873, 8192, 'PNG.PNG.chunk.chunkdata']],[[402065, 4, 'PNG.PNG.chunk.crc32'], [402069, 4, 'PNG.PNG.chunk.length'], [402073, 4, 'PNG.PNG.chunk.chunktype'], [402077, 8192, 'PNG.PNG.chunk.chunkdata']],[[410269, 4, 'PNG.PNG.chunk.crc32']],[[410273, 4, 'PNG.PNG.chunk.length'], [410277, 4, 'PNG.PNG.chunk.chunktype'], [410281, 8192, 'PNG.PNG.chunk.chunkdata']],[[418473, 4, 'PNG.PNG.chunk.crc32'], [418477, 4, 'PNG.PNG.chunk.length'], [418481, 4, 'PNG.PNG.chunk.chunktype'], [418485, 8192, 'PNG.PNG.chunk.chunkdata']],[[426677, 4, 'PNG.PNG.chunk.crc32'], [426681, 4, 'PNG.PNG.chunk.length'], [426685, 4, 'PNG.PNG.chunk.chunktype']],[[426689, 8192, 'PNG.PNG.chunk.chunkdata']],[[434881, 4, 'PNG.PNG.chunk.crc32'], [434885, 4, 'PNG.PNG.chunk.length'], [434889, 4, 'PNG.PNG.chunk.chunktype'], [434893, 8192, 'PNG.PNG.chunk.chunkdata']],[[443085, 4, 'PNG.PNG.chunk.crc32'], [443089, 4, 'PNG.PNG.chunk.length'], [443093, 4, 'PNG.PNG.chunk.chunktype'], [443097, 8192, 'PNG.PNG.chunk.chunkdata']],[[451289, 4, 'PNG.PNG.chunk.crc32'], [451293, 4, 'PNG.PNG.chunk.length']],[[451297, 4, 'PNG.PNG.chunk.chunktype'], [451301, 8192, 'PNG.PNG.chunk.chunkdata']],[[459493, 4, 'PNG.PNG.chunk.crc32'], [459497, 4, 'PNG.PNG.chunk.length'], [459501, 4, 'PNG.PNG.chunk.chunktype'], [459505, 3434, 'PNG.PNG.chunk.chunkdata']],[[462939, 4, 'PNG.PNG.chunk.crc32'], [462943, 4, 'PNG.PNG.footer.footerlength']],[[462947, 4, 'PNG.PNG.footer.footertype'], [462951, 4, 'PNG.PNG.footer.footercrc32']],[]];
+    </script>
+</body>
+</html>

@@ -24,16 +24,20 @@ import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.util.EncodingFactory.le;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseResult;
+import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.EnvironmentFactory;
+import io.parsingdata.metal.util.InMemoryByteStream;
 
 public class JsHexViewerTest {
 
@@ -42,7 +46,7 @@ public class JsHexViewerTest {
         def("text", ref("length")));
 
     @Test
-    public void testGenerate() throws Exception {
+    public void testGenerateData() throws Exception {
         final Environment env = EnvironmentFactory.stream(7, 'G', 'e', 'r', 't', 'j', 'a', 'n');
         final ParseResult result = STRING.parse(env, le());
 
@@ -60,6 +64,26 @@ public class JsHexViewerTest {
 
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_data.htm"));
+        assertEquals(expected, generated);
+    }
+
+    @Test
+    public void testGeneratePng() throws Exception {
+        byte[] data;
+        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/screenshot_data.png");
+             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            IOUtils.copy(input, output);
+            data = output.toByteArray();
+        }
+
+        final Environment env = new Environment(new InMemoryByteStream(data));
+        final ParseResult result = PNG.FORMAT.parse(env, le());
+        assertTrue(result.succeeded);
+
+        JsHexViewer.generate(result.environment.order);
+
+        final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_screenshot.htm"));
         assertEquals(expected, generated);
     }
 }

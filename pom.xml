@@ -31,6 +31,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.parsingdata</groupId>
+      <artifactId>metal-formats</artifactId>
+      <version>${metal.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
