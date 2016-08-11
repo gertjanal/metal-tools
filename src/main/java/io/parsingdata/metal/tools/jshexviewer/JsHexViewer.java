@@ -112,7 +112,7 @@ public class JsHexViewer {
         private final long _size;
 
         public Definition(final ParseValue value) {
-            _name = value.getFullName().substring(2); // W.
+            _name = value.name;
             _offset = value.getOffset();
             _size = value.getValue().length;
         }

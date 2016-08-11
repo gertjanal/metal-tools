@@ -7,7 +7,12 @@
   <packaging>jar</packaging>
 
   <properties>
+    <encoding>UTF-8</encoding>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+
     <commons-io.version>2.4</commons-io.version>
+    <junit.version>4.11</junit.version>
     <metal.version>4.0.1</metal.version>
     <source-plugin.version>2.2.1</source-plugin.version>
   </properties>
@@ -23,6 +28,12 @@
       <artifactId>metal-core</artifactId>
       <version>${metal.version}</version>
       <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

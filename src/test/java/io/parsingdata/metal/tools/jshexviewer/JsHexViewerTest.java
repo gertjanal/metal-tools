@@ -46,7 +46,7 @@ public class JsHexViewerTest {
         final Environment env = EnvironmentFactory.stream(7, 'G', 'e', 'r', 't', 'j', 'a', 'n');
         final ParseResult result = STRING.parse(env, le());
 
-        assertTrue(result.succeeded());
+        assertTrue(result.succeeded);
 
         // Write the data so it can be loaded manually in the viewer
         final File root = new File(getClass().getResource("/jsHexViewer").toURI());
@@ -56,7 +56,7 @@ public class JsHexViewerTest {
             out.write(buffer);
         }
 
-        JsHexViewer.generate(result.getEnvironment().order);
+        JsHexViewer.generate(result.environment.order);
 
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_data.htm"));
