@@ -62,6 +62,7 @@ public class JsHexViewerTest {
 
         JsHexViewer.generate(result.environment.order);
 
+        // export("jsHexViewer_data.htm");
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_data.htm"));
         assertEquals(expected, generated);
@@ -82,8 +83,16 @@ public class JsHexViewerTest {
 
         JsHexViewer.generate(result.environment.order);
 
+        // export("jsHexViewer_screenshot.htm");
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_screenshot.htm"));
         assertEquals(expected, generated);
+    }
+
+    private void export(final String fileName) throws Exception {
+        final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/test/resources/jsHexViewer/" + fileName);
+        try (FileOutputStream fos = new FileOutputStream(export)) {
+            IOUtils.copy(getClass().getResourceAsStream("/jsHexViewer.htm"), fos);
+        }
     }
 }
