@@ -245,7 +245,7 @@ $(function() {
 				}
 			});
 			
-			colorByte($('.name'), -1, definition, false);
+			colorByte($('.name'), definition, true, true, true, true);
 		}
 		else {
 			$('#values #length').empty();
@@ -465,7 +465,7 @@ function readPage() {
 					var spacer = $('<span>').addClass('spacer').html('&nbsp;');
 					if (definition) {
 						if (!isStartOrEnd(definition, filePosition)) {
-							colorByte(spacer, filePosition, definition, true);
+							colorByte(spacer, definition, true, false, true, false);
 						}
 					}
 					hexRow.append(spacer);
@@ -481,12 +481,14 @@ function readPage() {
 				asciiRow.append(asciiByteWrapper);
 
 				if (definition) {
-					colorByte(hexByteWrapper, filePosition, definition);
-					colorByte(asciiByteWrapper, filePosition, definition);
+					var left = filePosition === definition[0];
+					var right = filePosition === definition[0] + definition[1] - 1;
+					colorByte(hexByteWrapper, definition, true, right, true, left);
+					colorByte(asciiByteWrapper, definition, true, right, true, left);
 					
 					if (filePosition === definition[0]) {
 						var tab = $('<div>').addClass('tab').text(singleName(definition[2]));
-						colorByte(tab, filePosition, definition, true, true);
+						colorByte(tab, definition, true, true, false, true);
 					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
 					}
 				}
@@ -495,38 +497,17 @@ function readPage() {
 	});
 }
 
-function colorByte(wrapper, filePosition, definition, isSpacer, isTab) {
+function colorByte(wrapper, definition, top, right, bottom, left) {
 	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
 	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
+	var border = '1px solid ' + borderRgb;
 
 	wrapper.css('background-color', backgroundRgb);
 	wrapper.css('color', 'black');
-
-	var offset = definition[0];
-	var size = definition[1];
-	var border = '1px solid ' + borderRgb;
-	
-	if (isTab) {
-		wrapper.css('border-top', border);
-		wrapper.css('border-bottom', 'none');
-		wrapper.css('border-left', border);
-		wrapper.css('border-right', border);
-	}
-	else {
-		wrapper.css('border-top', border);
-		wrapper.css('border-bottom', border);
-	
-		if (!isSpacer) {
-			// spacer should never start or end the highlight,
-			// but does as a spacer does share the fileposition with its nearest byte
-			if (filePosition === offset) {
-				wrapper.css('border-left', border);
-			}
-			if (filePosition === offset + size -1) {
-				wrapper.css('border-right', border);
-			}
-		}
-	}
+	wrapper.css('border-top', top ? border : 'none');
+	wrapper.css('border-right', right ? border : 'none');
+	wrapper.css('border-bottom', bottom ? border : 'none');
+	wrapper.css('border-left', left ? border : 'none');
 }
 
 </script>
