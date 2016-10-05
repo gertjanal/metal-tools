@@ -1,5 +1,6 @@
 <html>
 <head>
+<link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
 <style>
 	body {
 		font-family: Verdana;
@@ -30,7 +31,7 @@
 	}
 
 	.selected {
-		background-color: #2929d0;
+		background-color: #75abff;
 		color: white;
 	}
 
@@ -72,7 +73,7 @@
 
 	#pagesOfInterest button {
 		display: inline-block;
-		width: 100px;
+		width: 120px;
 	}
 
 	#left-component {
@@ -99,6 +100,10 @@
 	
 	fieldset {
 		margin-bottom: 4px;
+	}
+
+	.ui-accordion .ui-accordion-content {
+		padding: 1em;
 	}
 
 	.split-pane {
@@ -156,7 +161,6 @@
 		cursor: col-resize;
 	}
 </style>
-<link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
 <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
 <script src="libs/jquery-ui-1.12.1/jquery-ui.min.js"></script>
 <script src="https://raw.githubusercontent.com/shagstrom/split-pane/master/split-pane.js"></script>
