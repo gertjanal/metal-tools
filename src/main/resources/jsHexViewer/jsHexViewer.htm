@@ -242,44 +242,38 @@ $(function() {
 			$(value).addClass('selected');
 		});
 
-		$('#filePosition').text(position);
-		$('#filePositionhex').text(toHex(position));
+		$('#filePositionDec').text(position);
+		$('#filePositionHex').text(toHex(position));
+		$('#filePositionKiB').text(tgmk(position));
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
+			$('#values span').empty();
 			var name = definition[2];
 			$('.name').text(singleName(name));
 			$('.fullname').text(name);
 
+			$('#values #sizeDec').text(definition[1]);
+			$('#values #sizeHex').text(definition[1].toString(16));
+			$('#values #sizeKiB').text(tgmk(definition[1]));
+
 			getData(definition[0], definition[1], function(buffer) {
-				$('#values #length').text(buffer.length);
 				if (buffer.length <= 8) {
 					var be = unpack(buffer, true);
 					var le = unpack(buffer, false);
 					$('#values #beDec').text(be);
 					$('#values #beHex').text(be.toString(16));
+					$('#values #beKiB').text(tgmk(be));
+
 					$('#values #leDec').text(le);
 					$('#values #leHex').text(le.toString(16));
-				}
-				else {
-					clearValues();
+					$('#values #leKiB').text(tgmk(le));
 				}
 			});
 			
 			colorByte($('.name'), definition, true, true, true, true);
 		}
-		else {
-			$('#values #length').empty();
-			clearValues();
-		}
 	});
-
-	function clearValues() {
-		$('#values #beDec').empty();
-		$('#values #beHex').empty();
-		$('#values #leDec').empty();
-		$('#values #leHex').empty();
-	}
 	
 	$('body').on('keydown', 'numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
 	
@@ -287,9 +281,11 @@ $(function() {
 	    $('.byte').each(function(index, value){
 			$(value).removeClass('selected');
 		});
-		$('.name').html('&nbsp;');
-		$('.fullname').html('&nbsp;');
-		$('#filePosition').html('&nbsp;');
+		$('.name').empty();
+		$('.fullname').empty();
+		$('#filePositionDec').empty();
+		$('#filePositionHex').empty();
+		$('#filePositionKiB').empty();
 	}
 	
 	$('#hexview').click(function() {
@@ -361,6 +357,27 @@ $(function() {
 
 function singleName(name) {
 	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
+
+function tgmk(x) {
+	if (!isFinite(x)) {
+		return x;
+	}
+	var n = 0;
+	while (x > 1024 && n < 6) {
+		x /= 1024;
+		n++;
+	}
+	if (n > 0) {
+		x  = x.toFixed(1);
+		x += ' ';
+		x += ' KMGTP'.charAt(n);
+		x += 'iB';
+	}
+	else {
+		x += ' bytes';
+	}
+	return x;
 }
 
 var lastDefinition;
@@ -492,6 +509,7 @@ function readPage() {
 	$('#jumpPage').val(page);
 	$('#jumpOffsetDec').val(pageOffset);
 	$('#jumpOffsetHex').val(pageOffset.toString(16));
+	$('#tgmk').val(tgmk(pageOffset));
 
 	getData(pageOffset, pageSize, function(buffer) {
 		var pagePosition = 0;
@@ -586,7 +604,7 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/>
 						</p>
 					</div>
-					<h3>Data offset</h3>
+					<h3>Data offset: <span id="tgmk"></span></h3>
 					<div>
 						<fieldset>
 							<legend>Jump to page</legend>
@@ -602,27 +620,32 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 						</fieldset>
 						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
 					</div>
-					<h3>Values <span class="name"></span></h3>
+					<h3>Selection <span class="name"></span></h3>
 					<div>
 						<div id="values">
 							<fieldset>
-								<legend>Selection</legend>
-								Size: <span id="length"></span> bytes
+								<legend>Size</legend>
+								dec: <span id="sizeDec"></span><br>
+								hex: <span id="sizeHex"></span><br>
+								kib: <span id="sizeKiB"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Offset</legend>
-								dec: <span id="filePosition"></span><br>
-								hex: <span id="filePositionhex"></span>
+								dec: <span id="filePositionDec"></span><br>
+								hex: <span id="filePositionHex"></span><br>
+								kib: <span id="filePositionKiB"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Big Endian</legend>
 								dec: <span id="beDec"></span><br>
-								hex: <span id="beHex"></span>
+								hex: <span id="beHex"></span><br>
+								kib: <span id="beKiB"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Little Endian</legend>
 								dec: <span id="leDec"></span><br>
-								hex: <span id="leHex"></span>
+								hex: <span id="leHex"></span><br>
+								kib: <span id="leKiB"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Path</legend>
