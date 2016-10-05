@@ -23,6 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -70,6 +76,29 @@ public class JsHexViewer {
                 out.write('\n');
             }
         }
+
+        final File libsSource = new File(JsHexViewer.class.getResource("/jsHexViewer/libs/").toURI());
+        final File libsDestination = new File(root, "libs");
+        libsDestination.mkdir();
+        final Path source = libsSource.toPath();
+        final Path destination = libsDestination.toPath();
+
+        Files.walkFileTree(libsSource.toPath(), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+                final Path targetPath = destination.resolve(source.relativize(dir));
+                if (!Files.exists(targetPath)) {
+                    Files.createDirectory(targetPath);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                Files.copy(file, destination.resolve(source.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     private static void writeData(final FileWriter out, final Map<Long, LinkedList<Definition>> map) throws IOException {
