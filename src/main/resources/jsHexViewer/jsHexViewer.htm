@@ -106,7 +106,7 @@
 		font-size: 9px;
 		text-align: left;
 		height: 9px;
-		top: -31px;
+		top: -30px;
 		left: -1px;
 		margin: 0px;
 		padding: 0px;
@@ -213,6 +213,7 @@ function unpack(buffer, asBigEndian) {
 }
 
 $(function() {
+    $('button').button();
 	$('div.split-pane').splitPane();
 	$('#accordion').accordion({
 		heightStyle: 'fill'
@@ -295,7 +296,7 @@ $(function() {
 	$('#prev').click(function(e) {
 		page -= 1;
 		setPage();
-	}).attr("disabled", true);
+	}).button('disable');
 
 	$('#next').click(function(e) {
 		page += 1;
@@ -306,11 +307,10 @@ $(function() {
 	$.each(locations, function(index, value) {
 		var page = Math.floor(value / (pageSize / columnCount));
 		if (page !== prevPage) {
-			$('#pagesOfInterest').append($('<button>').text('Page ' + page).attr('page', page));
+			$('#pagesOfInterest').append($('<button>').text('Page ' + page).attr('page', page).button());
 			prevPage = page;
 		}
 	});
-	$('button').button();
 
 	$('#pagesOfInterest').on('click', 'button', function() {
 		$('#jumpPage').val($(this).attr('page'));
@@ -451,13 +451,13 @@ function readPage() {
 		return;
 	}
 	
-	var page = parseInt(hash.substring('page'.length));
+	page = parseInt(hash.substring('page'.length));
 	var pageOffset = page * pageSize;
 	if (page > 0) {
-		$('#prev').removeAttr('disabled');
+		$('#prev').button('enable');
 	}
 	else {
-		$('#prev').attr('disabled', true);
+		$('#prev').button('disable');
 	}
 	$('#jumpPage').val(page);
 	$('#jumpOffset').val(pageOffset);
