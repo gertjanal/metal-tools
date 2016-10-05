@@ -294,12 +294,12 @@ $(function() {
 
 	$('#prev').click(function(e) {
 		page -= 1;
-		readPage();
+		setPage();
 	}).attr("disabled", true);
 
 	$('#next').click(function(e) {
 		page += 1;
-		readPage();
+		setPage();
 	});
 
 	var prevPage;
@@ -319,13 +319,13 @@ $(function() {
 
 	$('#goPage').click(function() {
 		page = parseInt($('#jumpPage').val());
-		readPage();
+		setPage();
 	});
 
 	$('#goOffset').click(function() {
 		var offset = parseInt($('#jumpOffset').val());
 		page = Math.floor(offset / pageSize);
-		readPage();
+		setPage();
 	});
 });
 
@@ -432,7 +432,26 @@ function getData(offset, size, callback) {
 	reader.readAsArrayBuffer(slice);
 }
 
+function resetPage() {
+	page = 0;
+	setPage();
+}
+
+function setPage() {
+	location.hash = 'page' + page;
+	readPage();
+}
+
 function readPage() {
+	var hash = location.hash.replace('#', '');
+	hash = hash == '' ? 'page0' : hash;
+	
+	if (hash.indexOf('page') !== 0) {
+		console.log('unknown page number in location hash');
+		return;
+	}
+	
+	var page = parseInt(hash.substring('page'.length));
 	var pageOffset = page * pageSize;
 	if (page > 0) {
 		$('#prev').removeAttr('disabled');
@@ -533,7 +552,7 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 					<h3>Data source</h3>
 					<div>
 						<p>
-							<input type="file" id="fileInput" onChange="readSingleFile(this)"/>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/>
 						</p>
 					</div>
 					<h3>Data offset</h3>
