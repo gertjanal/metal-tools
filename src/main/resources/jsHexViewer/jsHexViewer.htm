@@ -304,11 +304,23 @@ $(function() {
 	});
 
 	var prevPage;
+	var prevTitle;
 	$.each(locations, function(index, value) {
 		var page = Math.floor(value / (pageSize / columnCount));
 		if (page !== prevPage) {
-			$('#pagesOfInterest').append($('<button>').text('Page ' + page).attr('page', page).button());
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+			if (prevTitle && title.indexOf(prevTitle) === 0 && title.length > prevTitle.length) {
+				// Title is going to be the same as the previous page. Strip the parent path
+				title = title.substring(prevTitle.length);
+			}
+			if (title.indexOf('.') !== -1) {
+				// Get the parent of the page
+				title = title.substring(0, title.indexOf('.'));
+			}
+			$('#pagesOfInterest').append($('<button>').text('Page ' + page + '\n' + title).attr('page', page).button());
 			prevPage = page;
+			prevTitle = title;
 		}
 	});
 
