@@ -49,7 +49,7 @@
 	}
 
 	.spacerRow {
-		height: 3px;
+		height: 6px;
 	}
 
 	#hexview, #asciiview {
@@ -91,13 +91,36 @@
 		width: 300px;
 	}
 
-	.hexviewWrapper {
+	.tabAnchor {
+		display: block;
+		position: relative;
+		width: 0px;
+		height: 100%;
+		top: 0px;
+		left: 0px;
+	}
+
+	.tab {
+		display: block;
+		position: absolute;
+		font-size: 9px;
+		text-align: left;
+		height: 10px;
+		top: -32px;
+		left: -1px;
+		margin: 0px;
+		padding: 0px;
+		border: 1px solid red;
+		background-color: green;
+	}
+
+	#hexviewWrapper {
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		height: 100%;
 	}
-	
+
 	fieldset {
 		margin-bottom: 4px;
 	}
@@ -204,7 +227,7 @@ $(function() {
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
 			var name = definition[2];
-			$('.name').text(name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1));
+			$('.name').text(singleName(name));
 			$('.fullname').text(name);
 
 			getData(definition[0], definition[1], function(buffer) {
@@ -229,7 +252,7 @@ $(function() {
 			clearValues();
 		}
 	});
-	
+
 	function clearValues() {
 		$('#values #be').empty();
 		$('#values #behex').empty();
@@ -297,6 +320,10 @@ $(function() {
 		readPage();
 	});
 });
+
+function singleName(name) {
+	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
 
 var lastDefinition;
 function getDefinition(position) {
@@ -443,6 +470,7 @@ function readPage() {
 					}
 					hexRow.append(spacer);
 				}
+
 				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(hex);
 				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
 				hexRow.append(hexByteWrapper);
@@ -453,15 +481,21 @@ function readPage() {
 				asciiRow.append(asciiByteWrapper);
 
 				if (definition) {
-					colorByte(hexByteWrapper, filePosition, definition, false);
-					colorByte(asciiByteWrapper, filePosition, definition, false);
+					colorByte(hexByteWrapper, filePosition, definition);
+					colorByte(asciiByteWrapper, filePosition, definition);
+					
+					if (filePosition === definition[0]) {
+						var tab = $('<div>').addClass('tab').text(singleName(definition[2]));
+						colorByte(tab, filePosition, definition, true, true);
+					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
+					}
 				}
 			}
 		}
 	});
 }
 
-function colorByte(wrapper, filePosition, definition, isSpacer) {
+function colorByte(wrapper, filePosition, definition, isSpacer, isTab) {
 	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
 	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
 
@@ -471,17 +505,26 @@ function colorByte(wrapper, filePosition, definition, isSpacer) {
 	var offset = definition[0];
 	var size = definition[1];
 	var border = '1px solid ' + borderRgb;
-	wrapper.css('border-top', border);
-	wrapper.css('border-bottom', border);
-
-	if (!isSpacer) {
-		// spacer should never start or end the highlight,
-		// but does as a spacer does share the fileposition with its nearest byte
-		if (filePosition === offset) {
-			wrapper.css('border-left', border);
-		}
-		if (filePosition === offset + size -1) {
-			wrapper.css('border-right', border);
+	
+	if (isTab) {
+		wrapper.css('border-top', border);
+		wrapper.css('border-bottom', 'none');
+		wrapper.css('border-left', border);
+		wrapper.css('border-right', border);
+	}
+	else {
+		wrapper.css('border-top', border);
+		wrapper.css('border-bottom', border);
+	
+		if (!isSpacer) {
+			// spacer should never start or end the highlight,
+			// but does as a spacer does share the fileposition with its nearest byte
+			if (filePosition === offset) {
+				wrapper.css('border-left', border);
+			}
+			if (filePosition === offset + size -1) {
+				wrapper.css('border-right', border);
+			}
 		}
 	}
 }
@@ -491,7 +534,7 @@ function colorByte(wrapper, filePosition, definition, isSpacer) {
 	<div class="page-container">
 		<div class="split-pane fixed-right">
 			<div class="split-pane-component" id="left-component">
-				<div class="hexviewWrapper">
+				<div id="hexviewWrapper">
 					<div id="hexview"></div>
 					<div id="asciiview"></div>
 				</div>
