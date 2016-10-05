@@ -31,7 +31,7 @@
 	}
 
 	.selected {
-		background-color: #75abff;
+		background-color: #096ac8;
 		color: white;
 	}
 
@@ -81,10 +81,10 @@
 		margin-right: 5px;
 	}
 
-	#my-divider {
+	#divider {
 		right: 300px;
-		width: 5px;
-		background-color: grey;
+		width: 2px;
+		background-color: #096ac8;
 	}
 
 	#right-component {
@@ -127,6 +127,14 @@
 
 	.ui-accordion .ui-accordion-content {
 		padding: 1em;
+	}
+
+	.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
+		border-top-left-radius: 0px;
+	}
+
+	.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+		border-left: none;
 	}
 
 	.split-pane {
@@ -501,7 +509,6 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
 	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
 	var border = '1px solid ' + borderRgb;
-
 	wrapper.css('background-color', backgroundRgb);
 	wrapper.css('color', 'black');
 	wrapper.css('border-top', top ? border : 'none');
@@ -520,7 +527,7 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 					<div id="asciiview"></div>
 				</div>
 			</div>
-			<div class="split-pane-divider" id="my-divider"></div>
+			<div class="split-pane-divider" id="divider"></div>
 			<div class="split-pane-component" id="right-component">
 				<div id="accordion">
 					<h3>Data source</h3>
