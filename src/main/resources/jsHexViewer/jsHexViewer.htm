@@ -125,11 +125,19 @@
 		margin-bottom: 4px;
 	}
 
+	fieldset input[type=text] {
+		width: calc(100% - 80px);
+	}
+
+	fieldset button, button#next {
+		float: right;
+	}
+
 	.ui-accordion .ui-accordion-content {
 		padding: 1em;
 	}
 
-	.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
+	h3.ui-accordion-header {
 		border-top-left-radius: 0px;
 	}
 
@@ -213,8 +221,11 @@ function unpack(buffer, asBigEndian) {
 }
 
 $(function() {
-    $('button').button();
+	$('button').button();
+	$('input[type=text]').addClass("ui-corner-all");
 	$('div.split-pane').splitPane();
+	$('fieldset').addClass('ui-widget').addClass('ui-widget-content');
+
 	$('#accordion').accordion({
 		heightStyle: 'fill'
 	});
@@ -244,10 +255,10 @@ $(function() {
 				if (buffer.length <= 8) {
 					var be = unpack(buffer, true);
 					var le = unpack(buffer, false);
-					$('#values #be').text(be);
-					$('#values #behex').text(be.toString(16));
-					$('#values #le').text(le);
-					$('#values #lehex').text(le.toString(16));
+					$('#values #beDec').text(be);
+					$('#values #beHex').text(be.toString(16));
+					$('#values #leDec').text(le);
+					$('#values #leHex').text(le.toString(16));
 				}
 				else {
 					clearValues();
@@ -263,10 +274,10 @@ $(function() {
 	});
 
 	function clearValues() {
-		$('#values #be').empty();
-		$('#values #behex').empty();
-		$('#values #le').empty();
-		$('#values #lehex').empty();
+		$('#values #beDec').empty();
+		$('#values #beHex').empty();
+		$('#values #leDec').empty();
+		$('#values #leHex').empty();
 	}
 	
 	$('body').on('keydown', 'numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
@@ -312,7 +323,7 @@ $(function() {
 			title = firstDefinition[2];
 			if (prevTitle && title.indexOf(prevTitle) === 0 && title.length > prevTitle.length) {
 				// Title is going to be the same as the previous page. Strip the parent path
-				title = title.substring(prevTitle.length);
+				title = title.substring(prevTitle.length + 1);
 			}
 			if (title.indexOf('.') !== -1) {
 				// Get the parent of the page
@@ -334,8 +345,14 @@ $(function() {
 		setPage();
 	});
 
-	$('#goOffset').click(function() {
-		var offset = parseInt($('#jumpOffset').val());
+	$('#goOffsetDec').click(function() {
+		var offset = parseInt($('#jumpOffsetDec').val());
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$('#goOffsetHex').click(function() {
+		var offset = parseInt($('#jumpOffsetHex').val(), 16);
 		page = Math.floor(offset / pageSize);
 		setPage();
 	});
@@ -472,7 +489,8 @@ function readPage() {
 		$('#prev').button('disable');
 	}
 	$('#jumpPage').val(page);
-	$('#jumpOffset').val(pageOffset);
+	$('#jumpOffsetDec').val(pageOffset);
+	$('#jumpOffsetHex').val(pageOffset.toString(16));
 
 	getData(pageOffset, pageSize, function(buffer) {
 		var pagePosition = 0;
@@ -569,12 +587,19 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 					</div>
 					<h3>Data offset</h3>
 					<div>
-						<p>
-							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump to page</button>
-							<input type="text" size="8" id="jumpOffset" class="numeric" value="0"><button id="goOffset">Jump to offset</button>
-							<button id="prev">Previous page</button>
-							<button id="next">Next page</button><br>
-						</p>
+						<fieldset>
+							<legend>Jump to page</legend>
+							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump</button>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to decimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetDec" class="numeric" value="0"><button id="goOffsetDec">Jump</button><br>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to hexadecimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetHex"><button id="goOffsetHex">Jump</button>
+						</fieldset>
+						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
 					</div>
 					<h3>Values <span class="name"></span></h3>
 					<div>
@@ -590,13 +615,13 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 							</fieldset>
 							<fieldset>
 								<legend>Big Endian</legend>
-								dec: <span id="be"></span><br>
-								hex: <span id="behex"></span>
+								dec: <span id="beDec"></span><br>
+								hex: <span id="beHex"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Little Endian</legend>
-								dec: <span id="le"></span><br>
-								hex: <span id="lehex"></span>
+								dec: <span id="leDec"></span><br>
+								hex: <span id="leHex"></span>
 							</fieldset>
 							<fieldset>
 								<legend>Path</legend>
