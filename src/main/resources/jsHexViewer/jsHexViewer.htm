@@ -71,11 +71,6 @@
 		font-size: 12px;
 	}
 
-	#pagesOfInterest button {
-		display: inline-block;
-		width: 120px;
-	}
-
 	#left-component {
 		right: 300px;
 		margin-right: 5px;
@@ -131,6 +126,12 @@
 
 	fieldset button, button#next {
 		float: right;
+	}
+
+	#pagesOfInterest button {
+		display: inline-block;
+		font-size: 10px;
+		width: 110px;
 	}
 
 	.ui-accordion .ui-accordion-content {
@@ -329,7 +330,7 @@ $(function() {
 				// Get the parent of the page
 				title = title.substring(0, title.indexOf('.'));
 			}
-			$('#pagesOfInterest').append($('<button>').text('Page ' + page + '\n' + title).attr('page', page).button());
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + title).attr('page', page).button());
 			prevPage = page;
 			prevTitle = title;
 		}
