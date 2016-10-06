@@ -112,7 +112,7 @@
 		height: 100%;
 	}
 
-	#accordion fieldset, #accordion fieldset legend{
+	#accordion fieldset, #accordion fieldset legend, #accordion button {
 		font-size: 12px;
 	}
 
@@ -675,13 +675,13 @@ function colorByte(element, definition, top, right, bottom, left) {
 			<div class="split-pane-divider" id="divider"></div>
 			<div class="split-pane-component" id="right-component">
 				<div id="accordion">
-					<h3>Data source</h3>
+					<h3>Source</h3>
 					<div>
 						<p>
 							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/>
 						</p>
 					</div>
-					<h3>Data offset: <span id="tgmk"></span></h3>
+					<h3>Page</h3>
 					<div>
 						<fieldset>
 							<legend>Jump to page</legend>
