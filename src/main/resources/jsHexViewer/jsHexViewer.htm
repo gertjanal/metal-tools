@@ -111,6 +111,10 @@
 		padding: 0px;
 		border: 1px solid red;
 		cursor: pointer;
+		-webkit-user-select: none;   /* Chrome/Safari/Opera */
+		-moz-user-select: none;      /* Firefox */
+		-ms-user-select: none;       /* Internet Explorer/Edge */
+		user-select: none;           /* Non-prefixed version, currently not supported by any browser */
 	}
 
 	#hexviewWrapper {
@@ -122,6 +126,10 @@
 
 	#accordion fieldset, #accordion fieldset legend, #accordion button {
 		font-size: 12px;
+	}
+
+	#pagesOfInterest {
+		overflow-x: hidden !important;
 	}
 
 	fieldset {
