@@ -144,6 +144,10 @@
 		float: right;
 	}
 
+	ol {
+		padding-left: 14px;
+	}
+
 	#pagesOfInterest button {
 		display: inline-block;
 		font-size: 10px;
@@ -272,9 +276,8 @@ $(function() {
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
-			var name = definition[2];
-			$('.name').text(singleName(name));
-			$('.fullname').text(name);
+			$('.name').text(singleName(definition[2]));
+			$('.fullname').append(path(definition[2]));
 
 			$('#values #sizeDec').text(definition[1]);
 			$('#values #sizeHex').text(definition[1].toString(16));
@@ -311,7 +314,6 @@ $(function() {
 	}
 
 	$('#hexview').on('click', '.byte', function(e) {
-		console.log('byte clicked', e);
 		if (!hover) {
 			clearSelection();
 		}
@@ -335,7 +337,7 @@ $(function() {
 				.append(legend)
 				.append('offset: ').append(position).append('<br>')
 				.append('page: ').append(page).append('<br>')
-				.append('path: ').append($('<span>').text(definition[2])).append('<br>')
+				.append('path: ').append(path(definition[2])).append('<br>')
 				.append('hex: ').append(hexValue).append('<br>')
 				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
 				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
@@ -444,6 +446,14 @@ $(function() {
 		setPage();
 	});
 });
+
+function path(path) {
+	var list = $('<ol>');
+	$.each(path.split('.'), function(index, value) {
+	    list.append($('<li>').text(value));
+	});
+	return list;
+}
 
 function singleName(name) {
 	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
@@ -769,7 +779,7 @@ function colorByte(element, definition, top, right, bottom, left) {
 							</fieldset>
 							<fieldset>
 								<legend>Path</legend>
-								<span class="fullname">&nbsp;</span>
+								<span class="fullname"></span>
 							</fieldset>
 						</div>
 					</div>
