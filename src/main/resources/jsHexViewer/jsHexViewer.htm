@@ -489,7 +489,8 @@ function getDefinition(position) {
 		return lastDefinition;
 	}
 
-	var rowIndex = $.inArray(Math.floor(position / columnCount), locations);
+	var location = Math.floor(position / columnCount);
+	var rowIndex = $.inArray(location, locations);
 	if (rowIndex !== -1) {
 		var row = data[rowIndex];
 		for (var i = 0; i < row.length; i++) {
@@ -497,6 +498,21 @@ function getDefinition(position) {
 			if (inRange(definition, position)) {
 				lastDefinition = definition;
 				return definition;
+			}
+		}
+	}
+	else {
+		for (var i = 1; i < locations.length; i++) {
+			if (locations[i] > location) {
+				var row = data[i - 1];
+				var definition = row[row.length - 1];
+				if (inRange(definition, position)) {
+					lastDefinition = definition;
+					return definition;
+				}
+				else {
+					return;
+				}
 			}
 		}
 	}
