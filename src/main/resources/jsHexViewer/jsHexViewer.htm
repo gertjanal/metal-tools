@@ -124,7 +124,7 @@
 		width: calc(100% - 80px);
 	}
 
-	fieldset button, button#next {
+	fieldset button, button#next, button.tabTagJump {
 		float: right;
 	}
 
@@ -304,13 +304,7 @@ $(function() {
 	$('#hexview').on('click', '.tab', function(e) {
 		var position = parseInt($(this).attr('position'));
 		var definition = getDefinition(position);
-		var index = tags.indexOf(position);
-		console.log(index);
-		if (index !== -1) {
-		    // Untag tab
-			tags.splice(index, 1);
-		}
-		else {
+		if (!deleteTabTag(position)) {
 			// Tag tab
 			tags.push(position);
 			var tagLabel = $('<span>').text(definition[2]);
@@ -319,9 +313,10 @@ $(function() {
 			var hexValue = $('<span>').text('buffer too large');
 			colorByte(hexValue, definition, true, true, true, true);
 			
-			$('#tabTags').append($('<p>')
+			$('#tabTags').append($('<p>').addClass('tagLabel' + position)
 				.append(tagLabel).append('<br>')
 				.append(hexValue).append('<br>')
+				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button())
 				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button()));
 			
 			if (definition[1] <= 8) {
@@ -340,9 +335,24 @@ $(function() {
 		colorTab($(this), definition);
 	});
 	
+	function deleteTabTag(position) {
+		var index = tags.indexOf(position);
+		if (index === -1) {
+			return false;
+		}
+		tags.splice(index, 1);
+		$('p.tagLabel' + position).remove();
+		return true;
+	}
+	
 	$('#accordion').on('click', '.tabTagJump', function() {
 		page = parseInt($(this).attr('page'));
 		setPage();
+	});
+
+	$('#accordion').on('click', '.tabTagDelete', function() {
+		var position = parseInt($(this).attr('position'));
+		deleteTabTag(position);
 	});
 
 	$('document').ready(function() {
