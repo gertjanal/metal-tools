@@ -267,7 +267,8 @@ $(function() {
 		$('#filePositionHex').text(toHex(position));
 		$('#filePositionKiB').text(tgmk(position));
 
-		$('#values #binary').text((parseInt($(this).text(), 16) >>> 0).toString(2));
+		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
+		$('#values #binary').text(binary.substring(binary.length - 8));
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
