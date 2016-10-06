@@ -100,13 +100,13 @@
 		position: absolute;
 		font-size: 9px;
 		text-align: left;
-		height: 9px;
+		height: 8px;
 		top: -30px;
 		left: -1px;
 		margin: 0px;
 		padding: 0px;
 		border: 1px solid red;
-		background-color: green;
+		cursor: pointer;
 	}
 
 	#hexviewWrapper {
@@ -209,6 +209,7 @@
 <script src="libs/jquery-ui-1.12.1/jquery-ui.min.js"></script>
 <script src="https://raw.githubusercontent.com/shagstrom/split-pane/master/split-pane.js"></script>
 <script>
+var tags = [];
 var hover = true;
 var page = 0;
 var pageSize = 1024;
@@ -261,8 +262,8 @@ $(function() {
 			$('#values #sizeHex').text(definition[1].toString(16));
 			$('#values #sizeKiB').text(tgmk(definition[1]));
 
-			getData(definition[0], definition[1], function(buffer) {
-				if (buffer.length <= 8) {
+			if (definition[1] <= 8) {
+				getData(definition[0], definition[1], function(buffer) {
 					var be = unpack(buffer, true);
 					var le = unpack(buffer, false);
 					$('#values #beDec').text(be);
@@ -272,8 +273,8 @@ $(function() {
 					$('#values #leDec').text(le);
 					$('#values #leHex').text(le.toString(16));
 					$('#values #leKiB').text(tgmk(le));
-				}
-			});
+				});
+			}
 			
 			colorByte($('.name'), definition, true, true, true, true);
 		}
@@ -291,12 +292,57 @@ $(function() {
 		$('#filePositionHex').empty();
 		$('#filePositionKiB').empty();
 	}
-	
-	$('#hexview').click(function() {
+
+	$('#hexview').on('click', '.byte', function(e) {
+		console.log('byte clicked', e);
 		if (!hover) {
 			clearSelection();
 		}
 		hover = !hover;
+	});
+
+	$('#hexview').on('click', '.tab', function(e) {
+		var position = parseInt($(this).attr('position'));
+		var definition = getDefinition(position);
+		var index = tags.indexOf(position);
+		console.log(index);
+		if (index !== -1) {
+		    // Untag tab
+			tags.splice(index, 1);
+		}
+		else {
+			// Tag tab
+			tags.push(position);
+			var tagLabel = $('<span>').text(definition[2]);
+			colorByte(tagLabel, definition, true, true, true, true);
+
+			var hexValue = $('<span>').text('buffer too large');
+			colorByte(hexValue, definition, true, true, true, true);
+			
+			$('#tabTags').append($('<p>')
+				.append(tagLabel).append('<br>')
+				.append(hexValue).append('<br>')
+				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button()));
+			
+			if (definition[1] <= 8) {
+				getData(definition[0], definition[1], function(buffer) {
+					hexValue.empty();
+					$.each(buffer, function(index, value) {
+						var hex = toHex(value & 0xff);
+						if (index % 2 == 0 && index > 0) {
+							hexValue.append('&nbsp;');
+						}
+						hexValue.append(hex);
+					});
+				});
+			}
+		}
+		colorTab($(this), definition);
+	});
+	
+	$('#accordion').on('click', '.tabTagJump', function() {
+		page = parseInt($(this).attr('page'));
+		setPage();
 	});
 
 	$('document').ready(function() {
@@ -567,8 +613,8 @@ function readPage() {
 					colorByte(asciiByteWrapper, definition, true, right, true, left);
 					
 					if (filePosition === definition[0]) {
-						var tab = $('<div>').addClass('tab').text(singleName(definition[2]));
-						colorByte(tab, definition, true, true, false, true);
+						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
+						colorTab(tab, definition);
 					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
 					}
 				}
@@ -577,16 +623,26 @@ function readPage() {
 	});
 }
 
-function colorByte(wrapper, definition, top, right, bottom, left) {
+function colorTab(element, definition) {
+	colorByte(element, definition, true, true, false, true);
+	if (tags.indexOf(definition[0]) !== -1) {
+		// Override colors when tagged 
+		var rgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80)
+		element.css('background', 'linear-gradient(white, ' + rgb + ')');
+	}
+}
+
+
+function colorByte(element, definition, top, right, bottom, left) {
 	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
 	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
 	var border = '1px solid ' + borderRgb;
-	wrapper.css('background-color', backgroundRgb);
-	wrapper.css('color', 'black');
-	wrapper.css('border-top', top ? border : 'none');
-	wrapper.css('border-right', right ? border : 'none');
-	wrapper.css('border-bottom', bottom ? border : 'none');
-	wrapper.css('border-left', left ? border : 'none');
+	element.css('background', backgroundRgb);
+	element.css('color', 'black');
+	element.css('border-top', top ? border : 'none');
+	element.css('border-right', right ? border : 'none');
+	element.css('border-bottom', bottom ? border : 'none');
+	element.css('border-left', left ? border : 'none');
 }
 
 </script>
@@ -659,6 +715,9 @@ function colorByte(wrapper, definition, top, right, bottom, left) {
 					</div>
 					<h3>Pages of interest</h3>
 					<div id="pagesOfInterest">Pages of interest:<br></div>
+					<h3>Tab tags</h3>
+					<div id="tabTags">
+					</div>
 				</div>
 			</div>
 		</div>
