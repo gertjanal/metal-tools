@@ -87,6 +87,7 @@
 
 	#right-component {
 		width: 300px;
+		overflow: hidden;
 	}
 
 	.tabAnchor {
@@ -138,7 +139,7 @@
 	#pagesOfInterest button {
 		display: inline-block;
 		font-size: 10px;
-		width: 110px;
+		width: 126px;
 	}
 
 	.ui-accordion .ui-accordion-content {
@@ -157,7 +158,6 @@
 		position: relative;
 		height: 100%;
 		width: 100%;
-		overflow: hidden;
 		z-index: 0;
 	}
 
@@ -404,11 +404,11 @@ $(function() {
 			}
 			if (title.indexOf('.') !== -1) {
 				// Get the parent of the page
-				title = title.substring(0, title.indexOf('.'));
+				title = title.substring(0, title.indexOf('.')) + '...' + title.substring(title.lastIndexOf('.') + 1);
 			}
 			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + title).attr('page', page).button());
+			prevTitle = firstDefinition[2];
 			prevPage = page;
-			prevTitle = title;
 		}
 	});
 
