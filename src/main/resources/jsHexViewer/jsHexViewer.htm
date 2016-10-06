@@ -319,18 +319,16 @@ $(function() {
 				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button())
 				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button()));
 			
-			if (definition[1] <= 8) {
-				getData(definition[0], definition[1], function(buffer) {
-					hexValue.empty();
-					$.each(buffer, function(index, value) {
-						var hex = toHex(value & 0xff);
-						if (index % 2 == 0 && index > 0) {
-							hexValue.append('&nbsp;');
-						}
-						hexValue.append(hex);
-					});
+			getData(definition[0], Math.min(definition[1], 16), function(buffer) {
+				hexValue.empty();
+				$.each(buffer, function(index, value) {
+					var hex = toHex(value & 0xff);
+					if (index % 2 == 0 && index > 0) {
+						hexValue.append('&nbsp;');
+					}
+					hexValue.append(hex);
 				});
-			}
+			});
 		}
 		colorTab($(this), definition);
 	});
