@@ -9,7 +9,7 @@
 		font-size: 11px;
 	}
 
-	.byteWrapper, .linenr, .spacer {
+	.byteWrapper, .linenr, .columnnr, .spacer {
 		display: table-cell;
 	}
 
@@ -22,12 +22,19 @@
 		text-align: center;
 	}
 
+	.linenr, .columnnr, .row:first-child {
+		background-color: #292929;
+		color: #75abff;
+	}
+	.columnnr {
+		font-size: 10px;
+		text-align: center;
+		height: 30px;
+	}
 	.linenr {
 		padding-right: 4px;
 		margin-right: 10px;
 		text-align: right;
-		background-color: #292929;
-		color: #75abff;
 	}
 
 	.selected {
@@ -56,7 +63,7 @@
 		display: table;
 		color: white;
 	}
-
+	
 	#hexview {
 		float: left;
 		padding-right: 10px;
@@ -217,11 +224,11 @@ var columnCount = 0; <!-- generated -->
 
 function unpack(buffer, asBigEndian) {
 	if (buffer.length == 1 || buffer.length == 2 || buffer.length == 4 || buffer.length == 6 || buffer.length == 8) {
-		 var value = 0;
-		 for (var j = 0, i = asBigEndian ? buffer.length - 1 : 0; asBigEndian ? i >= 0 : i < buffer.length; asBigEndian ? i-- : i++, j++) {
-			 value |= (buffer[i] & 0xff) << (j * 8);
-		 }
-		 return value;
+		var value = 0;
+		for (var j = 0, i = (asBigEndian ? buffer.length - 1 : 0); asBigEndian ? i >= 0 : i < buffer.length; (asBigEndian ? i-- : i++), j++) {
+			value |= (buffer[i] & 0xff) << (j * 8);
+		}
+		return value;
 	}
 	return '';
 }
@@ -316,12 +323,15 @@ $(function() {
 			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
 				.addClass('ui-widget').addClass('ui-widget-content')
 				.append(legend)
-				.append($('<span>').text(definition[2])).append('<br>')
-				.append(hexValue).append('<br>')
+				.append('offset: ').append(position).append('<br>')
+				.append('page: ').append(page).append('<br>')
+				.append('path: ').append($('<span>').text(definition[2])).append('<br>')
+				.append('hex: ').append(hexValue).append('<br>')
 				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
 				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
 			
-			getData(definition[0], Math.min(definition[1], 16), function(buffer) {
+			var max = 12;
+			getData(definition[0], Math.min(definition[1], max), function(buffer) {
 				hexValue.empty();
 				$.each(buffer, function(index, value) {
 					var hex = toHex(value & 0xff);
@@ -330,6 +340,9 @@ $(function() {
 					}
 					hexValue.append(hex);
 				});
+				if (definition[1] > max) {
+					hexValue.append('...');
+				}
 			});
 		}
 		colorTab($(this), definition);
@@ -582,6 +595,22 @@ function readPage() {
 		var pagePosition = 0;
 		$('#hexview').empty();
 		$('#asciiview').empty();
+		
+
+		var hexRow = $('<div>').addClass('row').append($('<div>').addClass('linenr'));
+		$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+	
+		var asciiRow = $('<div>').addClass('row');
+		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+		for (var column = 0; column < columnCount; column++) {
+			if (column % 2 == 0) {
+				hexRow.append($('<div>').addClass('spacer'));
+			}
+			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
+			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+		}
+		
 
 		for (var row = 0; pagePosition < buffer.length; row++) {
 			if (buffer.length - pagePosition < columnCount) {
@@ -592,7 +621,7 @@ function readPage() {
 			var hexRow = $('<div>').addClass('row')
 				.append($('<div>').addClass('linenr').text(hexNr));
 
-			$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row'));
+			$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
 
 			var asciiRow = $('<div>').addClass('row');
 			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
