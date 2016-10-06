@@ -267,6 +267,8 @@ $(function() {
 		$('#filePositionHex').text(toHex(position));
 		$('#filePositionKiB').text(tgmk(position));
 
+		$('#values #binary').text((parseInt($(this).text(), 16) >>> 0).toString(2));
+
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
 			var name = definition[2];
@@ -290,7 +292,6 @@ $(function() {
 					$('#values #leKiB').text(tgmk(le));
 				});
 			}
-			
 			colorByte($('.name'), definition, true, true, true, true);
 		}
 	});
@@ -760,6 +761,10 @@ function colorByte(element, definition, top, right, bottom, left) {
 								dec: <span id="leDec"></span><br>
 								hex: <span id="leHex"></span><br>
 								kib: <span id="leKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Binary</legend>
+								bin: <span id="binary"></span><br>
 							</fieldset>
 							<fieldset>
 								<legend>Path</legend>
