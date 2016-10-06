@@ -318,8 +318,8 @@ $(function() {
 				.append(legend)
 				.append($('<span>').text(definition[2])).append('<br>')
 				.append(hexValue).append('<br>')
-				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button())
-				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button()));
+				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
+				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
 			
 			getData(definition[0], Math.min(definition[1], 16), function(buffer) {
 				hexValue.empty();
