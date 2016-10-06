@@ -153,6 +153,10 @@
 		overflow: hidden;
 		z-index: 0;
 	}
+
+	.split-pane-component {
+		overflow: hidden;
+	}
 	
 	.split-pane.fixed-right > .split-pane-component {
 		position: absolute;
@@ -242,13 +246,13 @@ $(function() {
 			$(value).addClass('selected');
 		});
 
+		$('#values span').empty();
 		$('#filePositionDec').text(position);
 		$('#filePositionHex').text(toHex(position));
 		$('#filePositionKiB').text(tgmk(position));
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
-			$('#values span').empty();
 			var name = definition[2];
 			$('.name').text(singleName(name));
 			$('.fullname').text(name);
