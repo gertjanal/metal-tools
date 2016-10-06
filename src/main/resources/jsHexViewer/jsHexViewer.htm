@@ -67,10 +67,6 @@
 		padding-left: 10px;
 	}
 
-	#values {
-		font-size: 12px;
-	}
-
 	#left-component {
 		right: 300px;
 		margin-right: 5px;
@@ -116,6 +112,10 @@
 		height: 100%;
 	}
 
+	#accordion fieldset, #accordion fieldset legend{
+		font-size: 12px;
+	}
+
 	fieldset {
 		margin-bottom: 4px;
 	}
@@ -124,7 +124,7 @@
 		width: calc(100% - 80px);
 	}
 
-	fieldset button, button#next, button.tabTagJump {
+	fieldset button, button#next {
 		float: right;
 	}
 
@@ -307,14 +307,16 @@ $(function() {
 		if (!deleteTabTag(position)) {
 			// Tag tab
 			tags.push(position);
-			var tagLabel = $('<span>').text(definition[2]);
-			colorByte(tagLabel, definition, true, true, true, true);
-
-			var hexValue = $('<span>').text('buffer too large');
+			var hexValue = $('<span>');
 			colorByte(hexValue, definition, true, true, true, true);
+
+			var legend = $('<legend>').text(singleName(definition[2]));
+			colorByte(legend, definition, true, true, true, true);
 			
-			$('#tabTags').append($('<p>').addClass('tagLabel' + position)
-				.append(tagLabel).append('<br>')
+			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
+				.addClass('ui-widget').addClass('ui-widget-content')
+				.append(legend)
+				.append($('<span>').text(definition[2])).append('<br>')
 				.append(hexValue).append('<br>')
 				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button())
 				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button()));
@@ -339,7 +341,7 @@ $(function() {
 			return false;
 		}
 		tags.splice(index, 1);
-		$('p.tagLabel' + position).remove();
+		$('fieldset.tagLabel' + position).remove();
 		return true;
 	}
 	
