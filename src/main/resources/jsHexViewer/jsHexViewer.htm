@@ -353,6 +353,13 @@ $(function() {
 	$('#accordion').on('click', '.tabTagDelete', function() {
 		var position = parseInt($(this).attr('position'));
 		deleteTabTag(position);
+		$('.tab').each(function() {
+			var tabPosition = parseInt($(this).attr('position'));
+			if (tabPosition === position) {
+				var definition = getDefinition(position);
+				colorTab($(this), definition);
+			}
+		});
 	});
 
 	$('document').ready(function() {
