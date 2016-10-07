@@ -440,17 +440,8 @@ $(function() {
 		}
 		definitionCounts += data[index].length;
 	});
-	definitionCounts = Object.keys(hotspots);
-	definitionCounts.sort(function(a, b) {
-		return parseInt(a) < parseInt(b);
-	});
 	
-	for (var i = 0; i < Math.min(definitionCounts.length, 6); i++) {
-		var definitionCount = definitionCounts[i];
-		$.each(hotspots[definitionCount], function(i, page) {
-			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definitions').attr('page', page).button());
-		});
-	}
+	addHotspots(hotspots, 30);
 
 	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
 		$('#jumpPage').val($(this).attr('page'));
@@ -490,6 +481,23 @@ $(function() {
 		readPage();
 	});
 });
+
+function addHotspots(hotspots, max) {
+	var definitionCounts = Object.keys(hotspots);
+	definitionCounts.sort(function(a, b) {
+		return parseInt(a) < parseInt(b);
+	});
+	for (var i = 0, k = 0; i < Math.min(definitionCounts.length, 6); i++) {
+		var definitionCount = definitionCounts[i];
+		for (var j = 0; j < hotspots[definitionCount].length; j++, k++) {
+			if (k >= max) {
+				return;
+			}
+			var page = hotspots[definitionCount][j];
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definitions').attr('page', page).button());
+		}
+	}
+}
 
 function path(path) {
 	var list = $('<ol>');
