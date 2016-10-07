@@ -427,20 +427,19 @@ $(function() {
 			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + title).attr('page', page).button());
 			prevTitle = firstDefinition[2];
 			
-			if (prevPage) {
+			if (prevPage !== undefined) {
 				if (hotspots[definitionCounts]) {
 					hotspots[definitionCounts].push(prevPage);
 				}
 				else {
 					hotspots[definitionCounts] = [prevPage];
 				}
+				definitionCounts = 0;
 			}
-			definitionCounts = 0;
 			prevPage = page;
 		}
 		definitionCounts += data[index].length;
 	});
-	
 	addHotspots(hotspots, 30);
 
 	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
@@ -487,14 +486,15 @@ function addHotspots(hotspots, max) {
 	definitionCounts.sort(function(a, b) {
 		return parseInt(a) < parseInt(b);
 	});
-	for (var i = 0, k = 0; i < Math.min(definitionCounts.length, 6); i++) {
+	for (var i = 0, k = 0; i < definitionCounts.length; i++) {
 		var definitionCount = definitionCounts[i];
 		for (var j = 0; j < hotspots[definitionCount].length; j++, k++) {
-			if (k >= max) {
-				return;
-			}
 			var page = hotspots[definitionCount][j];
-			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definitions').attr('page', page).button());
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definition' + (definitionCount > 1 ? 's' : '')).attr('page', page).button());
+		}
+		if (k >= max) {
+			// Added max buttons or more (equal hotspots are also added)
+			return;
 		}
 	}
 }
