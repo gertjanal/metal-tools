@@ -629,6 +629,10 @@ function readSingleFile(fileInput) {
 	if (!file) {
 		return false;
 	}
+	$('#fileInfoName').text(file.name);
+	$('#fileInfoSizeDec').text(file.size);
+	$('#fileInfoSizeKiB').text(tgmk(file.size));
+	$('#fileInfoPages').text(Math.floor(file.size / pageSize) + ' pages');
 	readPage();
 	return true;
 }
@@ -797,9 +801,18 @@ function colorByte(element, definition, top, right, bottom, left) {
 				<div id="accordion">
 					<h3>Source</h3>
 					<div>
-						<p>
+						<fieldset>
+							<legend>Browse</legend>
+							Select the source data this page was generated with<br>
 							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/>
-						</p>
+						</fieldset>
+						<fieldset>
+							<legend>File info</legend>
+							name: <span id="fileInfoName"></span><br>
+							dec: <span id="fileInfoSizeDec"></span><br>
+							kib: <span id="fileInfoSizeKiB"></span><br>
+							pages: <span id="fileInfoPages"></span>
+						</fieldset>
 					</div>
 					<h3>Page</h3>
 					<div>
