@@ -2,6 +2,10 @@
 <head>
 <link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
 <style>
+	html.wait, html.wait * {
+		cursor: wait !important;
+	}
+
 	body {
 		font-family: Verdana;
 		margin: 0px;
@@ -144,7 +148,7 @@
 		float: right;
 	}
 
-	ol {
+	ol, ul {
 		padding-left: 14px;
 	}
 
@@ -300,7 +304,7 @@ $(function() {
 		}
 	});
 	
-	$('body').on('keydown', 'numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
+	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
 	
 	function clearSelection() {
 	    $('.byte').each(function(index, value){
@@ -387,7 +391,7 @@ $(function() {
 		});
 	});
 
-	$('document').ready(function() {
+	$(document).ready(function() {
 		if (readSingleFile($('#fileInput'))) {
 			$('#accordion').accordion('option', 'active', 2);
 		}
@@ -444,6 +448,18 @@ $(function() {
 		var offset = parseInt($('#jumpOffsetHex').val(), 16);
 		page = Math.floor(offset / pageSize);
 		setPage();
+	});
+
+	$(document).on('keydown', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code == 33) {
+			page++;
+			setPage();
+		}
+		else if (code == 34 && page > 0) {
+			page--;
+			setPage();
+		}
 	});
 });
 
@@ -608,6 +624,7 @@ function setPage() {
 }
 
 function readPage() {
+    $('html').addClass('wait'); // Show wait cursor
 	var hash = location.hash.replace('#', '');
 	hash = hash == '' ? 'page0' : hash;
 	
@@ -704,6 +721,7 @@ function readPage() {
 				}
 			}
 		}
+		$('html').removeClass('wait'); // Remove wait cursor
 	});
 }
 
@@ -804,7 +822,22 @@ function colorByte(element, definition, top, right, bottom, left) {
 					<h3>Pages of interest</h3>
 					<div id="pagesOfInterest">Pages of interest:<br></div>
 					<h3>Tab tags</h3>
-					<div id="tabTags">
+					<div id="tabTags"></div>
+					<h3>Help</h3>
+					<div>
+						<fieldset>
+							<legend>Shortkeys</legend>
+							<ul>
+								<li>Page up: Next page
+								<li>Page down: Previous page
+							</ul>
+						</fieldset>
+						<fieldset>
+							<legend>Hints</legend>
+							<ul>
+								<li>Click a byte to keep selection. Click any byte to release selection.
+							</ul>
+						</fieldset>
 					</div>
 				</div>
 			</div>
