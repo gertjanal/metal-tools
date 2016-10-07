@@ -238,14 +238,18 @@ var pageSize = 1024;
 var columnCount = 0; <!-- generated -->
 
 function unpack(buffer, asBigEndian) {
-	if (buffer.length == 1 || buffer.length == 2 || buffer.length == 4 || buffer.length == 6 || buffer.length == 8) {
-		var value = 0;
-		for (var j = 0, i = (asBigEndian ? buffer.length - 1 : 0); asBigEndian ? i >= 0 : i < buffer.length; (asBigEndian ? i-- : i++), j++) {
-			value |= (buffer[i] & 0xff) << (j * 8);
+	var hex = '';
+	$.each(buffer, function(index, value) {
+		var byte = value.toString(16);
+		byte = byte.length == 1 ? '0' + byte : byte;
+		if (asBigEndian) {
+			hex += byte;
 		}
-		return value;
-	}
-	return '';
+		else {
+			hex = byte + hex;
+		}
+	});
+	return parseInt('0x' + hex, 16);
 }
 
 $(function() {
@@ -291,11 +295,11 @@ $(function() {
 					var be = unpack(buffer, true);
 					var le = unpack(buffer, false);
 					$('#values #beDec').text(be);
-					$('#values #beHex').text(be.toString(16));
+					$('#values #beHex').text(hexSpaces(be.toString(16)));
 					$('#values #beKiB').text(tgmk(be));
 
 					$('#values #leDec').text(le);
-					$('#values #leHex').text(le.toString(16));
+					$('#values #leHex').text(hexSpaces(le.toString(16)));
 					$('#values #leKiB').text(tgmk(le));
 				});
 			}
@@ -648,6 +652,21 @@ function toHex(value) {
 	var hex = value.toString(16);
 	hex = (hex.length === 1) ? '0' + hex : hex;
 	return hex;
+}
+
+function hexSpaces(hex) {
+	if (!hex || hex.length == 0) {
+		return hex;
+	}
+	var value = '';
+	var i = hex.length;
+	for (; i >= 0; i -= 4){
+		value = hex.substring(i, i + 4) + ' ' + value;
+	}
+	if (i < 0) {
+		value = hex.substring(0, i + 4) + ' ' + value;
+	}
+	return value;
 }
 
 function getData(offset, size, callback) {
