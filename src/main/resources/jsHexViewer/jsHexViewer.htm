@@ -153,7 +153,6 @@
 	}
 
 	#pagesOfInterest button, #hotspots button {
-		display: inline-block;
 		font-size: 10px;
 		width: 126px;
 	}
@@ -416,16 +415,15 @@ $(function() {
 		if (page !== prevPage) {
 			var firstDefinition = data[index][0];
 			title = firstDefinition[2];
-			if (prevTitle && title.indexOf(prevTitle) === 0 && title.length > prevTitle.length) {
-				// Title is going to be the same as the previous page. Strip the parent path
-				title = title.substring(prevTitle.length + 1);
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
 			}
-			if (title.indexOf('.') !== -1) {
-				// Get the parent of the page
-				title = title.substring(0, title.indexOf('.')) + '...' + title.substring(title.lastIndexOf('.') + 1);
-			}
-			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + title).attr('page', page).button());
-			prevTitle = firstDefinition[2];
+			
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
 			
 			if (prevPage !== undefined) {
 				if (hotspots[definitionCounts]) {
@@ -480,6 +478,15 @@ $(function() {
 		readPage();
 	});
 });
+
+function getMatchingIndex(a, b) {
+	for (var i = 0; i < Math.min(a.length, b.length); i++) {
+		if (a[i] !== b[i]) {
+			return i;
+		}
+	}
+	return 0;
+}
 
 function addHotspots(hotspots, max) {
 	var definitionCounts = Object.keys(hotspots);
