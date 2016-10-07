@@ -132,7 +132,7 @@
 		font-size: 12px;
 	}
 
-	#pagesOfInterest {
+	#pagesOfInterest, #hotspots {
 		overflow-x: hidden !important;
 	}
 
@@ -152,7 +152,7 @@
 		padding-left: 14px;
 	}
 
-	#pagesOfInterest button {
+	#pagesOfInterest button, #hotspots button {
 		display: inline-block;
 		font-size: 10px;
 		width: 126px;
@@ -409,6 +409,8 @@ $(function() {
 
 	var prevPage;
 	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
 	$.each(locations, function(index, value) {
 		var page = Math.floor(value / (pageSize / columnCount));
 		if (page !== prevPage) {
@@ -424,11 +426,33 @@ $(function() {
 			}
 			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + title).attr('page', page).button());
 			prevTitle = firstDefinition[2];
+			
+			if (prevPage) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+			}
+			definitionCounts = 0;
 			prevPage = page;
 		}
+		definitionCounts += data[index].length;
 	});
+	definitionCounts = Object.keys(hotspots);
+	definitionCounts.sort(function(a, b) {
+		return parseInt(a) < parseInt(b);
+	});
+	
+	for (var i = 0; i < Math.min(definitionCounts.length, 6); i++) {
+		var definitionCount = definitionCounts[i];
+		$.each(hotspots[definitionCount], function(i, page) {
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definitions').attr('page', page).button());
+		});
+	}
 
-	$('#pagesOfInterest').on('click', 'button', function() {
+	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
 		$('#jumpPage').val($(this).attr('page'));
 		$('#goPage').trigger('click');
 	});
@@ -460,6 +484,10 @@ $(function() {
 			page--;
 			setPage();
 		}
+	});
+
+	$(window).on('hashchange', function() {
+		readPage();
 	});
 });
 
@@ -620,7 +648,6 @@ function resetPage() {
 
 function setPage() {
 	location.hash = 'page' + page;
-	readPage();
 }
 
 function readPage() {
@@ -823,6 +850,8 @@ function colorByte(element, definition, top, right, bottom, left) {
 					<div id="pagesOfInterest">Pages of interest:<br></div>
 					<h3>Tab tags</h3>
 					<div id="tabTags"></div>
+					<h3>Hotspots</h3>
+					<div id="hotspots"></div>
 					<h3>Help</h3>
 					<div>
 						<fieldset>
