@@ -632,7 +632,7 @@ function readSingleFile(fileInput) {
 	$('#fileInfoName').text(file.name);
 	$('#fileInfoSizeDec').text(file.size);
 	$('#fileInfoSizeKiB').text(tgmk(file.size));
-	$('#fileInfoPages').text(Math.floor(file.size / pageSize) + ' pages');
+	$('#fileInfoPages').text(Math.floor(file.size / pageSize));
 	readPage();
 	return true;
 }
@@ -803,19 +803,21 @@ function colorByte(element, definition, top, right, bottom, left) {
 					<div>
 						<fieldset>
 							<legend>Browse</legend>
-							Select the source data this page was generated with<br>
-							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/>
+							Select the source data this page was generated with:<br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/><br>
 						</fieldset>
 						<fieldset>
-							<legend>File info</legend>
-							name: <span id="fileInfoName"></span><br>
-							dec: <span id="fileInfoSizeDec"></span><br>
+							<legend>Size of <span id="fileInfoName"></span></legend>
+							dec: <span id="fileInfoSizeDec"></span> bytes<br>
 							kib: <span id="fileInfoSizeKiB"></span><br>
-							pages: <span id="fileInfoPages"></span>
 						</fieldset>
 					</div>
 					<h3>Page</h3>
 					<div>
+						<fieldset>
+							<legend>Info</legend>
+							<span id="fileInfoPages"></span> pages
+						</fieldset>
 						<fieldset>
 							<legend>Jump to page</legend>
 							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump</button>
