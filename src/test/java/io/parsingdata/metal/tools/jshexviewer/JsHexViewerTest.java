@@ -36,6 +36,7 @@ import org.junit.Test;
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.format.PNG;
+import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.EnvironmentFactory;
 import io.parsingdata.metal.util.InMemoryByteStream;
@@ -78,7 +79,23 @@ public class JsHexViewerTest {
         final ParseResult result = PNG.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_screenshot.htm");
+        assertGenerate(result, "example_png.htm");
+    }
+
+    @Test
+    public void testGenerateZip() throws Exception {
+        byte[] data;
+        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/data.zip");
+             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            IOUtils.copy(input, output);
+            data = output.toByteArray();
+        }
+
+        final Environment env = new Environment(new InMemoryByteStream(data));
+        final ParseResult result = ZIP.FORMAT.parse(env, le());
+        assertTrue(result.succeeded);
+
+        assertGenerate(result, "example_zip.htm");
     }
 
     private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
