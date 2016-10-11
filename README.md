@@ -1,7 +1,7 @@
 # metal-tools
 Tools for [parsingdata/metal](https://github.com/parsingdata/metal)
 
-Live demo available at: [https://gertjanal.github.io/metal-tools](gertjanal.github.io/metal-tools)
+Live demo available at: [gertjanal.github.io/metal-tools](https://gertjanal.github.io/metal-tools)
 
 First tool added is a HexViewer, written in HTML.
 This hexviewer highlights all Metal Def tokens. For example, in the test a byte array is added with a string;
