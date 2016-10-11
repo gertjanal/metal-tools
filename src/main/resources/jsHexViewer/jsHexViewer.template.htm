@@ -656,8 +656,8 @@ function readSingleFile(fileInput) {
 			firstFileLoad();
 		};
 		xhr.send();
+		return false;
 	}
-	return false;
 
 	// Load file from browse input
 	var files = $(fileInput).prop('files');
