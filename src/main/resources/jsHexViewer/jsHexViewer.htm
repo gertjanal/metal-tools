@@ -468,12 +468,12 @@ $(function() {
 
 	$(document).on('keydown', function(e) {
 		var code = (e.keyCode ? e.keyCode : e.which);
-		if (code == 33) {
-			page++;
+		if (code == 33 && page > 0) {
+			page--;
 			setPage();
 		}
-		else if (code == 34 && page > 0) {
-			page--;
+		else if (code == 34) {
+			page++;
 			setPage();
 		}
 	});
@@ -699,6 +699,12 @@ function readPage() {
 	}
 	
 	page = parseInt(hash.substring('page'.length));
+	if (page < 0){
+		page = 0;
+		setPage();
+		return;
+	}
+	
 	var pageOffset = page * pageSize;
 	if (page > 0) {
 		$('#prev').button('enable');
@@ -906,8 +912,8 @@ function colorByte(element, definition, top, right, bottom, left) {
 						<fieldset>
 							<legend>Shortkeys</legend>
 							<ul>
-								<li>Page up: Next page
-								<li>Page down: Previous page
+								<li>Page down: Next page
+								<li>Page up: Previous page
 							</ul>
 						</fieldset>
 						<fieldset>
