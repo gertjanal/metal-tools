@@ -2,31 +2,39 @@
 <script type="text/javascript">
 
 for(var i = 0; i < 360; i++) {
+	write('def', i);
+	write('seq', i);
+}
+
+function write(name, i) {
 	var background = hsv2rgb(i, 50, 80);
 	var border = hsv2rgb(i, 100, 100);
-
-	document.write('.hue' + i + '-def-left {;' +
+	document.write(
+	'.split-pane-component.highlight-' + name + ' .hue' + i + '-' + name + '-left {' +
 		'border-left: 1px solid ' + border + ';' +
+		'margin-left: 0px;' +
 	'}' +
-	
-	'.hue' + i + '-def-right {' +
+
+	'.split-pane-component.highlight-' + name + ' .hue' + i + '-' + name + '-right {' +
 		'border-right: 1px solid ' + border + ';' +
+		'margin-right: 0px;' +
 	'}' +
-	
-	'.hue' + i + '-def-top.tagged {' +
+
+	'.split-pane-component.highlight-' + name + ' .hue' + i + '-' + name + '-top.tagged {' +
 		'background: linear-gradient(white, ' + background + ');' +
 	'}' +
-	
-	'.hue' + i + '-def-top {' +
+
+	'.split-pane-component.highlight-' + name + ' .hue' + i + '-' + name + '-top {' +
 		'background: ' + background + ';' +
 		'color: black;' +
 		'border-top: 1px solid ' + border + ';' +
 	'}' +
-	
-	'.hue' + i + '-def-bottom {' +
+
+	'.split-pane-component.highlight-' + name + ' .hue' + i + '-' + name + '-bottom {' +
 		'border-bottom: 1px solid ' + border + ';' +
 	'}<br>');
 }
+
 
 function hsv2rgb(h, s, v) {
 	var r, g, b;

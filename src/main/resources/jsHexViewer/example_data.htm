@@ -303,7 +303,7 @@ $(function() {
 					$('#values #leKiB').text(tgmk(le));
 				});
 			}
-			colorByte($('.name'), definition, true, true, true, true);
+			colorDef($('.name'), definition, true, true, true, true);
 		}
 	});
 	
@@ -335,10 +335,10 @@ $(function() {
 			tags.push(position);
 			$(this).addClass('tagged');
 			var hexValue = $('<span>');
-			colorByte(hexValue, definition, true, true, true, true);
+			colorDef(hexValue, definition, true, true, true, true);
 
 			var legend = $('<legend>').text(singleName(definition[2]));
-			colorByte(legend, definition, true, true, true, true);
+			colorDef(legend, definition, true, true, true, true);
 			
 			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
 				.addClass('ui-widget').addClass('ui-widget-content')
@@ -663,7 +663,7 @@ function readSingleFile(fileInput) {
 
 	// Load file from browse input
 	var files = $(fileInput).prop('files');
-	if (!files || files.length != 1){
+	if (!files || files.length != 1) {
 		return false;
 	}
 	file = files[0];
@@ -781,6 +781,8 @@ function readPage() {
 			// Less columns when there is not enough data to show
 			pageColumnCount = buffer.length - pagePosition;
 		}
+
+		var parentName;
 		for (var row = 0; pagePosition < buffer.length; row++) {
 			var hexNr = (pagePosition + pageOffset).toString(16);
 			var hexRow = $('<div>').addClass('row')
@@ -802,7 +804,7 @@ function readPage() {
 					var spacer = $('<span>').addClass('spacer').html('&nbsp;');
 					if (definition) {
 						if (!isStartOrEnd(definition, filePosition)) {
-							colorByte(spacer, definition, true, false, true, false);
+							colorDef(spacer, definition, true, false, true, false);
 						}
 					}
 					hexRow.append(spacer);
@@ -818,10 +820,18 @@ function readPage() {
 				asciiRow.append(asciiByteWrapper);
 
 				if (definition) {
+					if (definition[2].lastIndexOf('.') !== -1) {
+						var currentParentName = definition[2].substring(0, definition[2].lastIndexOf('.'));
+						if (currentParentName !== parentName) {
+							colorSeq(hexByteWrapper, currentParentName, true, right, true, true);
+							parentName = currentParentName;
+						}
+					}
+					
 					var left = filePosition === definition[0];
 					var right = filePosition === definition[0] + definition[1] - 1;
-					colorByte(hexByteWrapper, definition, true, right, true, left);
-					colorByte(asciiByteWrapper, definition, true, right, true, left);
+					colorDef(hexByteWrapper, definition, true, right, true, left);
+					colorDef(asciiByteWrapper, definition, true, right, true, left);
 					
 					if (filePosition === definition[0]) {
 						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
@@ -836,42 +846,50 @@ function readPage() {
 }
 
 function colorTab(element, definition) {
-	colorByte(element, definition, true, true, false, true);
+	colorDef(element, definition, true, true, false, true);
 }
 
 
-function colorByte(element, definition, top, right, bottom, left) {
+function colorDef(element, definition, top, right, bottom, left) {
 	var hue = getHue(definition[2]);
-	
 	if (top) {
 		element.addClass('hue' + hue + '-def-top');
 	}
-	
 	if (left) {
 		element.addClass('hue' + hue + '-def-left');
 	}
-	
 	if (bottom) {
 		element.addClass('hue' + hue + '-def-bottom');
 	}
-	
-	if (right) {
-		element.addClass('hue' + hue + '-def-right');
+	if (right) { element.addClass('hue' + hue + '-def-right'); }
+}
+
+function colorSeq(element, name, top, right, bottom, left) {
+	var hue = getHue(name);
+	if (top) {
+		element.addClass('hue' + hue + '-seq-top');
 	}
+	if (left) {
+		element.addClass('hue' + hue + '-seq-left');
+	}
+	if (bottom) {
+		element.addClass('hue' + hue + '-seq-bottom');
+	}
+	if (right) { element.addClass('hue' + hue + '-seq-right'); }
 }
 
 </script>
 <body>
 	<div class="page-container">
 		<div class="split-pane fixed-right">
-			<div class="split-pane-component" id="left-component">
+			<div class="split-pane-component highlight-def" id="left-component">
 				<div id="hexviewWrapper">
 					<div id="hexview"></div>
 					<div id="asciiview"></div>
 				</div>
 			</div>
 			<div class="split-pane-divider" id="divider"></div>
-			<div class="split-pane-component" id="right-component">
+			<div class="split-pane-component highlight-def" id="right-component">
 				<div id="accordion">
 					<h3>Source</h3>
 					<div>
