@@ -25,7 +25,8 @@
 	.byteWrapper {
 		min-width: 14px;
 		text-align: center;
-		border: 1px solid transparent;
+		margin-left: 1px;
+		margin-right: 1px;
 	}
 
 	.linenr, .columnnr, .row:first-child {
@@ -578,20 +579,19 @@ function getDefinition(position) {
 			}
 		}
 	}
-	else {
-		// No definition found, try to find the last definition for this position.
-		// It might fall in range. This occurs when a definition is over multiple pages.
-		for (var i = 0; i < locations.length; i++) {
-			if (locations[i] > location) {
-				var row = data[Math.max(0, i - 1)];
-				var definition = row[row.length - 1];
-				if (inRange(definition, position)) {
-					lastDefinition = definition;
-					return definition;
-				}
-				else {
-					return;
-				}
+
+	// No definition found, try to find the last definition for this position.
+	// It might fall in range. This occurs when a definition is over multiple pages.
+	for (var i = 0; i < locations.length; i++) {
+		if (locations[i] > location) {
+			var row = data[Math.max(0, i - 1)];
+			var definition = row[row.length - 1];
+			if (inRange(definition, position)) {
+				lastDefinition = definition;
+				return definition;
+			}
+			else {
+				return;
 			}
 		}
 	}
@@ -808,6 +808,7 @@ function readPage() {
 			for (var column = 0; column < pageColumnCount; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
 				var definition = getDefinition(filePosition);
+				var parentName = definition ? ((definition[2].lastIndexOf('.') !== -1 ? definition[2].substring(0, definition[2].lastIndexOf('.')) : definition[2])) : undefined;
 
 				var byte = buffer[pagePosition] & 0xff;
 				var hex = toHex(byte);
@@ -817,6 +818,7 @@ function readPage() {
 					if (definition) {
 						if (!isStartOrEnd(definition, filePosition)) {
 							colorDef(spacer, definition, true, false, true, false);
+							colorSeq(spacer, parentName, true, false, true, false);
 						}
 					}
 					hexRow.append(spacer);
@@ -832,18 +834,13 @@ function readPage() {
 				asciiRow.append(asciiByteWrapper);
 
 				if (definition) {
-					if (definition[2].lastIndexOf('.') !== -1) {
-						var currentParentName = definition[2].substring(0, definition[2].lastIndexOf('.'));
-						if (currentParentName !== parentName) {
-							colorSeq(hexByteWrapper, currentParentName, true, right, true, true);
-							parentName = currentParentName;
-						}
-					}
-					
 					var left = filePosition === definition[0];
 					var right = filePosition === definition[0] + definition[1] - 1;
 					colorDef(hexByteWrapper, definition, true, right, true, left);
+					colorSeq(hexByteWrapper, parentName, true, right, true, left);
+
 					colorDef(asciiByteWrapper, definition, true, right, true, left);
+					colorSeq(asciiByteWrapper, parentName, true, right, true, left);
 					
 					if (filePosition === definition[0]) {
 						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
