@@ -396,7 +396,7 @@ $(function() {
 
 	$(document).ready(function() {
 		if (readSingleFile($('#fileInput'))) {
-		    $('#accordion').accordion('option', 'active', 2);
+			firstFileLoad();
 		}
 	});
 
@@ -653,6 +653,7 @@ function readSingleFile(fileInput) {
 			file = xhr.response;
 			updateFileInfo();
 			readPage();
+			firstFileLoad();
 		};
 		xhr.send();
 	}
@@ -670,6 +671,10 @@ function readSingleFile(fileInput) {
 	updateFileInfo();
 	readPage();
 	return true;
+}
+
+function firstFileLoad() {
+	$('#accordion').accordion('option', 'active', 2);
 }
 
 function updateFileInfo() {
@@ -769,11 +774,12 @@ function readPage() {
 		}
 		
 
+		var pageColumnCount = columnCount;
+		if (buffer.length - pagePosition < columnCount) {
+			// Less columns when there is not enough data to show
+			pageColumnCount = buffer.length - pagePosition;
+		}
 		for (var row = 0; pagePosition < buffer.length; row++) {
-			if (buffer.length - pagePosition < columnCount) {
-				columnCount = buffer.length - pagePosition;
-			}
-
 			var hexNr = (pagePosition + pageOffset).toString(16);
 			var hexRow = $('<div>').addClass('row')
 				.append($('<div>').addClass('linenr').text(hexNr));
@@ -783,7 +789,7 @@ function readPage() {
 			var asciiRow = $('<div>').addClass('row');
 			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
-			for (var column = 0; column < columnCount; column++, pagePosition++) {
+			for (var column = 0; column < pageColumnCount; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
 				var definition = getDefinition(filePosition);
 
