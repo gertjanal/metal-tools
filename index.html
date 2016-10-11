@@ -1,1 +1,940 @@
-hello world
+<html>
+<head>
+<link rel="stylesheet" href="src/main/resources/jsHexViewer/libs/jquery-ui-1.12.1/jquery-ui.min.css">
+<style>
+	html.wait, html.wait * {
+		cursor: wait !important;
+	}
+
+	body {
+		font-family: Verdana;
+		margin: 0px;
+		background-color: rgb(51, 51, 51);
+		font-size: 11px;
+	}
+
+	.byteWrapper, .linenr, .columnnr, .spacer {
+		display: table-cell;
+	}
+
+	.byteWrapper, .spacer, .spacerRow {
+		cursor: text;
+	}
+
+	.byteWrapper {
+		min-width: 14px;
+		text-align: center;
+	}
+
+	.linenr, .columnnr, .row:first-child {
+		background-color: #292929;
+		color: #75abff;
+	}
+	.columnnr {
+		font-size: 10px;
+		text-align: center;
+		height: 30px;
+	}
+	.linenr {
+		padding-right: 4px;
+		margin-right: 10px;
+		text-align: right;
+	}
+
+	.selected {
+		background-color: #096ac8;
+		color: white;
+	}
+
+	.row {
+		font-size: 16px;
+	}
+
+	.name {
+		font-size: 16px;
+		font-weight: bold;
+	}
+
+	.row {
+		display: table-row;
+	}
+
+	.spacerRow {
+		height: 5px;
+	}
+
+	#hexview, #asciiview {
+		display: table;
+		color: white;
+	}
+	
+	#hexview {
+		float: left;
+		padding-right: 10px;
+		border-right: 2px solid grey;
+	}
+
+	#asciiview {
+		padding-left: 10px;
+	}
+
+	#left-component {
+		right: 300px;
+		margin-right: 5px;
+	}
+
+	#divider {
+		right: 300px;
+		width: 2px;
+		background-color: #096ac8;
+	}
+
+	#right-component {
+		width: 300px;
+		overflow: hidden;
+	}
+
+	.tabAnchor {
+		display: block;
+		position: relative;
+		width: 0px;
+		height: 100%;
+		top: 0px;
+		left: 0px;
+	}
+
+	.tab {
+		display: block;
+		position: absolute;
+		font-size: 9px;
+		text-align: left;
+		height: 12px;
+		top: -30px;
+		left: -1px;
+		margin: 0px;
+		padding: 0px;
+		border: 1px solid red;
+		cursor: pointer;
+		-webkit-user-select: none;   /* Chrome/Safari/Opera */
+		-moz-user-select: none;      /* Firefox */
+		-ms-user-select: none;       /* Internet Explorer/Edge */
+		user-select: none;           /* Non-prefixed version, currently not supported by any browser */
+	}
+
+	#hexviewWrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	#accordion fieldset, #accordion fieldset legend, #accordion button {
+		font-size: 12px;
+	}
+
+	#pagesOfInterest, #hotspots {
+		overflow-x: hidden !important;
+	}
+
+	fieldset {
+		margin-bottom: 4px;
+	}
+
+	fieldset input[type=text] {
+		width: calc(100% - 80px);
+	}
+
+	fieldset button, button#next {
+		float: right;
+	}
+
+	ol, ul {
+		padding-left: 14px;
+	}
+
+	#pagesOfInterest button, #hotspots button {
+		font-size: 10px;
+		width: 126px;
+	}
+
+	.ui-accordion .ui-accordion-content {
+		padding: 1em;
+	}
+
+	h3.ui-accordion-header {
+		border-top-left-radius: 0px;
+	}
+
+	.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+		border-left: none;
+	}
+
+	.split-pane {
+		position: relative;
+		height: 100%;
+		width: 100%;
+		z-index: 0;
+	}
+
+	.split-pane-component {
+		overflow: hidden;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		overflow: auto;
+		left: auto;
+		right: 0;
+		z-index: 1;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component:first-child {
+		left: 0;
+		right: auto;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider {
+		position: absolute;
+		height: 100%;
+		top: 0;
+		cursor: col-resize;
+		z-index: 2;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider > .split-pane-divider-inner {
+		position: absolute;
+		top: 0;
+		left: -5px;
+		box-sizing: content-box;
+		width: 100%;
+		height: 100%;
+		padding: 0 5px;
+	}
+	
+	.split-pane-resize-shim {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 10000;
+		display: none;
+	}
+
+	.split-pane.fixed-right > .split-pane-resize-shim {
+		cursor: col-resize;
+	}
+</style>
+<script src="src/main/resources/jsHexViewer/libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="src/main/resources/jsHexViewer/libs/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="src/main/resources/jsHexViewer/libs/splitpane-0.9.3/split-pane.js"></script>
+<script>
+var tags = [];
+var hover = true;
+var page = 0;
+var pageSize = 1024;
+var columnCount = 32;
+
+// Edited
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'src/test/resources/jsHexViewer/screenshot_data.png', true);
+xhr.responseType = 'blob';
+xhr.onload = function(e) {
+	file = xhr.response;
+	readSingleFile();
+};
+xhr.send();
+// \Edited
+
+function unpack(buffer, asBigEndian) {
+	var hex = '';
+	$.each(buffer, function(index, value) {
+		var byte = value.toString(16);
+		byte = byte.length == 1 ? '0' + byte : byte;
+		if (asBigEndian) {
+			hex += byte;
+		}
+		else {
+			hex = byte + hex;
+		}
+	});
+	return parseInt('0x' + hex, 16);
+}
+
+$(function() {
+	$('button').button();
+	$('input[type=text]').addClass("ui-corner-all");
+	$('div.split-pane').splitPane();
+	$('fieldset').addClass('ui-widget').addClass('ui-widget-content');
+
+	$('#accordion').accordion({
+		heightStyle: 'fill'
+	});
+
+	$('body').on('mouseenter', '.byte', function() {
+		if (!hover) {
+			return;
+		}
+
+		clearSelection();
+		var position = parseInt($(this).attr('position'));
+		$('.byte[position=' + position +']').each(function(index, value) {
+			$(value).addClass('selected');
+		});
+
+		$('#values span').empty();
+		$('#filePositionDec').text(position);
+		$('#filePositionHex').text(toHex(position));
+		$('#filePositionKiB').text(tgmk(position));
+
+		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
+		$('#values #binary').text(binary.substring(binary.length - 8));
+
+		var definition = getDefinition(parseInt(position)); // TODO int != long
+		if (definition) {
+			$('.name').text(singleName(definition[2]));
+			$('.fullname').append(path(definition[2]));
+
+			$('#values #sizeDec').text(definition[1]);
+			$('#values #sizeHex').text(definition[1].toString(16));
+			$('#values #sizeKiB').text(tgmk(definition[1]));
+
+			if (definition[1] <= 8) {
+				getData(definition[0], definition[1], function(buffer) {
+					var be = unpack(buffer, true);
+					var le = unpack(buffer, false);
+					$('#values #beDec').text(be);
+					$('#values #beHex').text(hexSpaces(be.toString(16)));
+					$('#values #beKiB').text(tgmk(be));
+
+					$('#values #leDec').text(le);
+					$('#values #leHex').text(hexSpaces(le.toString(16)));
+					$('#values #leKiB').text(tgmk(le));
+				});
+			}
+			colorByte($('.name'), definition, true, true, true, true);
+		}
+	});
+	
+	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
+	
+	function clearSelection() {
+	    $('.byte').each(function(index, value){
+			$(value).removeClass('selected');
+		});
+		$('.name').empty();
+		$('.fullname').empty();
+		$('#filePositionDec').empty();
+		$('#filePositionHex').empty();
+		$('#filePositionKiB').empty();
+	}
+
+	$('#hexview').on('click', '.byte', function(e) {
+		if (!hover) {
+			clearSelection();
+		}
+		hover = !hover;
+	});
+
+	$('#hexview').on('click', '.tab', function(e) {
+		var position = parseInt($(this).attr('position'));
+		var definition = getDefinition(position);
+		if (!deleteTabTag(position)) {
+			// Tag tab
+			tags.push(position);
+			var hexValue = $('<span>');
+			colorByte(hexValue, definition, true, true, true, true);
+
+			var legend = $('<legend>').text(singleName(definition[2]));
+			colorByte(legend, definition, true, true, true, true);
+			
+			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
+				.addClass('ui-widget').addClass('ui-widget-content')
+				.append(legend)
+				.append('offset: ').append(position).append('<br>')
+				.append('page: ').append(page).append('<br>')
+				.append('path: ').append(path(definition[2])).append('<br>')
+				.append('hex: ').append(hexValue).append('<br>')
+				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
+				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
+			
+			var max = 12;
+			getData(definition[0], Math.min(definition[1], max), function(buffer) {
+				hexValue.empty();
+				$.each(buffer, function(index, value) {
+					var hex = toHex(value & 0xff);
+					if (index % 2 == 0 && index > 0) {
+						hexValue.append('&nbsp;');
+					}
+					hexValue.append(hex);
+				});
+				if (definition[1] > max) {
+					hexValue.append('...');
+				}
+			});
+		}
+		colorTab($(this), definition);
+	});
+	
+	function deleteTabTag(position) {
+		var index = tags.indexOf(position);
+		if (index === -1) {
+			return false;
+		}
+		tags.splice(index, 1);
+		$('fieldset.tagLabel' + position).remove();
+		return true;
+	}
+	
+	$('#accordion').on('click', '.tabTagJump', function() {
+		page = parseInt($(this).attr('page'));
+		setPage();
+	});
+
+	$('#accordion').on('click', '.tabTagDelete', function() {
+		var position = parseInt($(this).attr('position'));
+		deleteTabTag(position);
+		$('.tab').each(function() {
+			var tabPosition = parseInt($(this).attr('position'));
+			if (tabPosition === position) {
+				var definition = getDefinition(position);
+				colorTab($(this), definition);
+			}
+		});
+	});
+
+	$(document).ready(function() {
+		if (readSingleFile($('#fileInput'))) {
+			$('#accordion').accordion('option', 'active', 2);
+		}
+	});
+
+	$('#prev').click(function(e) {
+		page -= 1;
+		setPage();
+	}).button('disable');
+
+	$('#next').click(function(e) {
+		page += 1;
+		setPage();
+	});
+
+	var prevPage;
+	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
+	$.each(locations, function(index, value) {
+		var page = Math.floor(value / (pageSize / columnCount));
+		if (page !== prevPage) {
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
+			}
+			
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
+			
+			if (prevPage !== undefined) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+				definitionCounts = 0;
+			}
+			prevPage = page;
+		}
+		definitionCounts += data[index].length;
+	});
+	addHotspots(hotspots, 30);
+
+	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
+		$('#jumpPage').val($(this).attr('page'));
+		$('#goPage').trigger('click');
+	});
+
+	$('#goPage').click(function() {
+		page = parseInt($('#jumpPage').val());
+		setPage();
+	});
+
+	$('#goOffsetDec').click(function() {
+		var offset = parseInt($('#jumpOffsetDec').val());
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$('#goOffsetHex').click(function() {
+		var offset = parseInt($('#jumpOffsetHex').val(), 16);
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$(document).on('keydown', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code == 33) {
+			page++;
+			setPage();
+		}
+		else if (code == 34 && page > 0) {
+			page--;
+			setPage();
+		}
+	});
+
+	$(window).on('hashchange', function() {
+		readPage();
+	});
+});
+
+function getMatchingIndex(a, b) {
+	for (var i = 0; i < Math.min(a.length, b.length); i++) {
+		if (a[i] !== b[i]) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+function addHotspots(hotspots, max) {
+	var definitionCounts = Object.keys(hotspots);
+	definitionCounts.sort(function(a, b) {
+		return parseInt(a) < parseInt(b);
+	});
+	for (var i = 0, k = 0; i < definitionCounts.length; i++) {
+		var definitionCount = definitionCounts[i];
+		for (var j = 0; j < hotspots[definitionCount].length; j++, k++) {
+			var page = hotspots[definitionCount][j];
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definition' + (definitionCount > 1 ? 's' : '')).attr('page', page).button());
+		}
+		if (k >= max) {
+			// Added max buttons or more (equal hotspots are also added)
+			return;
+		}
+	}
+}
+
+function path(path) {
+	var list = $('<ol>');
+	$.each(path.split('.'), function(index, value) {
+	    list.append($('<li>').text(value));
+	});
+	return list;
+}
+
+function singleName(name) {
+	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
+
+function tgmk(x) {
+	if (!isFinite(x)) {
+		return x;
+	}
+	var n = 0;
+	while (x > 1024 && n < 6) {
+		x /= 1024;
+		n++;
+	}
+	if (n > 0) {
+		x  = x.toFixed(1);
+		x += ' ';
+		x += ' KMGTP'.charAt(n);
+		x += 'iB';
+	}
+	else {
+		x += ' bytes';
+	}
+	return x;
+}
+
+var lastDefinition;
+function getDefinition(position) {
+	if (lastDefinition && inRange(lastDefinition, position)) {
+		// Instead of reading all rows above to check if this is part of a multi-row def,
+		// just cache the previous definition and check again.
+		// Note that this only works for drawing the highlights, not for a mouseover event.
+		return lastDefinition;
+	}
+
+	var location = Math.floor(position / columnCount);
+	var rowIndex = $.inArray(location, locations);
+	if (rowIndex !== -1) {
+		var row = data[rowIndex];
+		for (var i = 0; i < row.length; i++) {
+			var definition = row[i];
+			if (inRange(definition, position)) {
+				lastDefinition = definition;
+				return definition;
+			}
+		}
+	}
+	else {
+		// No definition found, try to find the last definition for this position.
+		// It might fall in range. This occurs when a definition is over multiple pages.
+		for (var i = 1; i < locations.length; i++) {
+			if (locations[i] > location) {
+				var row = data[i - 1];
+				var definition = row[row.length - 1];
+				if (inRange(definition, position)) {
+					lastDefinition = definition;
+					return definition;
+				}
+				else {
+					return;
+				}
+			}
+		}
+	}
+}
+
+function inRange(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position >= offset && position < offset + size;
+}
+
+function isStartOrEnd(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position === offset || position === offset + size;
+}
+
+function hsv2rgb(h, s, v) {
+	var r, g, b;
+	var i;
+	var f, p, q, t;
+	s /= 100;
+	v /= 100;
+	h /= 60;
+	i = Math.floor(h);
+	f = h - i;
+	p = v * (1 - s);
+	q = v * (1 - s * f);
+	t = v * (1 - s * (1 - f));
+	switch(i) {
+		case 0: r = v; g = t; b = p; break;
+		case 1: r = q; g = v; b = p; break;
+		case 2: r = p; g = v; b = t; break;
+		case 3: r = p; g = q; b = v; break;
+		case 4: r = t; g = p; b = v; break;
+		default: r = v; g = p; b = q;
+	}
+	return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+}
+
+var flip = true;
+var lastColor = 0;
+var colors = {};
+function getHue(str) {
+	if (!(str in colors)) {
+		lastColor = (lastColor + 12) % 180;
+		colors[str] = flip ? lastColor : 360 - lastColor;
+		flip = !flip;
+	}
+	return colors[str];
+}
+
+var file;
+function readSingleFile(fileInput) {
+	/*var files = $(fileInput).prop('files');
+	if (!files || files.length != 1){
+		return false;
+	}
+	file = files[0];*/
+	if (!file) {
+		return false;
+	}
+	$('#fileInfoName').text(file.name);
+	$('#fileInfoSizeDec').text(file.size);
+	$('#fileInfoSizeKiB').text(tgmk(file.size));
+	$('#fileInfoPages').text(Math.floor(file.size / pageSize));
+	readPage();
+	return true;
+}
+
+function toHex(value) {
+	var hex = value.toString(16);
+	hex = (hex.length === 1) ? '0' + hex : hex;
+	return hex;
+}
+
+function hexSpaces(hex) {
+	if (!hex || hex.length == 0) {
+		return hex;
+	}
+	var value = '';
+	var i = hex.length;
+	for (; i >= 0; i -= 4){
+		value = hex.substring(i, i + 4) + ' ' + value;
+	}
+	if (i < 0) {
+		value = hex.substring(0, i + 4) + ' ' + value;
+	}
+	return value;
+}
+
+function getData(offset, size, callback) {
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var buffer = new Uint8Array(e.target.result);
+		callback(buffer);
+	};
+	var slice = file.slice(offset, offset + size);
+	reader.readAsArrayBuffer(slice);
+}
+
+function resetPage() {
+	page = 0;
+	location.hash = 'page' + page;
+}
+
+function setPage() {
+	location.hash = 'page' + page;
+}
+
+function readPage() {
+    $('html').addClass('wait'); // Show wait cursor
+	var hash = location.hash.replace('#', '');
+	hash = hash == '' ? 'page0' : hash;
+	
+	if (hash.indexOf('page') !== 0) {
+		console.log('unknown page number in location hash');
+		return;
+	}
+	
+	page = parseInt(hash.substring('page'.length));
+	var pageOffset = page * pageSize;
+	if (page > 0) {
+		$('#prev').button('enable');
+	}
+	else {
+		$('#prev').button('disable');
+	}
+	$('#jumpPage').val(page);
+	$('#jumpOffsetDec').val(pageOffset);
+	$('#jumpOffsetHex').val(pageOffset.toString(16));
+	$('#tgmk').val(tgmk(pageOffset));
+
+	getData(pageOffset, pageSize, function(buffer) {
+		var pagePosition = 0;
+		$('#hexview').empty();
+		$('#asciiview').empty();
+		
+
+		var hexRow = $('<div>').addClass('row').append($('<div>').addClass('linenr'));
+		$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+	
+		var asciiRow = $('<div>').addClass('row');
+		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+		for (var column = 0; column < columnCount; column++) {
+			if (column % 2 == 0) {
+				hexRow.append($('<div>').addClass('spacer'));
+			}
+			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
+			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+		}
+		
+
+		for (var row = 0; pagePosition < buffer.length; row++) {
+			if (buffer.length - pagePosition < columnCount) {
+				columnCount = buffer.length - pagePosition;
+			}
+
+			var hexNr = (pagePosition + pageOffset).toString(16);
+			var hexRow = $('<div>').addClass('row')
+				.append($('<div>').addClass('linenr').text(hexNr));
+
+			$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+
+			var asciiRow = $('<div>').addClass('row');
+			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+			for (var column = 0; column < columnCount; column++, pagePosition++) {
+				var filePosition = pageOffset + pagePosition;
+				var definition = getDefinition(filePosition);
+
+				var byte = buffer[pagePosition] & 0xff;
+				var hex = toHex(byte);
+
+				if (column % 2 == 0) {
+					var spacer = $('<span>').addClass('spacer').html('&nbsp;');
+					if (definition) {
+						if (!isStartOrEnd(definition, filePosition)) {
+							colorByte(spacer, definition, true, false, true, false);
+						}
+					}
+					hexRow.append(spacer);
+				}
+
+				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(hex);
+				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
+				hexRow.append(hexByteWrapper);
+
+				var character = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '\u00B7';
+				var asciiByte = $('<span>').addClass('byte').attr('position', filePosition).text(character);
+				var asciiByteWrapper = $('<span>').addClass('byteWrapper').append(asciiByte);
+				asciiRow.append(asciiByteWrapper);
+
+				if (definition) {
+					var left = filePosition === definition[0];
+					var right = filePosition === definition[0] + definition[1] - 1;
+					colorByte(hexByteWrapper, definition, true, right, true, left);
+					colorByte(asciiByteWrapper, definition, true, right, true, left);
+					
+					if (filePosition === definition[0]) {
+						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
+						colorTab(tab, definition);
+					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
+					}
+				}
+			}
+		}
+		$('html').removeClass('wait'); // Remove wait cursor
+	});
+}
+
+function colorTab(element, definition) {
+	colorByte(element, definition, true, true, false, true);
+	if (tags.indexOf(definition[0]) !== -1) {
+		// Override colors when tagged 
+		var rgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80)
+		element.css('background', 'linear-gradient(white, ' + rgb + ')');
+	}
+}
+
+
+function colorByte(element, definition, top, right, bottom, left) {
+	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
+	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
+	var border = '1px solid ' + borderRgb;
+	element.css('background', backgroundRgb);
+	element.css('color', 'black');
+	element.css('border-top', top ? border : 'none');
+	element.css('border-right', right ? border : 'none');
+	element.css('border-bottom', bottom ? border : 'none');
+	element.css('border-left', left ? border : 'none');
+}
+
+</script>
+<body>
+	<div class="page-container">
+		<div class="split-pane fixed-right">
+			<div class="split-pane-component" id="left-component">
+				<div id="hexviewWrapper">
+					<div id="hexview"></div>
+					<div id="asciiview"></div>
+				</div>
+			</div>
+			<div class="split-pane-divider" id="divider"></div>
+			<div class="split-pane-component" id="right-component">
+				<div id="accordion">
+					<h3>Source</h3>
+					<div>
+						<fieldset>
+							<legend>Browse</legend>
+							Select the source data this page was generated with:<br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/><br>
+						</fieldset>
+						<fieldset>
+							<legend>Size of <span id="fileInfoName"></span></legend>
+							dec: <span id="fileInfoSizeDec"></span> bytes<br>
+							kib: <span id="fileInfoSizeKiB"></span><br>
+						</fieldset>
+					</div>
+					<h3>Page</h3>
+					<div>
+						<fieldset>
+							<legend>Info</legend>
+							<span id="fileInfoPages"></span> pages
+						</fieldset>
+						<fieldset>
+							<legend>Jump to page</legend>
+							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump</button>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to decimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetDec" class="numeric" value="0"><button id="goOffsetDec">Jump</button><br>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to hexadecimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetHex"><button id="goOffsetHex">Jump</button>
+						</fieldset>
+						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
+					</div>
+					<h3>Selection <span class="name"></span></h3>
+					<div>
+						<div id="values">
+							<fieldset>
+								<legend>Size</legend>
+								dec: <span id="sizeDec"></span><br>
+								hex: <span id="sizeHex"></span><br>
+								kib: <span id="sizeKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Offset</legend>
+								dec: <span id="filePositionDec"></span><br>
+								hex: <span id="filePositionHex"></span><br>
+								kib: <span id="filePositionKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Big Endian</legend>
+								dec: <span id="beDec"></span><br>
+								hex: <span id="beHex"></span><br>
+								kib: <span id="beKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Little Endian</legend>
+								dec: <span id="leDec"></span><br>
+								hex: <span id="leHex"></span><br>
+								kib: <span id="leKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Binary</legend>
+								bin: <span id="binary"></span><br>
+							</fieldset>
+							<fieldset>
+								<legend>Path</legend>
+								<span class="fullname"></span>
+							</fieldset>
+						</div>
+					</div>
+					<h3>Pages of interest</h3>
+					<div id="pagesOfInterest">Pages of interest:<br></div>
+					<h3>Tab tags</h3>
+					<div id="tabTags"></div>
+					<h3>Hotspots</h3>
+					<div id="hotspots"></div>
+					<h3>Help</h3>
+					<div>
+						<fieldset>
+							<legend>Shortkeys</legend>
+							<ul>
+								<li>Page up: Next page
+								<li>Page down: Previous page
+							</ul>
+						</fieldset>
+						<fieldset>
+							<legend>Hints</legend>
+							<ul>
+								<li>Click a byte to keep selection. Click any byte to release selection.
+							</ul>
+						</fieldset>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+    var locations = [0, 1, 2, 258, 514, 515, 771, 1027, 1028, 1284, 1540, 1796, 1797, 2053, 2309, 2565, 2566, 2822, 3078, 3079, 3335, 3591, 3847, 3848, 4104, 4360, 4616, 4617, 4873, 5129, 5130, 5386, 5642, 5898, 5899, 6155, 6411, 6667, 6668, 6924, 7180, 7181, 7437, 7693, 7949, 7950, 8206, 8462, 8718, 8719, 8975, 9231, 9232, 9488, 9744, 10000, 10001, 10257, 10513, 10769, 10770, 11026, 11282, 11283, 11539, 11795, 12051, 12052, 12308, 12564, 12820, 12821, 13077, 13333, 13334, 13590, 13846, 14102, 14103, 14359, 14466, 14467];
+    var data = [[[0, 1, 'PNG.PNG.signature.highbit'], [1, 3, 'PNG.PNG.signature.PNG'], [4, 4, 'PNG.PNG.signature.controlchars'], [8, 4, 'PNG.PNG.chunk.length'], [12, 4, 'PNG.PNG.chunk.chunktype'], [16, 13, 'PNG.PNG.chunk.chunkdata'], [29, 4, 'PNG.PNG.chunk.crc32']],[[33, 4, 'PNG.PNG.chunk.length'], [37, 4, 'PNG.PNG.chunk.chunktype'], [41, 9, 'PNG.PNG.chunk.chunkdata'], [50, 4, 'PNG.PNG.chunk.crc32'], [54, 4, 'PNG.PNG.chunk.length'], [58, 4, 'PNG.PNG.chunk.chunktype'], [62, 7, 'PNG.PNG.chunk.chunkdata']],[[69, 4, 'PNG.PNG.chunk.crc32'], [73, 4, 'PNG.PNG.chunk.length'], [77, 4, 'PNG.PNG.chunk.chunktype'], [81, 8192, 'PNG.PNG.chunk.chunkdata']],[[8273, 4, 'PNG.PNG.chunk.crc32'], [8277, 4, 'PNG.PNG.chunk.length'], [8281, 4, 'PNG.PNG.chunk.chunktype'], [8285, 8192, 'PNG.PNG.chunk.chunkdata']],[[16477, 4, 'PNG.PNG.chunk.crc32']],[[16481, 4, 'PNG.PNG.chunk.length'], [16485, 4, 'PNG.PNG.chunk.chunktype'], [16489, 8192, 'PNG.PNG.chunk.chunkdata']],[[24681, 4, 'PNG.PNG.chunk.crc32'], [24685, 4, 'PNG.PNG.chunk.length'], [24689, 4, 'PNG.PNG.chunk.chunktype'], [24693, 8192, 'PNG.PNG.chunk.chunkdata']],[[32885, 4, 'PNG.PNG.chunk.crc32'], [32889, 4, 'PNG.PNG.chunk.length'], [32893, 4, 'PNG.PNG.chunk.chunktype']],[[32897, 8192, 'PNG.PNG.chunk.chunkdata']],[[41089, 4, 'PNG.PNG.chunk.crc32'], [41093, 4, 'PNG.PNG.chunk.length'], [41097, 4, 'PNG.PNG.chunk.chunktype'], [41101, 8192, 'PNG.PNG.chunk.chunkdata']],[[49293, 4, 'PNG.PNG.chunk.crc32'], [49297, 4, 'PNG.PNG.chunk.length'], [49301, 4, 'PNG.PNG.chunk.chunktype'], [49305, 8192, 'PNG.PNG.chunk.chunkdata']],[[57497, 4, 'PNG.PNG.chunk.crc32'], [57501, 4, 'PNG.PNG.chunk.length']],[[57505, 4, 'PNG.PNG.chunk.chunktype'], [57509, 8192, 'PNG.PNG.chunk.chunkdata']],[[65701, 4, 'PNG.PNG.chunk.crc32'], [65705, 4, 'PNG.PNG.chunk.length'], [65709, 4, 'PNG.PNG.chunk.chunktype'], [65713, 8192, 'PNG.PNG.chunk.chunkdata']],[[73905, 4, 'PNG.PNG.chunk.crc32'], [73909, 4, 'PNG.PNG.chunk.length'], [73913, 4, 'PNG.PNG.chunk.chunktype'], [73917, 8192, 'PNG.PNG.chunk.chunkdata']],[[82109, 4, 'PNG.PNG.chunk.crc32']],[[82113, 4, 'PNG.PNG.chunk.length'], [82117, 4, 'PNG.PNG.chunk.chunktype'], [82121, 8192, 'PNG.PNG.chunk.chunkdata']],[[90313, 4, 'PNG.PNG.chunk.crc32'], [90317, 4, 'PNG.PNG.chunk.length'], [90321, 4, 'PNG.PNG.chunk.chunktype'], [90325, 8192, 'PNG.PNG.chunk.chunkdata']],[[98517, 4, 'PNG.PNG.chunk.crc32'], [98521, 4, 'PNG.PNG.chunk.length'], [98525, 4, 'PNG.PNG.chunk.chunktype']],[[98529, 8192, 'PNG.PNG.chunk.chunkdata']],[[106721, 4, 'PNG.PNG.chunk.crc32'], [106725, 4, 'PNG.PNG.chunk.length'], [106729, 4, 'PNG.PNG.chunk.chunktype'], [106733, 8192, 'PNG.PNG.chunk.chunkdata']],[[114925, 4, 'PNG.PNG.chunk.crc32'], [114929, 4, 'PNG.PNG.chunk.length'], [114933, 4, 'PNG.PNG.chunk.chunktype'], [114937, 8192, 'PNG.PNG.chunk.chunkdata']],[[123129, 4, 'PNG.PNG.chunk.crc32'], [123133, 4, 'PNG.PNG.chunk.length']],[[123137, 4, 'PNG.PNG.chunk.chunktype'], [123141, 8192, 'PNG.PNG.chunk.chunkdata']],[[131333, 4, 'PNG.PNG.chunk.crc32'], [131337, 4, 'PNG.PNG.chunk.length'], [131341, 4, 'PNG.PNG.chunk.chunktype'], [131345, 8192, 'PNG.PNG.chunk.chunkdata']],[[139537, 4, 'PNG.PNG.chunk.crc32'], [139541, 4, 'PNG.PNG.chunk.length'], [139545, 4, 'PNG.PNG.chunk.chunktype'], [139549, 8192, 'PNG.PNG.chunk.chunkdata']],[[147741, 4, 'PNG.PNG.chunk.crc32']],[[147745, 4, 'PNG.PNG.chunk.length'], [147749, 4, 'PNG.PNG.chunk.chunktype'], [147753, 8192, 'PNG.PNG.chunk.chunkdata']],[[155945, 4, 'PNG.PNG.chunk.crc32'], [155949, 4, 'PNG.PNG.chunk.length'], [155953, 4, 'PNG.PNG.chunk.chunktype'], [155957, 8192, 'PNG.PNG.chunk.chunkdata']],[[164149, 4, 'PNG.PNG.chunk.crc32'], [164153, 4, 'PNG.PNG.chunk.length'], [164157, 4, 'PNG.PNG.chunk.chunktype']],[[164161, 8192, 'PNG.PNG.chunk.chunkdata']],[[172353, 4, 'PNG.PNG.chunk.crc32'], [172357, 4, 'PNG.PNG.chunk.length'], [172361, 4, 'PNG.PNG.chunk.chunktype'], [172365, 8192, 'PNG.PNG.chunk.chunkdata']],[[180557, 4, 'PNG.PNG.chunk.crc32'], [180561, 4, 'PNG.PNG.chunk.length'], [180565, 4, 'PNG.PNG.chunk.chunktype'], [180569, 8192, 'PNG.PNG.chunk.chunkdata']],[[188761, 4, 'PNG.PNG.chunk.crc32'], [188765, 4, 'PNG.PNG.chunk.length']],[[188769, 4, 'PNG.PNG.chunk.chunktype'], [188773, 8192, 'PNG.PNG.chunk.chunkdata']],[[196965, 4, 'PNG.PNG.chunk.crc32'], [196969, 4, 'PNG.PNG.chunk.length'], [196973, 4, 'PNG.PNG.chunk.chunktype'], [196977, 8192, 'PNG.PNG.chunk.chunkdata']],[[205169, 4, 'PNG.PNG.chunk.crc32'], [205173, 4, 'PNG.PNG.chunk.length'], [205177, 4, 'PNG.PNG.chunk.chunktype'], [205181, 8192, 'PNG.PNG.chunk.chunkdata']],[[213373, 4, 'PNG.PNG.chunk.crc32']],[[213377, 4, 'PNG.PNG.chunk.length'], [213381, 4, 'PNG.PNG.chunk.chunktype'], [213385, 8192, 'PNG.PNG.chunk.chunkdata']],[[221577, 4, 'PNG.PNG.chunk.crc32'], [221581, 4, 'PNG.PNG.chunk.length'], [221585, 4, 'PNG.PNG.chunk.chunktype'], [221589, 8192, 'PNG.PNG.chunk.chunkdata']],[[229781, 4, 'PNG.PNG.chunk.crc32'], [229785, 4, 'PNG.PNG.chunk.length'], [229789, 4, 'PNG.PNG.chunk.chunktype']],[[229793, 8192, 'PNG.PNG.chunk.chunkdata']],[[237985, 4, 'PNG.PNG.chunk.crc32'], [237989, 4, 'PNG.PNG.chunk.length'], [237993, 4, 'PNG.PNG.chunk.chunktype'], [237997, 8192, 'PNG.PNG.chunk.chunkdata']],[[246189, 4, 'PNG.PNG.chunk.crc32'], [246193, 4, 'PNG.PNG.chunk.length'], [246197, 4, 'PNG.PNG.chunk.chunktype'], [246201, 8192, 'PNG.PNG.chunk.chunkdata']],[[254393, 4, 'PNG.PNG.chunk.crc32'], [254397, 4, 'PNG.PNG.chunk.length']],[[254401, 4, 'PNG.PNG.chunk.chunktype'], [254405, 8192, 'PNG.PNG.chunk.chunkdata']],[[262597, 4, 'PNG.PNG.chunk.crc32'], [262601, 4, 'PNG.PNG.chunk.length'], [262605, 4, 'PNG.PNG.chunk.chunktype'], [262609, 8192, 'PNG.PNG.chunk.chunkdata']],[[270801, 4, 'PNG.PNG.chunk.crc32'], [270805, 4, 'PNG.PNG.chunk.length'], [270809, 4, 'PNG.PNG.chunk.chunktype'], [270813, 8192, 'PNG.PNG.chunk.chunkdata']],[[279005, 4, 'PNG.PNG.chunk.crc32']],[[279009, 4, 'PNG.PNG.chunk.length'], [279013, 4, 'PNG.PNG.chunk.chunktype'], [279017, 8192, 'PNG.PNG.chunk.chunkdata']],[[287209, 4, 'PNG.PNG.chunk.crc32'], [287213, 4, 'PNG.PNG.chunk.length'], [287217, 4, 'PNG.PNG.chunk.chunktype'], [287221, 8192, 'PNG.PNG.chunk.chunkdata']],[[295413, 4, 'PNG.PNG.chunk.crc32'], [295417, 4, 'PNG.PNG.chunk.length'], [295421, 4, 'PNG.PNG.chunk.chunktype']],[[295425, 8192, 'PNG.PNG.chunk.chunkdata']],[[303617, 4, 'PNG.PNG.chunk.crc32'], [303621, 4, 'PNG.PNG.chunk.length'], [303625, 4, 'PNG.PNG.chunk.chunktype'], [303629, 8192, 'PNG.PNG.chunk.chunkdata']],[[311821, 4, 'PNG.PNG.chunk.crc32'], [311825, 4, 'PNG.PNG.chunk.length'], [311829, 4, 'PNG.PNG.chunk.chunktype'], [311833, 8192, 'PNG.PNG.chunk.chunkdata']],[[320025, 4, 'PNG.PNG.chunk.crc32'], [320029, 4, 'PNG.PNG.chunk.length']],[[320033, 4, 'PNG.PNG.chunk.chunktype'], [320037, 8192, 'PNG.PNG.chunk.chunkdata']],[[328229, 4, 'PNG.PNG.chunk.crc32'], [328233, 4, 'PNG.PNG.chunk.length'], [328237, 4, 'PNG.PNG.chunk.chunktype'], [328241, 8192, 'PNG.PNG.chunk.chunkdata']],[[336433, 4, 'PNG.PNG.chunk.crc32'], [336437, 4, 'PNG.PNG.chunk.length'], [336441, 4, 'PNG.PNG.chunk.chunktype'], [336445, 8192, 'PNG.PNG.chunk.chunkdata']],[[344637, 4, 'PNG.PNG.chunk.crc32']],[[344641, 4, 'PNG.PNG.chunk.length'], [344645, 4, 'PNG.PNG.chunk.chunktype'], [344649, 8192, 'PNG.PNG.chunk.chunkdata']],[[352841, 4, 'PNG.PNG.chunk.crc32'], [352845, 4, 'PNG.PNG.chunk.length'], [352849, 4, 'PNG.PNG.chunk.chunktype'], [352853, 8192, 'PNG.PNG.chunk.chunkdata']],[[361045, 4, 'PNG.PNG.chunk.crc32'], [361049, 4, 'PNG.PNG.chunk.length'], [361053, 4, 'PNG.PNG.chunk.chunktype']],[[361057, 8192, 'PNG.PNG.chunk.chunkdata']],[[369249, 4, 'PNG.PNG.chunk.crc32'], [369253, 4, 'PNG.PNG.chunk.length'], [369257, 4, 'PNG.PNG.chunk.chunktype'], [369261, 8192, 'PNG.PNG.chunk.chunkdata']],[[377453, 4, 'PNG.PNG.chunk.crc32'], [377457, 4, 'PNG.PNG.chunk.length'], [377461, 4, 'PNG.PNG.chunk.chunktype'], [377465, 8192, 'PNG.PNG.chunk.chunkdata']],[[385657, 4, 'PNG.PNG.chunk.crc32'], [385661, 4, 'PNG.PNG.chunk.length']],[[385665, 4, 'PNG.PNG.chunk.chunktype'], [385669, 8192, 'PNG.PNG.chunk.chunkdata']],[[393861, 4, 'PNG.PNG.chunk.crc32'], [393865, 4, 'PNG.PNG.chunk.length'], [393869, 4, 'PNG.PNG.chunk.chunktype'], [393873, 8192, 'PNG.PNG.chunk.chunkdata']],[[402065, 4, 'PNG.PNG.chunk.crc32'], [402069, 4, 'PNG.PNG.chunk.length'], [402073, 4, 'PNG.PNG.chunk.chunktype'], [402077, 8192, 'PNG.PNG.chunk.chunkdata']],[[410269, 4, 'PNG.PNG.chunk.crc32']],[[410273, 4, 'PNG.PNG.chunk.length'], [410277, 4, 'PNG.PNG.chunk.chunktype'], [410281, 8192, 'PNG.PNG.chunk.chunkdata']],[[418473, 4, 'PNG.PNG.chunk.crc32'], [418477, 4, 'PNG.PNG.chunk.length'], [418481, 4, 'PNG.PNG.chunk.chunktype'], [418485, 8192, 'PNG.PNG.chunk.chunkdata']],[[426677, 4, 'PNG.PNG.chunk.crc32'], [426681, 4, 'PNG.PNG.chunk.length'], [426685, 4, 'PNG.PNG.chunk.chunktype']],[[426689, 8192, 'PNG.PNG.chunk.chunkdata']],[[434881, 4, 'PNG.PNG.chunk.crc32'], [434885, 4, 'PNG.PNG.chunk.length'], [434889, 4, 'PNG.PNG.chunk.chunktype'], [434893, 8192, 'PNG.PNG.chunk.chunkdata']],[[443085, 4, 'PNG.PNG.chunk.crc32'], [443089, 4, 'PNG.PNG.chunk.length'], [443093, 4, 'PNG.PNG.chunk.chunktype'], [443097, 8192, 'PNG.PNG.chunk.chunkdata']],[[451289, 4, 'PNG.PNG.chunk.crc32'], [451293, 4, 'PNG.PNG.chunk.length']],[[451297, 4, 'PNG.PNG.chunk.chunktype'], [451301, 8192, 'PNG.PNG.chunk.chunkdata']],[[459493, 4, 'PNG.PNG.chunk.crc32'], [459497, 4, 'PNG.PNG.chunk.length'], [459501, 4, 'PNG.PNG.chunk.chunktype'], [459505, 3434, 'PNG.PNG.chunk.chunkdata']],[[462939, 4, 'PNG.PNG.chunk.crc32'], [462943, 4, 'PNG.PNG.footer.footerlength']],[[462947, 4, 'PNG.PNG.footer.footertype'], [462951, 4, 'PNG.PNG.footer.footercrc32']],[]];
+	</script>
+</body>
+</html>
