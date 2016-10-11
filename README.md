@@ -8,10 +8,9 @@ This hexviewer highlights all Metal Def tokens. For example, in the test a byte 
 Using `JsHexViewer.generate(result.environment.order);`, the following hexviewer is generated:
 ![screenshot_data.png](https://raw.githubusercontent.com/gertjanal/metal-tools/master/src/test/resources/jsHexViewer/screenshot_data.png)
 
-After opening the hexviewer, you need to browse to the source data to view the bytes.
+Note that after opening the hexviewer webpage, you need to browse to the source data to view the bytes.
 
-To make things even more complicated, here's a hexviewer of the `screenshot_data.png` above, using the PNG metal token:
-(The page buttons on the right are calculated based on the known highlights on offsets)
+Below is a screenshot of the hexviewer with the `screenshot_data.png` from the previous example as input. As you can see this hexviewer is newer than the example above. It has more features, like bookmarking definitions.
 
 ![screenshot_png.png](https://raw.githubusercontent.com/gertjanal/metal-tools/master/src/test/resources/jsHexViewer/screenshot_png.png)
 
