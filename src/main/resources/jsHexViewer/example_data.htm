@@ -1,6 +1,7 @@
 <html>
 <head>
 <link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
+<link rel="stylesheet" href="libs/hue/hue-def.css">
 <style>
 	html.wait, html.wait * {
 		cursor: wait !important;
@@ -113,7 +114,6 @@
 		left: -1px;
 		margin: 0px;
 		padding: 0px;
-		border: 1px solid red;
 		cursor: pointer;
 		-webkit-user-select: none;   /* Chrome/Safari/Opera */
 		-moz-user-select: none;      /* Firefox */
@@ -333,6 +333,7 @@ $(function() {
 		if (!deleteTabTag(position)) {
 			// Tag tab
 			tags.push(position);
+			$(this).addClass('tagged');
 			var hexValue = $('<span>');
 			colorByte(hexValue, definition, true, true, true, true);
 
@@ -374,6 +375,7 @@ $(function() {
 		}
 		tags.splice(index, 1);
 		$('fieldset.tagLabel' + position).remove();
+		$('.tab[position=' + position + ']').removeClass('tagged');
 		return true;
 	}
 	
@@ -824,7 +826,7 @@ function readPage() {
 					if (filePosition === definition[0]) {
 						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
 						colorTab(tab, definition);
-					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
+						hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
 					}
 				}
 			}
@@ -835,24 +837,27 @@ function readPage() {
 
 function colorTab(element, definition) {
 	colorByte(element, definition, true, true, false, true);
-	if (tags.indexOf(definition[0]) !== -1) {
-		// Override colors when tagged 
-		var rgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80)
-		element.css('background', 'linear-gradient(white, ' + rgb + ')');
-	}
 }
 
 
 function colorByte(element, definition, top, right, bottom, left) {
-	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
-	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
-	var border = '1px solid ' + borderRgb;
-	element.css('background', backgroundRgb);
-	element.css('color', 'black');
-	element.css('border-top', top ? border : 'none');
-	element.css('border-right', right ? border : 'none');
-	element.css('border-bottom', bottom ? border : 'none');
-	element.css('border-left', left ? border : 'none');
+	var hue = getHue(definition[2]);
+	
+	if (top) {
+		element.addClass('hue' + hue + '-def-top');
+	}
+	
+	if (left) {
+		element.addClass('hue' + hue + '-def-left');
+	}
+	
+	if (bottom) {
+		element.addClass('hue' + hue + '-def-bottom');
+	}
+	
+	if (right) {
+		element.addClass('hue' + hue + '-def-right');
+	}
 }
 
 </script>
