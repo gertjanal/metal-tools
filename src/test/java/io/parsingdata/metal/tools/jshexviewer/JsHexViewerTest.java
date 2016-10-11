@@ -18,6 +18,7 @@ package io.parsingdata.metal.tools.jshexviewer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.ref;
@@ -41,6 +42,7 @@ import io.parsingdata.metal.util.InMemoryByteStream;
 
 public class JsHexViewerTest {
 
+    private static final boolean RENEW = false;
     private static final Token STRING = seq(
         def("length", 1),
         def("text", ref("length")));
@@ -62,7 +64,9 @@ public class JsHexViewerTest {
 
         JsHexViewer.generate(result.environment.order);
 
-        // export("jsHexViewer_data.htm");
+        if (RENEW) {
+            export("jsHexViewer_data.htm");
+        }
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_data.htm"));
         assertEquals(expected, generated);
@@ -83,7 +87,9 @@ public class JsHexViewerTest {
 
         JsHexViewer.generate(result.environment.order);
 
-        // export("jsHexViewer_screenshot.htm");
+        if (RENEW) {
+            export("jsHexViewer_screenshot.htm");
+        }
         final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
         final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_screenshot.htm"));
         assertEquals(expected, generated);
@@ -94,5 +100,6 @@ public class JsHexViewerTest {
         try (FileOutputStream fos = new FileOutputStream(export)) {
             IOUtils.copy(getClass().getResourceAsStream("/jsHexViewer.htm"), fos);
         }
+        fail("Export should not be used in production");
     }
 }

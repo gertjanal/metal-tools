@@ -567,9 +567,9 @@ function getDefinition(position) {
 	else {
 		// No definition found, try to find the last definition for this position.
 		// It might fall in range. This occurs when a definition is over multiple pages.
-		for (var i = 1; i < locations.length; i++) {
+		for (var i = 0; i < locations.length; i++) {
 			if (locations[i] > location) {
-				var row = data[i - 1];
+				var row = data[Math.max(0, i - 1)];
 				var definition = row[row.length - 1];
 				if (inRange(definition, position)) {
 					lastDefinition = definition;
