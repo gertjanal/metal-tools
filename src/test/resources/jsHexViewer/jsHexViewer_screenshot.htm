@@ -468,12 +468,12 @@ $(function() {
 
 	$(document).on('keydown', function(e) {
 		var code = (e.keyCode ? e.keyCode : e.which);
-		if (code == 33) {
-			page++;
+		if (code == 33 && page > 0) {
+			page--;
 			setPage();
 		}
-		else if (code == 34 && page > 0) {
-			page--;
+		else if (code == 34) {
+			page++;
 			setPage();
 		}
 	});
@@ -567,9 +567,9 @@ function getDefinition(position) {
 	else {
 		// No definition found, try to find the last definition for this position.
 		// It might fall in range. This occurs when a definition is over multiple pages.
-		for (var i = 1; i < locations.length; i++) {
+		for (var i = 0; i < locations.length; i++) {
 			if (locations[i] > location) {
-				var row = data[i - 1];
+				var row = data[Math.max(0, i - 1)];
 				var definition = row[row.length - 1];
 				if (inRange(definition, position)) {
 					lastDefinition = definition;
@@ -619,7 +619,7 @@ function hsv2rgb(h, s, v) {
 }
 
 var flip = true;
-var lastColor = 0;
+var lastColor = Math.floor((Math.random() * 180) + 1);
 var colors = {};
 function getHue(str) {
 	if (!(str in colors)) {
@@ -699,6 +699,12 @@ function readPage() {
 	}
 	
 	page = parseInt(hash.substring('page'.length));
+	if (page < 0){
+		page = 0;
+		setPage();
+		return;
+	}
+	
 	var pageOffset = page * pageSize;
 	if (page > 0) {
 		$('#prev').button('enable');
@@ -906,8 +912,8 @@ function colorByte(element, definition, top, right, bottom, left) {
 						<fieldset>
 							<legend>Shortkeys</legend>
 							<ul>
-								<li>Page up: Next page
-								<li>Page down: Previous page
+								<li>Page down: Next page
+								<li>Page up: Previous page
 							</ul>
 						</fieldset>
 						<fieldset>

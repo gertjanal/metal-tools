@@ -18,6 +18,7 @@ package io.parsingdata.metal.tools.jshexviewer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.ref;
@@ -41,6 +42,7 @@ import io.parsingdata.metal.util.InMemoryByteStream;
 
 public class JsHexViewerTest {
 
+    private static final boolean RENEW = true;
     private static final Token STRING = seq(
         def("length", 1),
         def("text", ref("length")));
@@ -60,12 +62,7 @@ public class JsHexViewerTest {
             out.write(buffer);
         }
 
-        JsHexViewer.generate(result.environment.order);
-
-        // export("jsHexViewer_data.htm");
-        final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_data.htm"));
-        assertEquals(expected, generated);
+        assertGenerate(result, "example_data.htm");
     }
 
     @Test
@@ -81,18 +78,25 @@ public class JsHexViewerTest {
         final ParseResult result = PNG.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
-        JsHexViewer.generate(result.environment.order);
+        assertGenerate(result, "example_screenshot.htm");
+    }
 
-        // export("jsHexViewer_screenshot.htm");
-        final String generated = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer.htm"));
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/jsHexViewer_screenshot.htm"));
+    private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
+        JsHexViewer.generate(result.environment.order, fileName);
+
+        if (RENEW) {
+            export(fileName);
+        }
+        final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName));
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName));
         assertEquals(expected, generated);
     }
 
     private void export(final String fileName) throws Exception {
-        final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/test/resources/jsHexViewer/" + fileName);
+        final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsHexViewer/" + fileName);
         try (FileOutputStream fos = new FileOutputStream(export)) {
-            IOUtils.copy(getClass().getResourceAsStream("/jsHexViewer.htm"), fos);
+            IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
         }
+        fail("Export should not be used in production");
     }
 }

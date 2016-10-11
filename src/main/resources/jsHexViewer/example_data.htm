@@ -396,7 +396,7 @@ $(function() {
 
 	$(document).ready(function() {
 		if (readSingleFile($('#fileInput'))) {
-			$('#accordion').accordion('option', 'active', 2);
+		    $('#accordion').accordion('option', 'active', 2);
 		}
 	});
 
@@ -630,8 +630,35 @@ function getHue(str) {
 	return colors[str];
 }
 
+function getParameter(name) {
+	var parameters = window.location.search.substring(1).split("&");
+	for (var i = 0; i < parameters.length; i++) {
+		var pair = parameters[i].split("=");
+		if (pair.length === 2 && pair[0] === name) {
+			return pair[1];
+		}
+	}
+}
+
 var file;
 function readSingleFile(fileInput) {
+	var fileParameter = getParameter('file');
+	if (!file && fileParameter) {
+		// Load file from url
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', fileParameter, true);
+		xhr.responseType = 'blob';
+		xhr.withCredentials = true;
+		xhr.onload = function(e) {
+			file = xhr.response;
+			updateFileInfo();
+			readPage();
+		};
+		xhr.send();
+		return false;
+	}
+	
+	// Load file from browse input
 	var files = $(fileInput).prop('files');
 	if (!files || files.length != 1){
 		return false;
@@ -640,12 +667,16 @@ function readSingleFile(fileInput) {
 	if (!file) {
 		return false;
 	}
+	updateFileInfo();
+	readPage();
+	return true;
+}
+
+function updateFileInfo() {
 	$('#fileInfoName').text(file.name);
 	$('#fileInfoSizeDec').text(file.size);
 	$('#fileInfoSizeKiB').text(tgmk(file.size));
 	$('#fileInfoPages').text(Math.floor(file.size / pageSize));
-	readPage();
-	return true;
 }
 
 function toHex(value) {
