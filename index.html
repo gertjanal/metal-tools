@@ -237,17 +237,6 @@ var page = 0;
 var pageSize = 1024;
 var columnCount = 32;
 
-// Edited
-var xhr = new XMLHttpRequest();
-xhr.open('GET', 'src/test/resources/jsHexViewer/screenshot_data.png', true);
-xhr.responseType = 'blob';
-xhr.onload = function(e) {
-	file = xhr.response;
-	readSingleFile();
-};
-xhr.send();
-// \Edited
-
 function unpack(buffer, asBigEndian) {
 	var hex = '';
 	$.each(buffer, function(index, value) {
@@ -649,6 +638,14 @@ function readSingleFile(fileInput) {
 	}
 	file = files[0];*/
 	if (!file) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'src/test/resources/jsHexViewer/screenshot_data.png', true);
+		xhr.responseType = 'blob';
+		xhr.onload = function(e) {
+			file = xhr.response;
+			readSingleFile();
+		};
+		xhr.send();
 		return false;
 	}
 	$('#fileInfoName').text(file.name);
