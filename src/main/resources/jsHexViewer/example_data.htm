@@ -643,31 +643,27 @@ function getParameter(name) {
 var file;
 function readSingleFile(fileInput) {
 	var fileParameter = getParameter('file');
-	if (!fileInput) {
-		if (!file && fileParameter) {
-			// Load file from url
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', fileParameter, true);
-			xhr.responseType = 'blob';
-			xhr.withCredentials = true;
-			xhr.onload = function(e) {
-				file = xhr.response;
-				updateFileInfo();
-				readPage();
-			};
-			xhr.send();
-		}
+	if (!file && fileParameter) {
+		// Load file from url
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', fileParameter, true);
+		xhr.responseType = 'blob';
+		xhr.withCredentials = true;
+		xhr.onload = function(e) {
+			file = xhr.response;
+			updateFileInfo();
+			readPage();
+		};
+		xhr.send();
+	}
+	return false;
+
+	// Load file from browse input
+	var files = $(fileInput).prop('files');
+	if (!files || files.length != 1){
 		return false;
 	}
-	
-	if (fileInput) {
-		// Load file from browse input
-		var files = $(fileInput).prop('files');
-		if (!files || files.length != 1){
-			return false;
-		}
-		file = files[0];
-	}
+	file = files[0];
 	if (!file) {
 		return false;
 	}
