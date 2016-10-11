@@ -46,14 +46,18 @@ public class JsHexViewer {
     private static final int COLUMN_COUNT = 1 << 5;
 
     public static void generate(final ParseGraph graph) throws URISyntaxException, IOException {
+        generate(graph, "jsHexViewer.htm");
+    }
+
+    public static void generate(final ParseGraph graph, final String fileName) throws URISyntaxException, IOException {
         final Map<Long, LinkedList<Definition>> map = new TreeMap<>();
         step(graph, map);
 
         final File root = new File(JsHexViewer.class.getResource("/").toURI());
 
-        final File file = new File(root, "jsHexViewer.htm");
+        final File file = new File(root, fileName);
         try (FileWriter out = new FileWriter(file);
-             InputStream in = JsHexViewer.class.getResourceAsStream("/jsHexViewer/jsHexViewer.htm");
+             InputStream in = JsHexViewer.class.getResourceAsStream("/jsHexViewer/jsHexViewer.template.htm");
              BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
             String line;
             while ((line = br.readLine()) != null) {

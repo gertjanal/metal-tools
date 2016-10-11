@@ -1,0 +1,966 @@
+<html>
+<head>
+<link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
+<style>
+	html.wait, html.wait * {
+		cursor: wait !important;
+	}
+
+	body {
+		font-family: Verdana;
+		margin: 0px;
+		background-color: rgb(51, 51, 51);
+		font-size: 11px;
+	}
+
+	.byteWrapper, .linenr, .columnnr, .spacer {
+		display: table-cell;
+	}
+
+	.byteWrapper, .spacer, .spacerRow {
+		cursor: text;
+	}
+
+	.byteWrapper {
+		min-width: 14px;
+		text-align: center;
+	}
+
+	.linenr, .columnnr, .row:first-child {
+		background-color: #292929;
+		color: #75abff;
+	}
+	.columnnr {
+		font-size: 10px;
+		text-align: center;
+		height: 30px;
+	}
+	.linenr {
+		padding-right: 4px;
+		margin-right: 10px;
+		text-align: right;
+	}
+
+	.selected {
+		background-color: #096ac8;
+		color: white;
+	}
+
+	.row {
+		font-size: 16px;
+	}
+
+	.name {
+		font-size: 16px;
+		font-weight: bold;
+	}
+
+	.row {
+		display: table-row;
+	}
+
+	.spacerRow {
+		height: 5px;
+	}
+
+	#hexview, #asciiview {
+		display: table;
+		color: white;
+	}
+	
+	#hexview {
+		float: left;
+		padding-right: 10px;
+		border-right: 2px solid grey;
+	}
+
+	#asciiview {
+		padding-left: 10px;
+	}
+
+	#left-component {
+		right: 300px;
+		margin-right: 5px;
+	}
+
+	#divider {
+		right: 300px;
+		width: 2px;
+		background-color: #096ac8;
+	}
+
+	#right-component {
+		width: 300px;
+		overflow: hidden;
+	}
+
+	.tabAnchor {
+		display: block;
+		position: relative;
+		width: 0px;
+		height: 100%;
+		top: 0px;
+		left: 0px;
+	}
+
+	.tab {
+		display: block;
+		position: absolute;
+		font-size: 9px;
+		text-align: left;
+		height: 12px;
+		top: -30px;
+		left: -1px;
+		margin: 0px;
+		padding: 0px;
+		border: 1px solid red;
+		cursor: pointer;
+		-webkit-user-select: none;   /* Chrome/Safari/Opera */
+		-moz-user-select: none;      /* Firefox */
+		-ms-user-select: none;       /* Internet Explorer/Edge */
+		user-select: none;           /* Non-prefixed version, currently not supported by any browser */
+	}
+
+	#hexviewWrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	#accordion fieldset, #accordion fieldset legend, #accordion button {
+		font-size: 12px;
+	}
+
+	#pagesOfInterest, #hotspots {
+		overflow-x: hidden !important;
+	}
+
+	fieldset {
+		margin-bottom: 4px;
+	}
+
+	fieldset input[type=text] {
+		width: calc(100% - 80px);
+	}
+
+	fieldset button, button#next {
+		float: right;
+	}
+
+	ol, ul {
+		padding-left: 14px;
+	}
+
+	#pagesOfInterest button, #hotspots button {
+		font-size: 10px;
+		width: 126px;
+	}
+
+	.ui-accordion .ui-accordion-content {
+		padding: 1em;
+	}
+
+	h3.ui-accordion-header {
+		border-top-left-radius: 0px;
+	}
+
+	.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+		border-left: none;
+	}
+
+	.split-pane {
+		position: relative;
+		height: 100%;
+		width: 100%;
+		z-index: 0;
+	}
+
+	.split-pane-component {
+		overflow: hidden;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		overflow: auto;
+		left: auto;
+		right: 0;
+		z-index: 1;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component:first-child {
+		left: 0;
+		right: auto;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider {
+		position: absolute;
+		height: 100%;
+		top: 0;
+		cursor: col-resize;
+		z-index: 2;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider > .split-pane-divider-inner {
+		position: absolute;
+		top: 0;
+		left: -5px;
+		box-sizing: content-box;
+		width: 100%;
+		height: 100%;
+		padding: 0 5px;
+	}
+	
+	.split-pane-resize-shim {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 10000;
+		display: none;
+	}
+
+	.split-pane.fixed-right > .split-pane-resize-shim {
+		cursor: col-resize;
+	}
+</style>
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="libs/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="libs/splitpane-0.9.3/split-pane.js"></script>
+<script>
+var tags = [];
+var hover = true;
+var page = 0;
+var pageSize = 1024;
+var columnCount = 32;
+
+function unpack(buffer, asBigEndian) {
+	var hex = '';
+	$.each(buffer, function(index, value) {
+		var byte = value.toString(16);
+		byte = byte.length == 1 ? '0' + byte : byte;
+		if (asBigEndian) {
+			hex += byte;
+		}
+		else {
+			hex = byte + hex;
+		}
+	});
+	return parseInt('0x' + hex, 16);
+}
+
+$(function() {
+	$('button').button();
+	$('input[type=text]').addClass("ui-corner-all");
+	$('div.split-pane').splitPane();
+	$('fieldset').addClass('ui-widget').addClass('ui-widget-content');
+
+	$('#accordion').accordion({
+		heightStyle: 'fill'
+	});
+
+	$('body').on('mouseenter', '.byte', function() {
+		if (!hover) {
+			return;
+		}
+
+		clearSelection();
+		var position = parseInt($(this).attr('position'));
+		$('.byte[position=' + position +']').each(function(index, value) {
+			$(value).addClass('selected');
+		});
+
+		$('#values span').empty();
+		$('#filePositionDec').text(position);
+		$('#filePositionHex').text(toHex(position));
+		$('#filePositionKiB').text(tgmk(position));
+
+		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
+		$('#values #binary').text(binary.substring(binary.length - 8));
+
+		var definition = getDefinition(parseInt(position)); // TODO int != long
+		if (definition) {
+			$('.name').text(singleName(definition[2]));
+			$('.fullname').append(path(definition[2]));
+
+			$('#values #sizeDec').text(definition[1]);
+			$('#values #sizeHex').text(definition[1].toString(16));
+			$('#values #sizeKiB').text(tgmk(definition[1]));
+
+			if (definition[1] <= 8) {
+				getData(definition[0], definition[1], function(buffer) {
+					var be = unpack(buffer, true);
+					var le = unpack(buffer, false);
+					$('#values #beDec').text(be);
+					$('#values #beHex').text(hexSpaces(be.toString(16)));
+					$('#values #beKiB').text(tgmk(be));
+
+					$('#values #leDec').text(le);
+					$('#values #leHex').text(hexSpaces(le.toString(16)));
+					$('#values #leKiB').text(tgmk(le));
+				});
+			}
+			colorByte($('.name'), definition, true, true, true, true);
+		}
+	});
+	
+	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
+	
+	function clearSelection() {
+	    $('.byte').each(function(index, value){
+			$(value).removeClass('selected');
+		});
+		$('.name').empty();
+		$('.fullname').empty();
+		$('#filePositionDec').empty();
+		$('#filePositionHex').empty();
+		$('#filePositionKiB').empty();
+	}
+
+	$('#hexview').on('click', '.byte', function(e) {
+		if (!hover) {
+			clearSelection();
+		}
+		hover = !hover;
+	});
+
+	$('#hexview').on('click', '.tab', function(e) {
+		var position = parseInt($(this).attr('position'));
+		var definition = getDefinition(position);
+		if (!deleteTabTag(position)) {
+			// Tag tab
+			tags.push(position);
+			var hexValue = $('<span>');
+			colorByte(hexValue, definition, true, true, true, true);
+
+			var legend = $('<legend>').text(singleName(definition[2]));
+			colorByte(legend, definition, true, true, true, true);
+			
+			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
+				.addClass('ui-widget').addClass('ui-widget-content')
+				.append(legend)
+				.append('offset: ').append(position).append('<br>')
+				.append('page: ').append(page).append('<br>')
+				.append('path: ').append(path(definition[2])).append('<br>')
+				.append('hex: ').append(hexValue).append('<br>')
+				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
+				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
+			
+			var max = 12;
+			getData(definition[0], Math.min(definition[1], max), function(buffer) {
+				hexValue.empty();
+				$.each(buffer, function(index, value) {
+					var hex = toHex(value & 0xff);
+					if (index % 2 == 0 && index > 0) {
+						hexValue.append('&nbsp;');
+					}
+					hexValue.append(hex);
+				});
+				if (definition[1] > max) {
+					hexValue.append('...');
+				}
+			});
+		}
+		colorTab($(this), definition);
+	});
+	
+	function deleteTabTag(position) {
+		var index = tags.indexOf(position);
+		if (index === -1) {
+			return false;
+		}
+		tags.splice(index, 1);
+		$('fieldset.tagLabel' + position).remove();
+		return true;
+	}
+	
+	$('#accordion').on('click', '.tabTagJump', function() {
+		page = parseInt($(this).attr('page'));
+		setPage();
+	});
+
+	$('#accordion').on('click', '.tabTagDelete', function() {
+		var position = parseInt($(this).attr('position'));
+		deleteTabTag(position);
+		$('.tab').each(function() {
+			var tabPosition = parseInt($(this).attr('position'));
+			if (tabPosition === position) {
+				var definition = getDefinition(position);
+				colorTab($(this), definition);
+			}
+		});
+	});
+
+	$(document).ready(function() {
+		if (readSingleFile($('#fileInput'))) {
+		    $('#accordion').accordion('option', 'active', 2);
+		}
+	});
+
+	$('#prev').click(function(e) {
+		page -= 1;
+		setPage();
+	}).button('disable');
+
+	$('#next').click(function(e) {
+		page += 1;
+		setPage();
+	});
+
+	var prevPage;
+	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
+	$.each(locations, function(index, value) {
+		var page = Math.floor(value / (pageSize / columnCount));
+		if (page !== prevPage) {
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
+			}
+			
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
+			
+			if (prevPage !== undefined) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+				definitionCounts = 0;
+			}
+			prevPage = page;
+		}
+		definitionCounts += data[index].length;
+	});
+	addHotspots(hotspots, 30);
+
+	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
+		$('#jumpPage').val($(this).attr('page'));
+		$('#goPage').trigger('click');
+	});
+
+	$('#goPage').click(function() {
+		page = parseInt($('#jumpPage').val());
+		setPage();
+	});
+
+	$('#goOffsetDec').click(function() {
+		var offset = parseInt($('#jumpOffsetDec').val());
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$('#goOffsetHex').click(function() {
+		var offset = parseInt($('#jumpOffsetHex').val(), 16);
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$(document).on('keydown', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code == 33 && page > 0) {
+			page--;
+			setPage();
+		}
+		else if (code == 34) {
+			page++;
+			setPage();
+		}
+	});
+
+	$(window).on('hashchange', function() {
+		readPage();
+	});
+});
+
+function getMatchingIndex(a, b) {
+	for (var i = 0; i < Math.min(a.length, b.length); i++) {
+		if (a[i] !== b[i]) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+function addHotspots(hotspots, max) {
+	var definitionCounts = Object.keys(hotspots);
+	definitionCounts.sort(function(a, b) {
+		return parseInt(a) < parseInt(b);
+	});
+	for (var i = 0, k = 0; i < definitionCounts.length; i++) {
+		var definitionCount = definitionCounts[i];
+		for (var j = 0; j < hotspots[definitionCount].length; j++, k++) {
+			var page = hotspots[definitionCount][j];
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definition' + (definitionCount > 1 ? 's' : '')).attr('page', page).button());
+		}
+		if (k >= max) {
+			// Added max buttons or more (equal hotspots are also added)
+			return;
+		}
+	}
+}
+
+function path(path) {
+	var list = $('<ol>');
+	$.each(path.split('.'), function(index, value) {
+	    list.append($('<li>').text(value));
+	});
+	return list;
+}
+
+function singleName(name) {
+	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
+
+function tgmk(x) {
+	if (!isFinite(x)) {
+		return x;
+	}
+	var n = 0;
+	while (x > 1024 && n < 6) {
+		x /= 1024;
+		n++;
+	}
+	if (n > 0) {
+		x  = x.toFixed(1);
+		x += ' ';
+		x += ' KMGTP'.charAt(n);
+		x += 'iB';
+	}
+	else {
+		x += ' bytes';
+	}
+	return x;
+}
+
+var lastDefinition;
+function getDefinition(position) {
+	if (lastDefinition && inRange(lastDefinition, position)) {
+		// Instead of reading all rows above to check if this is part of a multi-row def,
+		// just cache the previous definition and check again.
+		// Note that this only works for drawing the highlights, not for a mouseover event.
+		return lastDefinition;
+	}
+
+	var location = Math.floor(position / columnCount);
+	var rowIndex = $.inArray(location, locations);
+	if (rowIndex !== -1) {
+		var row = data[rowIndex];
+		for (var i = 0; i < row.length; i++) {
+			var definition = row[i];
+			if (inRange(definition, position)) {
+				lastDefinition = definition;
+				return definition;
+			}
+		}
+	}
+	else {
+		// No definition found, try to find the last definition for this position.
+		// It might fall in range. This occurs when a definition is over multiple pages.
+		for (var i = 0; i < locations.length; i++) {
+			if (locations[i] > location) {
+				var row = data[Math.max(0, i - 1)];
+				var definition = row[row.length - 1];
+				if (inRange(definition, position)) {
+					lastDefinition = definition;
+					return definition;
+				}
+				else {
+					return;
+				}
+			}
+		}
+	}
+}
+
+function inRange(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position >= offset && position < offset + size;
+}
+
+function isStartOrEnd(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position === offset || position === offset + size;
+}
+
+function hsv2rgb(h, s, v) {
+	var r, g, b;
+	var i;
+	var f, p, q, t;
+	s /= 100;
+	v /= 100;
+	h /= 60;
+	i = Math.floor(h);
+	f = h - i;
+	p = v * (1 - s);
+	q = v * (1 - s * f);
+	t = v * (1 - s * (1 - f));
+	switch(i) {
+		case 0: r = v; g = t; b = p; break;
+		case 1: r = q; g = v; b = p; break;
+		case 2: r = p; g = v; b = t; break;
+		case 3: r = p; g = q; b = v; break;
+		case 4: r = t; g = p; b = v; break;
+		default: r = v; g = p; b = q;
+	}
+	return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+}
+
+var flip = true;
+var lastColor = Math.floor((Math.random() * 180) + 1);
+var colors = {};
+function getHue(str) {
+	if (!(str in colors)) {
+		lastColor = (lastColor + 12) % 180;
+		colors[str] = flip ? lastColor : 360 - lastColor;
+		flip = !flip;
+	}
+	return colors[str];
+}
+
+function getParameter(name) {
+	var parameters = window.location.search.substring(1).split("&");
+	for (var i = 0; i < parameters.length; i++) {
+		var pair = parameters[i].split("=");
+		if (pair.length === 2 && pair[0] === name) {
+			return pair[1];
+		}
+	}
+}
+
+var file;
+function readSingleFile(fileInput) {
+	var fileParameter = getParameter('file');
+	if (!file && fileParameter) {
+		// Load file from url
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', fileParameter, true);
+		xhr.responseType = 'blob';
+		xhr.withCredentials = true;
+		xhr.onload = function(e) {
+			file = xhr.response;
+			updateFileInfo();
+			readPage();
+		};
+		xhr.send();
+		return false;
+	}
+	
+	// Load file from browse input
+	var files = $(fileInput).prop('files');
+	if (!files || files.length != 1){
+		return false;
+	}
+	file = files[0];
+	if (!file) {
+		return false;
+	}
+	updateFileInfo();
+	readPage();
+	return true;
+}
+
+function updateFileInfo() {
+	$('#fileInfoName').text(file.name);
+	$('#fileInfoSizeDec').text(file.size);
+	$('#fileInfoSizeKiB').text(tgmk(file.size));
+	$('#fileInfoPages').text(Math.floor(file.size / pageSize));
+}
+
+function toHex(value) {
+	var hex = value.toString(16);
+	hex = (hex.length === 1) ? '0' + hex : hex;
+	return hex;
+}
+
+function hexSpaces(hex) {
+	if (!hex || hex.length == 0) {
+		return hex;
+	}
+	var value = '';
+	var i = hex.length;
+	for (; i >= 0; i -= 4){
+		value = hex.substring(i, i + 4) + ' ' + value;
+	}
+	if (i < 0) {
+		value = hex.substring(0, i + 4) + ' ' + value;
+	}
+	return value;
+}
+
+function getData(offset, size, callback) {
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var buffer = new Uint8Array(e.target.result);
+		callback(buffer);
+	};
+	var slice = file.slice(offset, offset + size);
+	reader.readAsArrayBuffer(slice);
+}
+
+function resetPage() {
+	page = 0;
+	location.hash = 'page' + page;
+}
+
+function setPage() {
+	location.hash = 'page' + page;
+}
+
+function readPage() {
+    $('html').addClass('wait'); // Show wait cursor
+	var hash = location.hash.replace('#', '');
+	hash = hash == '' ? 'page0' : hash;
+	
+	if (hash.indexOf('page') !== 0) {
+		console.log('unknown page number in location hash');
+		return;
+	}
+	
+	page = parseInt(hash.substring('page'.length));
+	if (page < 0){
+		page = 0;
+		setPage();
+		return;
+	}
+	
+	var pageOffset = page * pageSize;
+	if (page > 0) {
+		$('#prev').button('enable');
+	}
+	else {
+		$('#prev').button('disable');
+	}
+	$('#jumpPage').val(page);
+	$('#jumpOffsetDec').val(pageOffset);
+	$('#jumpOffsetHex').val(pageOffset.toString(16));
+	$('#tgmk').val(tgmk(pageOffset));
+
+	getData(pageOffset, pageSize, function(buffer) {
+		var pagePosition = 0;
+		$('#hexview').empty();
+		$('#asciiview').empty();
+		
+
+		var hexRow = $('<div>').addClass('row').append($('<div>').addClass('linenr'));
+		$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+	
+		var asciiRow = $('<div>').addClass('row');
+		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+		for (var column = 0; column < columnCount; column++) {
+			if (column % 2 == 0) {
+				hexRow.append($('<div>').addClass('spacer'));
+			}
+			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
+			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+		}
+		
+
+		for (var row = 0; pagePosition < buffer.length; row++) {
+			if (buffer.length - pagePosition < columnCount) {
+				columnCount = buffer.length - pagePosition;
+			}
+
+			var hexNr = (pagePosition + pageOffset).toString(16);
+			var hexRow = $('<div>').addClass('row')
+				.append($('<div>').addClass('linenr').text(hexNr));
+
+			$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+
+			var asciiRow = $('<div>').addClass('row');
+			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+			for (var column = 0; column < columnCount; column++, pagePosition++) {
+				var filePosition = pageOffset + pagePosition;
+				var definition = getDefinition(filePosition);
+
+				var byte = buffer[pagePosition] & 0xff;
+				var hex = toHex(byte);
+
+				if (column % 2 == 0) {
+					var spacer = $('<span>').addClass('spacer').html('&nbsp;');
+					if (definition) {
+						if (!isStartOrEnd(definition, filePosition)) {
+							colorByte(spacer, definition, true, false, true, false);
+						}
+					}
+					hexRow.append(spacer);
+				}
+
+				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(hex);
+				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
+				hexRow.append(hexByteWrapper);
+
+				var character = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '\u00B7';
+				var asciiByte = $('<span>').addClass('byte').attr('position', filePosition).text(character);
+				var asciiByteWrapper = $('<span>').addClass('byteWrapper').append(asciiByte);
+				asciiRow.append(asciiByteWrapper);
+
+				if (definition) {
+					var left = filePosition === definition[0];
+					var right = filePosition === definition[0] + definition[1] - 1;
+					colorByte(hexByteWrapper, definition, true, right, true, left);
+					colorByte(asciiByteWrapper, definition, true, right, true, left);
+					
+					if (filePosition === definition[0]) {
+						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
+						colorTab(tab, definition);
+					    hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
+					}
+				}
+			}
+		}
+		$('html').removeClass('wait'); // Remove wait cursor
+	});
+}
+
+function colorTab(element, definition) {
+	colorByte(element, definition, true, true, false, true);
+	if (tags.indexOf(definition[0]) !== -1) {
+		// Override colors when tagged 
+		var rgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80)
+		element.css('background', 'linear-gradient(white, ' + rgb + ')');
+	}
+}
+
+
+function colorByte(element, definition, top, right, bottom, left) {
+	var backgroundRgb = hsv2rgb(getHue(definition[2]) % 360, 50, 80);
+	var borderRgb = hsv2rgb(getHue(definition[2]) % 360, 100, 100);
+	var border = '1px solid ' + borderRgb;
+	element.css('background', backgroundRgb);
+	element.css('color', 'black');
+	element.css('border-top', top ? border : 'none');
+	element.css('border-right', right ? border : 'none');
+	element.css('border-bottom', bottom ? border : 'none');
+	element.css('border-left', left ? border : 'none');
+}
+
+</script>
+<body>
+	<div class="page-container">
+		<div class="split-pane fixed-right">
+			<div class="split-pane-component" id="left-component">
+				<div id="hexviewWrapper">
+					<div id="hexview"></div>
+					<div id="asciiview"></div>
+				</div>
+			</div>
+			<div class="split-pane-divider" id="divider"></div>
+			<div class="split-pane-component" id="right-component">
+				<div id="accordion">
+					<h3>Source</h3>
+					<div>
+						<fieldset>
+							<legend>Browse</legend>
+							Select the source data this page was generated with:<br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/><br>
+						</fieldset>
+						<fieldset>
+							<legend>Size of <span id="fileInfoName"></span></legend>
+							dec: <span id="fileInfoSizeDec"></span> bytes<br>
+							kib: <span id="fileInfoSizeKiB"></span><br>
+						</fieldset>
+					</div>
+					<h3>Page</h3>
+					<div>
+						<fieldset>
+							<legend>Info</legend>
+							<span id="fileInfoPages"></span> pages
+						</fieldset>
+						<fieldset>
+							<legend>Jump to page</legend>
+							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump</button>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to decimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetDec" class="numeric" value="0"><button id="goOffsetDec">Jump</button><br>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to hexadecimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetHex"><button id="goOffsetHex">Jump</button>
+						</fieldset>
+						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
+					</div>
+					<h3>Selection <span class="name"></span></h3>
+					<div>
+						<div id="values">
+							<fieldset>
+								<legend>Size</legend>
+								dec: <span id="sizeDec"></span><br>
+								hex: <span id="sizeHex"></span><br>
+								kib: <span id="sizeKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Offset</legend>
+								dec: <span id="filePositionDec"></span><br>
+								hex: <span id="filePositionHex"></span><br>
+								kib: <span id="filePositionKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Big Endian</legend>
+								dec: <span id="beDec"></span><br>
+								hex: <span id="beHex"></span><br>
+								kib: <span id="beKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Little Endian</legend>
+								dec: <span id="leDec"></span><br>
+								hex: <span id="leHex"></span><br>
+								kib: <span id="leKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Binary</legend>
+								bin: <span id="binary"></span><br>
+							</fieldset>
+							<fieldset>
+								<legend>Path</legend>
+								<span class="fullname"></span>
+							</fieldset>
+						</div>
+					</div>
+					<h3>Pages of interest</h3>
+					<div id="pagesOfInterest">Pages of interest:<br></div>
+					<h3>Tab tags</h3>
+					<div id="tabTags"></div>
+					<h3>Hotspots</h3>
+					<div id="hotspots"></div>
+					<h3>Help</h3>
+					<div>
+						<fieldset>
+							<legend>Shortkeys</legend>
+							<ul>
+								<li>Page down: Next page
+								<li>Page up: Previous page
+							</ul>
+						</fieldset>
+						<fieldset>
+							<legend>Hints</legend>
+							<ul>
+								<li>Click a byte to keep selection. Click any byte to release selection.
+							</ul>
+						</fieldset>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+    var locations = [0];
+    var data = [[[0, 1, 'length'], [1, 7, 'text']],[]];
+	</script>
+</body>
+</html>
