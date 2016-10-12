@@ -53,7 +53,7 @@
 		font-size: 16px;
 	}
 
-	.name {
+	#selectionName {
 		font-size: 16px;
 		font-weight: bold;
 	}
@@ -293,7 +293,7 @@ $(function() {
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
-			$('.name').text(getSingleName(definition[2]));
+			$('#selectionName').text(getSingleName(definition[2]));
 			$('.fullname').append(path(definition[2]));
 
 			$('#values #sizeDec').text(definition[1]);
@@ -313,17 +313,31 @@ $(function() {
 					$('#values #leKiB').text(tgmk(le));
 				});
 			}
-			colorDef($('.name'), definition, true, true, true, true);
+			colorDef($('#selectionName'), definition, true, true, true, true);
 		}
 	});
 	
 	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
 	
+	$('body').on('keydown', function(e) {
+		if (e.keyCode === 16) {
+			// Shift key down
+			$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
+		}
+	});
+	
+	$('body').on('keyup', function(e) {
+		if (e.keyCode === 16) {
+			// Shift key up
+			$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
+		}
+	});
+	
 	function clearSelection() {
 	    $('.byte').each(function(index, value){
 			$(value).removeClass('selected');
 		});
-		$('.name').empty();
+		$('#selectionName').removeClass().empty(); // Remove css highlighting and value
 		$('.fullname').empty();
 		$('#filePositionDec').empty();
 		$('#filePositionHex').empty();
@@ -492,13 +506,6 @@ $(function() {
 
 	$(window).on('hashchange', function() {
 		readPage();
-	});
-	
-	$('#highlightDef').click(function() {
-		$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
-	});
-	$('#highlightSeq').click(function() {
-		$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
 	});
 });
 
@@ -851,16 +858,19 @@ function readPage() {
 					colorDef(asciiByteWrapper, definition, true, right, true, left);
 					colorSeq(asciiByteWrapper, parentName, true, right, true, left);
 
-					if (filePosition === definition[0]) {
+					if (left) {
+						var tabAnchor = $('<div>').addClass('tabAnchor');
 						var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
 						colorTab(defTab, definition[2], 'def');
+						tabAnchor.append(defTab);
 						
 						if (prevParentName !== parentName) {
 							var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
 							colorTab(seqTab, parentName, 'seq');
 							prevParentName = parentName;
+							tabAnchor.append(seqTab);
 						}
-						hexByteWrapper.append($('<div>').addClass('tabAnchor').append(defTab).append(seqTab));
+						hexByteWrapper.append(tabAnchor);
 					}
 				}
 			}
@@ -902,7 +912,7 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 <body>
 	<div class="page-container">
 		<div class="split-pane fixed-right">
-			<div class="split-pane-component highlight-seq" id="left-component">
+			<div class="split-pane-component highlight-def" id="left-component">
 				<div id="hexviewWrapper">
 					<div id="hexview"></div>
 					<div id="asciiview"></div>
@@ -944,7 +954,7 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 						</fieldset>
 						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
 					</div>
-					<h3>Selection <span class="name"></span></h3>
+					<h3>Selection <span id="selectionName"></span></h3>
 					<div>
 						<div id="values">
 							<fieldset>
@@ -987,15 +997,6 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 					<div id="tabTags"></div>
 					<h3>Hotspots</h3>
 					<div id="hotspots"></div>
-					<h3>View</h3>
-					<div>
-						<fieldset>
-							<legend>Highlight</legend>
-							<button id="highlightSeq">Seq</button>
-							<button id="highlightDef">Def</button>
-						</fieldset>
-					
-					</div>
 					<h3>Help</h3>
 					<div>
 						<fieldset>
@@ -1003,6 +1004,7 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 							<ul>
 								<li>Page down: Next page
 								<li>Page up: Previous page
+								<li>Hold shift: peek sequence instead of definition
 							</ul>
 						</fieldset>
 						<fieldset>
