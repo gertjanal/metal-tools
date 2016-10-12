@@ -653,7 +653,7 @@ var lastColor = Math.floor((Math.random() * 180) + 1);
 var colors = {};
 function getHue(str) {
 	if (!(str in colors)) {
-		lastColor = (lastColor + 12) % 180;
+		lastColor = (lastColor + 13) % 180;
 		colors[str] = flip ? lastColor : 360 - lastColor;
 		flip = !flip;
 	}
