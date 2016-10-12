@@ -1,7 +1,7 @@
 <html>
 <head>
 <link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
-<link rel="stylesheet" href="libs/hue/hue-def.css">
+<link rel="stylesheet" href="libs/hue/hue.css">
 <style>
 	html.wait, html.wait * {
 		cursor: wait !important;
@@ -25,6 +25,8 @@
 	.byteWrapper {
 		min-width: 14px;
 		text-align: center;
+		margin-left: 1px;
+		margin-right: 1px;
 	}
 
 	.linenr, .columnnr, .row:first-child {
@@ -104,8 +106,16 @@
 		left: 0px;
 	}
 
-	.tab {
+	.split-pane-component.highlight-def .defTab {
 		display: block;
+	}
+	
+	.split-pane-component.highlight-seq .seqTab {
+		display: block;
+	}
+
+	.tab {
+		display: none;
 		position: absolute;
 		font-size: 9px;
 		text-align: left;
@@ -283,7 +293,7 @@ $(function() {
 
 		var definition = getDefinition(parseInt(position)); // TODO int != long
 		if (definition) {
-			$('.name').text(singleName(definition[2]));
+			$('.name').text(getSingleName(definition[2]));
 			$('.fullname').append(path(definition[2]));
 
 			$('#values #sizeDec').text(definition[1]);
@@ -327,7 +337,7 @@ $(function() {
 		hover = !hover;
 	});
 
-	$('#hexview').on('click', '.tab', function(e) {
+	$('#hexview').on('click', '.defTab', function(e) {
 		var position = parseInt($(this).attr('position'));
 		var definition = getDefinition(position);
 		if (!deleteTabTag(position)) {
@@ -337,7 +347,7 @@ $(function() {
 			var hexValue = $('<span>');
 			colorDef(hexValue, definition, true, true, true, true);
 
-			var legend = $('<legend>').text(singleName(definition[2]));
+			var legend = $('<legend>').text(getSingleName(definition[2]));
 			colorDef(legend, definition, true, true, true, true);
 			
 			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
@@ -347,8 +357,8 @@ $(function() {
 				.append('page: ').append(page).append('<br>')
 				.append('path: ').append(path(definition[2])).append('<br>')
 				.append('hex: ').append(hexValue).append('<br>')
-				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
-				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
+				.append($('<button>').addClass('defTabJump').attr('page', page).text('Jump').button())
+				.append($('<button>').addClass('defTabDelete').attr('position', position).text('Delete').button()));
 			
 			var max = 12;
 			getData(definition[0], Math.min(definition[1], max), function(buffer) {
@@ -375,19 +385,19 @@ $(function() {
 		}
 		tags.splice(index, 1);
 		$('fieldset.tagLabel' + position).remove();
-		$('.tab[position=' + position + ']').removeClass('tagged');
+		$('.defTab[position=' + position + ']').removeClass('tagged');
 		return true;
 	}
 	
-	$('#accordion').on('click', '.tabTagJump', function() {
+	$('#accordion').on('click', '.defTabJump', function() {
 		page = parseInt($(this).attr('page'));
 		setPage();
 	});
 
-	$('#accordion').on('click', '.tabTagDelete', function() {
+	$('#accordion').on('click', '.defTabDelete', function() {
 		var position = parseInt($(this).attr('position'));
 		deleteTabTag(position);
-		$('.tab').each(function() {
+		$('.defTab').each(function() {
 			var tabPosition = parseInt($(this).attr('position'));
 			if (tabPosition === position) {
 				var definition = getDefinition(position);
@@ -483,6 +493,13 @@ $(function() {
 	$(window).on('hashchange', function() {
 		readPage();
 	});
+	
+	$('#highlightDef').click(function() {
+		$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
+	});
+	$('#highlightSeq').click(function() {
+		$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
+	});
 });
 
 function getMatchingIndex(a, b) {
@@ -520,8 +537,12 @@ function path(path) {
 	return list;
 }
 
-function singleName(name) {
+function getSingleName(name) {
 	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
+
+function getParentName(definition) {
+	return definition ? ((definition[2].lastIndexOf('.') !== -1 ? definition[2].substring(0, definition[2].lastIndexOf('.')) : definition[2])) : undefined;
 }
 
 function tgmk(x) {
@@ -782,7 +803,7 @@ function readPage() {
 			pageColumnCount = buffer.length - pagePosition;
 		}
 
-		var parentName;
+		var prevParentName;
 		for (var row = 0; pagePosition < buffer.length; row++) {
 			var hexNr = (pagePosition + pageOffset).toString(16);
 			var hexRow = $('<div>').addClass('row')
@@ -796,6 +817,7 @@ function readPage() {
 			for (var column = 0; column < pageColumnCount; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
 				var definition = getDefinition(filePosition);
+				var parentName = getParentName(definition);
 
 				var byte = buffer[pagePosition] & 0xff;
 				var hex = toHex(byte);
@@ -805,6 +827,7 @@ function readPage() {
 					if (definition) {
 						if (!isStartOrEnd(definition, filePosition)) {
 							colorDef(spacer, definition, true, false, true, false);
+							colorSeq(spacer, parentName, true, false, true, false);
 						}
 					}
 					hexRow.append(spacer);
@@ -820,23 +843,24 @@ function readPage() {
 				asciiRow.append(asciiByteWrapper);
 
 				if (definition) {
-					if (definition[2].lastIndexOf('.') !== -1) {
-						var currentParentName = definition[2].substring(0, definition[2].lastIndexOf('.'));
-						if (currentParentName !== parentName) {
-							colorSeq(hexByteWrapper, currentParentName, true, right, true, true);
-							parentName = currentParentName;
-						}
-					}
-					
 					var left = filePosition === definition[0];
 					var right = filePosition === definition[0] + definition[1] - 1;
 					colorDef(hexByteWrapper, definition, true, right, true, left);
+					colorSeq(hexByteWrapper, parentName, true, right, true, left);
+
 					colorDef(asciiByteWrapper, definition, true, right, true, left);
-					
+					colorSeq(asciiByteWrapper, parentName, true, right, true, left);
+
 					if (filePosition === definition[0]) {
-						var tab = $('<div>').addClass('tab').text(singleName(definition[2])).attr('position', filePosition);
-						colorTab(tab, definition);
-						hexByteWrapper.append($('<div>').addClass('tabAnchor').append(tab));
+						var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
+						colorTab(defTab, definition[2], 'def');
+						
+						if (prevParentName !== parentName) {
+							var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
+							colorTab(seqTab, parentName, 'seq');
+							prevParentName = parentName;
+						}
+						hexByteWrapper.append($('<div>').addClass('tabAnchor').append(defTab).append(seqTab));
 					}
 				}
 			}
@@ -845,44 +869,40 @@ function readPage() {
 	});
 }
 
-function colorTab(element, definition) {
-	colorDef(element, definition, true, true, false, true);
+function colorTab(element, name, type) {
+	var hue = getHue(name);
+	colorElement(element, hue, type, true, true, false, true);
 }
-
 
 function colorDef(element, definition, top, right, bottom, left) {
 	var hue = getHue(definition[2]);
-	if (top) {
-		element.addClass('hue' + hue + '-def-top');
-	}
-	if (left) {
-		element.addClass('hue' + hue + '-def-left');
-	}
-	if (bottom) {
-		element.addClass('hue' + hue + '-def-bottom');
-	}
-	if (right) { element.addClass('hue' + hue + '-def-right'); }
+	colorElement(element, hue, 'def', top, right, bottom, right);
 }
 
 function colorSeq(element, name, top, right, bottom, left) {
 	var hue = getHue(name);
-	if (top) {
-		element.addClass('hue' + hue + '-seq-top');
-	}
-	if (left) {
-		element.addClass('hue' + hue + '-seq-left');
-	}
-	if (bottom) {
-		element.addClass('hue' + hue + '-seq-bottom');
-	}
-	if (right) { element.addClass('hue' + hue + '-seq-right'); }
+	colorElement(element, hue, 'seq', top, right, bottom, left);
 }
 
+function colorElement(element, hue, type, top, right, bottom, left) {
+	if (top) {
+		element.addClass('hue' + hue + '-' + type + '-top');
+	}
+	if (left) {
+		element.addClass('hue' + hue + '-' + type + '-left');
+	}
+	if (bottom) {
+		element.addClass('hue' + hue + '-' + type + '-bottom');
+	}
+	if (right) {
+		element.addClass('hue' + hue + '-' + type + '-right');
+	}
+}
 </script>
 <body>
 	<div class="page-container">
 		<div class="split-pane fixed-right">
-			<div class="split-pane-component highlight-def" id="left-component">
+			<div class="split-pane-component highlight-seq" id="left-component">
 				<div id="hexviewWrapper">
 					<div id="hexview"></div>
 					<div id="asciiview"></div>
@@ -967,6 +987,15 @@ function colorSeq(element, name, top, right, bottom, left) {
 					<div id="tabTags"></div>
 					<h3>Hotspots</h3>
 					<div id="hotspots"></div>
+					<h3>View</h3>
+					<div>
+						<fieldset>
+							<legend>Highlight</legend>
+							<button id="highlightSeq">Seq</button>
+							<button id="highlightDef">Def</button>
+						</fieldset>
+					
+					</div>
 					<h3>Help</h3>
 					<div>
 						<fieldset>

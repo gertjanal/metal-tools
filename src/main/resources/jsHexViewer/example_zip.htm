@@ -357,8 +357,8 @@ $(function() {
 				.append('page: ').append(page).append('<br>')
 				.append('path: ').append(path(definition[2])).append('<br>')
 				.append('hex: ').append(hexValue).append('<br>')
-				.append($('<button>').addClass('tabTagJump').attr('page', page).text('Jump').button())
-				.append($('<button>').addClass('tabTagDelete').attr('position', position).text('Delete').button()));
+				.append($('<button>').addClass('defTabJump').attr('page', page).text('Jump').button())
+				.append($('<button>').addClass('defTabDelete').attr('position', position).text('Delete').button()));
 			
 			var max = 12;
 			getData(definition[0], Math.min(definition[1], max), function(buffer) {
@@ -389,12 +389,12 @@ $(function() {
 		return true;
 	}
 	
-	$('#accordion').on('click', '.defTabTagJump', function() {
+	$('#accordion').on('click', '.defTabJump', function() {
 		page = parseInt($(this).attr('page'));
 		setPage();
 	});
 
-	$('#accordion').on('click', '.defTabTagDelete', function() {
+	$('#accordion').on('click', '.defTabDelete', function() {
 		var position = parseInt($(this).attr('position'));
 		deleteTabTag(position);
 		$('.defTab').each(function() {
@@ -850,7 +850,7 @@ function readPage() {
 
 					colorDef(asciiByteWrapper, definition, true, right, true, left);
 					colorSeq(asciiByteWrapper, parentName, true, right, true, left);
-					
+
 					if (filePosition === definition[0]) {
 						var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
 						colorTab(defTab, definition[2], 'def');
@@ -881,7 +881,7 @@ function colorDef(element, definition, top, right, bottom, left) {
 
 function colorSeq(element, name, top, right, bottom, left) {
 	var hue = getHue(name);
-	colorElement(element, hue, 'seq', top, right, bottom, right);
+	colorElement(element, hue, 'seq', top, right, bottom, left);
 }
 
 function colorElement(element, hue, type, top, right, bottom, left) {
