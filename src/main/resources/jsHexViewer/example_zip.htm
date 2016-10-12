@@ -861,6 +861,10 @@ function readPage() {
 					if (left) {
 						var tabAnchor = $('<div>').addClass('tabAnchor');
 						var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
+						if (tags.indexOf(definition[0]) !== -1) {
+							defTab.addClass('tagged');
+						}
+						
 						colorTab(defTab, definition[2], 'def');
 						tabAnchor.append(defTab);
 						
