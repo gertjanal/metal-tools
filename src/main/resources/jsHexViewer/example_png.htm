@@ -318,21 +318,7 @@ $(function() {
 	});
 	
 	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
-	
-	$('body').on('keydown', function(e) {
-		if (e.keyCode === 16) {
-			// Shift key down
-			$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
-		}
-	});
-	
-	$('body').on('keyup', function(e) {
-		if (e.keyCode === 16) {
-			// Shift key up
-			$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
-		}
-	});
-	
+
 	function clearSelection() {
 	    $('.byte').each(function(index, value){
 			$(value).removeClass('selected');
@@ -451,10 +437,10 @@ $(function() {
 			if (prevTitle !== undefined) {
 				start = getMatchingIndex(split, prevTitle);
 			}
-			
+
 			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
 			prevTitle = split;
-			
+
 			if (prevPage !== undefined) {
 				if (hotspots[definitionCounts]) {
 					hotspots[definitionCounts].push(prevPage);
@@ -494,13 +480,23 @@ $(function() {
 
 	$(document).on('keydown', function(e) {
 		var code = (e.keyCode ? e.keyCode : e.which);
-		if (code == 33 && page > 0) {
+		if (code === 33 && page > 0) {
 			page--;
 			setPage();
 		}
-		else if (code == 34) {
+		else if (code === 34) {
 			page++;
 			setPage();
+		}
+		else if (code === 16) {
+			// Shift key down
+			$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
+		}
+	}).on('keyup', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code === 16) {
+			// Shift key up
+			$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
 		}
 	});
 
