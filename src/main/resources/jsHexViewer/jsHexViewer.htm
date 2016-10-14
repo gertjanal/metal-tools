@@ -249,34 +249,42 @@ var dataHash = 0;
 var dataUrl = ''; <!-- generated -->
 
 setInterval(function() {
+	// This hexviewer is mostly used without a webserver; just locally run
+	// However, we want the latest definitions from the parseGraph to be shown here,
+	// without reloading the page or re-selecting the source file via the file input form.
+	// ajax calls can only be made to webserver locations, so not an option.
+	// Best workaround found in this case was to save the definition variables columnCount,
+	// data and locations to a separate js file and load this script file every n ms by
+	// removing and adding it to the <head> tag.
 	var head = document.getElementsByTagName('head')[0];
-	var script = document.createElement('script');
-	script.class ='data';
-	script.type = 'text/javascript';
-	script.src = dataUrl;
-
 	var children = head.children;
 	for (var i = 0; i < children.length; i++) {
 		if (children[i].class === 'data') {
+			// Removed previous script data element
 			head.removeChild(children[i]);
 		}
 	}
+
+	var script = document.createElement('script');
+	script.class = 'data';
+	script.type = 'text/javascript';
+	script.src = dataUrl;
 	head.appendChild(script);
 	
 	setTimeout(function() {
-	    if (data !== undefined) {
-			var start = new Date().getTime();
+		// Give the browser 250 ms to load the script file
+		if (typeof data !== 'undefined') {
+			// caluculate hash over the data object.
+			// This should be sufficient for change detection.
 			var newDataHash = hash(JSON.stringify(data));
-			console.log('hashing took ', (new Date().getTime() - start), 'ms');
 			if (newDataHash !== dataHash) {
-				console.log('Found new data with hash ', newDataHash, ' updating page...');
 				dataHash = newDataHash;
 				$('#updated').text(new Date());
 				dataRefresh();
 			}
 		}
-	}, 1000);
-}, 2000);
+	}, 250);
+}, 500);
 
 function unpack(buffer, asBigEndian) {
 	var hex = '';
