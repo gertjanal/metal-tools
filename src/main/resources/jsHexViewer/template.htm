@@ -268,7 +268,7 @@ setInterval(function() {
 	var script = document.createElement('script');
 	script.class = 'data';
 	script.type = 'text/javascript';
-	script.src = dataUrl;
+	script.src = dataUrl + "?time=" + (new Date().getTime());
 	head.appendChild(script);
 	
 	setTimeout(function() {
