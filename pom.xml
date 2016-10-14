@@ -11,7 +11,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
 
-    <commons-io.version>2.4</commons-io.version>
+    <commons-io.version>2.5</commons-io.version>
     <junit.version>4.11</junit.version>
     <metal.version>4.0.1</metal.version>
     <source-plugin.version>2.2.1</source-plugin.version>
@@ -22,6 +22,11 @@
       <groupId>io.parsingdata</groupId>
       <artifactId>metal-core</artifactId>
       <version>${metal.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>io.parsingdata</groupId>
@@ -40,12 +45,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

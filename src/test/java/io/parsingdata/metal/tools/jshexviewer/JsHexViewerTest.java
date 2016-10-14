@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class JsHexViewerTest {
             out.write(buffer);
         }
 
-        assertGenerate(result, "example_data.htm");
+        assertGenerate(result, "example_data");
     }
 
     @Test
@@ -79,7 +80,7 @@ public class JsHexViewerTest {
         final ParseResult result = PNG.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_png.htm");
+        assertGenerate(result, "example_png");
     }
 
     @Test
@@ -95,7 +96,7 @@ public class JsHexViewerTest {
         final ParseResult result = ZIP.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_zip.htm");
+        assertGenerate(result, "example_zip");
     }
 
     private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
@@ -104,16 +105,21 @@ public class JsHexViewerTest {
         if (RENEW) {
             export(fileName);
         }
-        final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName));
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName));
+        final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".js"), StandardCharsets.UTF_8);
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName + ".js"), StandardCharsets.UTF_8);
         assertEquals(expected, generated);
     }
 
     private void export(final String fileName) throws Exception {
+        exportFile(fileName + ".htm");
+        exportFile(fileName + ".js");
+        fail("Export should not be used in production");
+    }
+
+    private void exportFile(final String fileName) throws Exception {
         final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsHexViewer/" + fileName);
         try (FileOutputStream fos = new FileOutputStream(export)) {
             IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
         }
-        fail("Export should not be used in production");
     }
 }
