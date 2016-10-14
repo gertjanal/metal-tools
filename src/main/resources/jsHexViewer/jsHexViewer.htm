@@ -245,7 +245,34 @@ var tags = [];
 var hover = true;
 var page = 0;
 var pageSize = 1024;
-var columnCount = 0; <!-- generated -->
+/*var columnCount = 0;
+var locations = [];
+var data = [];*/
+var dataUrl = ''; <!-- generated -->
+
+
+setInterval(function() {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.class ='data';
+    script.type = 'text/javascript';
+    script.src = dataUrl;
+
+    var children = head.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].class === 'data') {
+          head.removeChild(children[i]);
+          console.log('found data!');
+      }
+    }
+    head.appendChild(script);
+    setTimeout(function() {
+    console.log('locations hash', hash(JSON.stringify(locations)));
+	console.log('data hash', hash(JSON.stringify(data)));
+    }, 1000);
+    
+    dataRefresh();
+}, 4000);
 
 function unpack(buffer, asBigEndian) {
 	var hex = '';
@@ -260,6 +287,60 @@ function unpack(buffer, asBigEndian) {
 		}
 	});
 	return parseInt('0x' + hex, 16);
+}
+
+function hash(value) {
+    var hash = 0, i, chr, len;
+    if (value.length === 0) return hash;
+    for (i = 0, len = value.length; i < len; i++) {
+      chr   = value.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function dataRefresh() {
+	var prevPage;
+	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
+	$('#pagesOfInterest').empty();
+	$.each(locations, function(index, value) {
+		var page = Math.floor(value / (pageSize / columnCount));
+		if (page !== prevPage) {
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
+			}
+
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
+
+			if (prevPage !== undefined) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+				definitionCounts = 0;
+			}
+			prevPage = page;
+		}
+		definitionCounts += data[index].length;
+	});
+	$('#hotspots').empty();
+	addHotspots(hotspots, 30);
+	
+	// Done drawing UI, open data
+	if (readSingleFile($('#fileInput'))) {
+		firstFileLoad();
+	}
 }
 
 $(function() {
@@ -406,12 +487,6 @@ $(function() {
 		});
 	});
 
-	$(document).ready(function() {
-		if (readSingleFile($('#fileInput'))) {
-			firstFileLoad();
-		}
-	});
-
 	$('#prev').click(function(e) {
 		page -= 1;
 		setPage();
@@ -421,40 +496,6 @@ $(function() {
 		page += 1;
 		setPage();
 	});
-
-	var prevPage;
-	var prevTitle;
-	var definitionCounts = 0;
-	var hotspots = {};
-	$.each(locations, function(index, value) {
-		var page = Math.floor(value / (pageSize / columnCount));
-		if (page !== prevPage) {
-			var firstDefinition = data[index][0];
-			title = firstDefinition[2];
-
-			var split = title.split('.');
-			var start = 0;
-			if (prevTitle !== undefined) {
-				start = getMatchingIndex(split, prevTitle);
-			}
-
-			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
-			prevTitle = split;
-
-			if (prevPage !== undefined) {
-				if (hotspots[definitionCounts]) {
-					hotspots[definitionCounts].push(prevPage);
-				}
-				else {
-					hotspots[definitionCounts] = [prevPage];
-				}
-				definitionCounts = 0;
-			}
-			prevPage = page;
-		}
-		definitionCounts += data[index].length;
-	});
-	addHotspots(hotspots, 30);
 
 	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
 		$('#jumpPage').val($(this).attr('page'));
@@ -1018,9 +1059,5 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 			</div>
 		</div>
 	</div>
-	<script>
-		var locations = []<!-- generated -->;
-		var data = []<!-- generated -->;
-	</script>
 </body>
 </html>

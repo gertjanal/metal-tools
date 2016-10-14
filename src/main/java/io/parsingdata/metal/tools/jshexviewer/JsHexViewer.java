@@ -18,6 +18,7 @@ package io.parsingdata.metal.tools.jshexviewer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.io.IOUtils;
+
 import io.parsingdata.metal.data.ParseGraph;
 import io.parsingdata.metal.data.ParseItem;
 import io.parsingdata.metal.data.ParseValue;
@@ -46,7 +49,7 @@ public class JsHexViewer {
     private static final int COLUMN_COUNT = 1 << 5;
 
     public static void generate(final ParseGraph graph) throws URISyntaxException, IOException {
-        generate(graph, "jsHexViewer.htm");
+        generate(graph, "jsHexViewer");
     }
 
     public static void generate(final ParseGraph graph, final String fileName) throws URISyntaxException, IOException {
@@ -55,23 +58,26 @@ public class JsHexViewer {
 
         final File root = new File(JsHexViewer.class.getResource("/").toURI());
 
-        final File file = new File(root, fileName);
+        final String js =
+            "var columnCount = " + COLUMN_COUNT + ";" +
+                "var locations = " + map.keySet().toString() + ";" +
+                "var data = " + writeData(map) + ";";
+
+        try (FileOutputStream fos = new FileOutputStream(new File(root, fileName + ".js"))) {
+            IOUtils.write(js, fos);
+        }
+
+        final File file = new File(root, fileName + ".htm");
         try (FileWriter out = new FileWriter(file);
-             InputStream in = JsHexViewer.class.getResourceAsStream("/jsHexViewer/jsHexViewer.template.htm");
+             InputStream in = JsHexViewer.class.getResourceAsStream("/jsHexViewer/jsHexViewer.htm");
              BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.contains("<!-- generated -->")) {
-                    if (line.trim().startsWith("var locations =")) {
-                        out.write("    var locations = ");
-                        out.write(map.keySet().toString());
-                        out.write(";");
-                    }
-                    else if (line.trim().startsWith("var data =")) {
-                        writeData(out, map);
-                    }
-                    else if (line.trim().startsWith("var columnCount =")) {
-                        out.write("var columnCount = " + COLUMN_COUNT + ";");
+                    if (line.trim().startsWith("var dataUrl =")) {
+                        out.write("var dataUrl = '");
+                        out.write(fileName + ".js");
+                        out.write("';");
                     }
                 }
                 else {
@@ -105,13 +111,15 @@ public class JsHexViewer {
         });
     }
 
-    private static void writeData(final FileWriter out, final Map<Long, LinkedList<Definition>> map) throws IOException {
-        out.write("    var data = [");
+    private static String writeData(final Map<Long, LinkedList<Definition>> map) throws IOException {
+        final StringBuilder builder = new StringBuilder("[");
         for (final Long row : map.keySet()) {
-            out.write(map.get(row).toString());
-            out.write(",");
+            if (builder.length() > 1) {
+                builder.append(",");
+            }
+            builder.append(map.get(row).toString());
         }
-        out.write("[]];");
+        return builder.append("]").toString();
     }
 
     private static void step(final ParseItem item, final Map<Long, LinkedList<Definition>> map) {
