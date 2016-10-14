@@ -45,7 +45,7 @@ public class JsHexViewerTest {
     private static final boolean RENEW = false;
     private static final Token STRING = seq(
         def("length", 1),
-        def("text", con(6)));//ref("length")
+        def("text", con(1 + (int) (Math.random() * 6))));//ref("length")
 
     @Test
     public void testGenerateData() throws Exception {

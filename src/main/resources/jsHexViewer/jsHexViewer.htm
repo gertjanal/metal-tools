@@ -245,34 +245,38 @@ var tags = [];
 var hover = true;
 var page = 0;
 var pageSize = 1024;
-/*var columnCount = 0;
-var locations = [];
-var data = [];*/
+var dataHash = 0;
 var dataUrl = ''; <!-- generated -->
 
-
 setInterval(function() {
-    var head = document.getElementsByTagName('head')[0];
-    var script = document.createElement('script');
-    script.class ='data';
-    script.type = 'text/javascript';
-    script.src = dataUrl;
+	var head = document.getElementsByTagName('head')[0];
+	var script = document.createElement('script');
+	script.class ='data';
+	script.type = 'text/javascript';
+	script.src = dataUrl;
 
-    var children = head.children;
-    for (var i = 0; i < children.length; i++) {
-      if (children[i].class === 'data') {
-          head.removeChild(children[i]);
-          console.log('found data!');
-      }
-    }
-    head.appendChild(script);
-    setTimeout(function() {
-    console.log('locations hash', hash(JSON.stringify(locations)));
-	console.log('data hash', hash(JSON.stringify(data)));
-    }, 1000);
-    
-    dataRefresh();
-}, 4000);
+	var children = head.children;
+	for (var i = 0; i < children.length; i++) {
+		if (children[i].class === 'data') {
+			head.removeChild(children[i]);
+		}
+	}
+	head.appendChild(script);
+	
+	setTimeout(function() {
+	    if (data !== undefined) {
+			var start = new Date().getTime();
+			var newDataHash = hash(JSON.stringify(data));
+			console.log('hashing took ', (new Date().getTime() - start), 'ms');
+			if (newDataHash !== dataHash) {
+				console.log('Found new data with hash ', newDataHash, ' updating page...');
+				dataHash = newDataHash;
+				$('#updated').text(new Date());
+				dataRefresh();
+			}
+		}
+	}, 1000);
+}, 2000);
 
 function unpack(buffer, asBigEndian) {
 	var hex = '';
@@ -338,9 +342,7 @@ function dataRefresh() {
 	addHotspots(hotspots, 30);
 	
 	// Done drawing UI, open data
-	if (readSingleFile($('#fileInput'))) {
-		firstFileLoad();
-	}
+	readSingleFile($('#fileInput'));
 }
 
 $(function() {
@@ -967,12 +969,16 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 						<fieldset>
 							<legend>Browse</legend>
 							Select the source data this page was generated with:<br>
-							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/><br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this); firstFileLoad()"/><br>
 						</fieldset>
 						<fieldset>
 							<legend>Size of <span id="fileInfoName"></span></legend>
-							dec: <span id="fileInfoSizeDec"></span> bytes<br>
+							dec: <span id="fileInfoSizeDec">0</span> bytes<br>
 							kib: <span id="fileInfoSizeKiB"></span><br>
+						</fieldset>
+						<fieldset>
+							<legend>Last definition update</legend>
+							Updated: <span id="updated"></span><br>
 						</fieldset>
 					</div>
 					<h3>Page</h3>
