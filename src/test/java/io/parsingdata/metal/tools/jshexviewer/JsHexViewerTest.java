@@ -16,11 +16,12 @@
 
 package io.parsingdata.metal.tools.jshexviewer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static io.parsingdata.metal.Shorthand.con;
 import static io.parsingdata.metal.Shorthand.def;
+import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.util.EncodingFactory.le;
 
@@ -28,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -45,7 +47,7 @@ public class JsHexViewerTest {
     private static final boolean RENEW = false;
     private static final Token STRING = seq(
         def("length", 1),
-        def("text", con(1 + (int) (Math.random() * 6))));//ref("length")
+        def("text", ref("length")));
 
     @Test
     public void testGenerateData() throws Exception {
@@ -99,20 +101,25 @@ public class JsHexViewerTest {
 
     private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
         JsHexViewer.generate(result.environment.order, fileName);
-/*
-if (RENEW) {
-    export(fileName);
-}
-final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName));
-final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName));
-assertEquals(expected, generated);*/
+
+        if (RENEW) {
+            export(fileName);
+        }
+        final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".js"), StandardCharsets.UTF_8);
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName + ".js"), StandardCharsets.UTF_8);
+        assertEquals(expected, generated);
     }
 
     private void export(final String fileName) throws Exception {
+        exportFile(fileName + ".htm");
+        exportFile(fileName + ".js");
+        fail("Export should not be used in production");
+    }
+
+    private void exportFile(final String fileName) throws Exception {
         final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsHexViewer/" + fileName);
         try (FileOutputStream fos = new FileOutputStream(export)) {
             IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
         }
-        fail("Export should not be used in production");
     }
 }

@@ -245,7 +245,46 @@ var tags = [];
 var hover = true;
 var page = 0;
 var pageSize = 1024;
-var columnCount = 32;
+var dataHash = 0;
+var dataUrl = 'example_data.js';
+
+setInterval(function() {
+	// This hexviewer is mostly used without a webserver; just locally run
+	// However, we want the latest definitions from the parseGraph to be shown here,
+	// without reloading the page or re-selecting the source file via the file input form.
+	// ajax calls can only be made to webserver locations, so not an option.
+	// Best workaround found in this case was to save the definition variables columnCount,
+	// data and locations to a separate js file and load this script file every n ms by
+	// removing and adding it to the <head> tag.
+	var head = document.getElementsByTagName('head')[0];
+	var children = head.children;
+	for (var i = 0; i < children.length; i++) {
+		if (children[i].class === 'data') {
+			// Removed previous script data element
+			head.removeChild(children[i]);
+		}
+	}
+
+	var script = document.createElement('script');
+	script.class = 'data';
+	script.type = 'text/javascript';
+	script.src = dataUrl;
+	head.appendChild(script);
+	
+	setTimeout(function() {
+		// Give the browser 250 ms to load the script file
+		if (typeof data !== 'undefined') {
+			// caluculate hash over the data object.
+			// This should be sufficient for change detection.
+			var newDataHash = hash(JSON.stringify(data));
+			if (newDataHash !== dataHash) {
+				dataHash = newDataHash;
+				$('#updated').text(new Date());
+				dataRefresh();
+			}
+		}
+	}, 250);
+}, 500);
 
 function unpack(buffer, asBigEndian) {
 	var hex = '';
@@ -260,6 +299,58 @@ function unpack(buffer, asBigEndian) {
 		}
 	});
 	return parseInt('0x' + hex, 16);
+}
+
+function hash(value) {
+    var hash = 0, i, chr, len;
+    if (value.length === 0) return hash;
+    for (i = 0, len = value.length; i < len; i++) {
+      chr   = value.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function dataRefresh() {
+	var prevPage;
+	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
+	$('#pagesOfInterest').empty();
+	$.each(locations, function(index, value) {
+		var page = Math.floor(value / (pageSize / columnCount));
+		if (page !== prevPage) {
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
+			}
+
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
+
+			if (prevPage !== undefined) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+				definitionCounts = 0;
+			}
+			prevPage = page;
+		}
+		definitionCounts += data[index].length;
+	});
+	$('#hotspots').empty();
+	addHotspots(hotspots, 30);
+	
+	// Done drawing UI, open data
+	readSingleFile($('#fileInput'));
 }
 
 $(function() {
@@ -406,12 +497,6 @@ $(function() {
 		});
 	});
 
-	$(document).ready(function() {
-		if (readSingleFile($('#fileInput'))) {
-			firstFileLoad();
-		}
-	});
-
 	$('#prev').click(function(e) {
 		page -= 1;
 		setPage();
@@ -421,40 +506,6 @@ $(function() {
 		page += 1;
 		setPage();
 	});
-
-	var prevPage;
-	var prevTitle;
-	var definitionCounts = 0;
-	var hotspots = {};
-	$.each(locations, function(index, value) {
-		var page = Math.floor(value / (pageSize / columnCount));
-		if (page !== prevPage) {
-			var firstDefinition = data[index][0];
-			title = firstDefinition[2];
-
-			var split = title.split('.');
-			var start = 0;
-			if (prevTitle !== undefined) {
-				start = getMatchingIndex(split, prevTitle);
-			}
-
-			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
-			prevTitle = split;
-
-			if (prevPage !== undefined) {
-				if (hotspots[definitionCounts]) {
-					hotspots[definitionCounts].push(prevPage);
-				}
-				else {
-					hotspots[definitionCounts] = [prevPage];
-				}
-				definitionCounts = 0;
-			}
-			prevPage = page;
-		}
-		definitionCounts += data[index].length;
-	});
-	addHotspots(hotspots, 30);
 
 	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
 		$('#jumpPage').val($(this).attr('page'));
@@ -926,12 +977,16 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 						<fieldset>
 							<legend>Browse</legend>
 							Select the source data this page was generated with:<br>
-							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this)"/><br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this); firstFileLoad()"/><br>
 						</fieldset>
 						<fieldset>
 							<legend>Size of <span id="fileInfoName"></span></legend>
-							dec: <span id="fileInfoSizeDec"></span> bytes<br>
+							dec: <span id="fileInfoSizeDec">0</span> bytes<br>
 							kib: <span id="fileInfoSizeKiB"></span><br>
+						</fieldset>
+						<fieldset>
+							<legend>Last definition update</legend>
+							Updated: <span id="updated"></span><br>
 						</fieldset>
 					</div>
 					<h3>Page</h3>
@@ -1018,9 +1073,5 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 			</div>
 		</div>
 	</div>
-	<script>
-    var locations = [0];
-    var data = [[[0, 1, 'length'], [1, 7, 'text']],[]];
-	</script>
 </body>
 </html>
