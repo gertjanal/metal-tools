@@ -23,14 +23,23 @@
 	}
 
 	.byteWrapper {
-		min-width: 14px;
 		text-align: center;
 		margin-left: 1px;
 		margin-right: 1px;
 	}
+	#left-component.fontNormal .byteWrapper {
+		min-width: 14px;
+	}
+	#left-component.fontSmaller .byteWrapper {
+		min-width: 8px;
+	}
 
-	.spacer {
+	#left-component.fontNormal .spacer {
 		width: 4px;
+	}
+	
+	#left-component.fontSmaller .spacer {
+		width: 2px;
 	}
 
 	.linenr, .columnnr, .row:first-child {
@@ -38,10 +47,16 @@
 		color: #75abff;
 	}
 	.columnnr {
-		font-size: 10px;
 		text-align: center;
 		height: 30px;
 	}
+	#left-component.fontNormal .columnnr {
+		font-size: 10px;
+	}
+	#left-component.fontSmaller .columnnr {
+		font-size: 8px;
+	}
+
 	.linenr {
 		padding-right: 4px;
 		margin-right: 10px;
@@ -53,8 +68,12 @@
 		color: white;
 	}
 
-	.row {
+	#left-component.fontNormal .row {
 		font-size: 16px;
+	}
+	
+	#left-component.fontSmaller .row {
+		font-size: 10px;
 	}
 
 	#selectionName {
@@ -124,7 +143,6 @@
 		font-size: 9px;
 		text-align: left;
 		height: 12px;
-		top: -30px;
 		left: -1px;
 		margin: 0px;
 		padding: 0px;
@@ -133,6 +151,14 @@
 		-moz-user-select: none;      /* Firefox */
 		-ms-user-select: none;       /* Internet Explorer/Edge */
 		user-select: none;           /* Non-prefixed version, currently not supported by any browser */
+	}
+
+	#left-component.fontNormal .tab {
+		top: -30px;
+	}
+	
+	#left-component.fontSmaller .tab {
+		top: -24px;
 	}
 
 	#hexviewWrapper {
@@ -564,6 +590,16 @@ $(function() {
 			// Shift key up
 			$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
 		}
+	}).on('keypress', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code === 45) {
+			// Minus sign
+			$('#left-component').addClass('fontSmaller').removeClass('fontNormal');
+		}
+		else if (code === 43) {
+			// Plus sign
+			$('#left-component').addClass('fontNormal').removeClass('fontSmaller');
+		}
 	});
 
 	$(window).on('hashchange', function() {
@@ -987,7 +1023,7 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 <body>
 	<div class="page-container">
 		<div class="split-pane fixed-right">
-			<div class="split-pane-component highlight-def" id="left-component">
+			<div class="split-pane-component highlight-def fontSmaller" id="left-component">
 				<div id="hexviewWrapper">
 					<div id="hexview"></div>
 					<div id="asciiview"></div>
@@ -1084,6 +1120,8 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 								<li>Page down: Next page
 								<li>Page up: Previous page
 								<li>Hold shift: peek sequence instead of definition
+								<li>Minus sign: zoom out layout
+								<li>Plus sign: zoom in layout
 							</ul>
 						</fieldset>
 						<fieldset>
