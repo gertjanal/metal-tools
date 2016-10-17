@@ -419,7 +419,7 @@ $(function() {
 		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
 		$('#values #binary').text(binary.substring(binary.length - 8));
 
-		getDefinition(parseInt(position)).done(function(definition) {
+		getDefinition(position).done(function(definition) {
 			if (definition) {
 				$('#selectionName').text(getSingleName(definition[2]));
 				$('.fullname').append(path(definition[2]));
@@ -430,22 +430,31 @@ $(function() {
 
 				if (definition[1] <= 8) {
 					getData(definition[0], definition[1], function(buffer) {
-						var be = unpack(buffer, true);
-						var le = unpack(buffer, false);
-						$('#values #beDec').text(be);
-						$('#values #beHex').text(hexSpaces(be.toString(16)));
-						$('#values #beKiB').text(tgmk(be));
-
-						$('#values #leDec').text(le);
-						$('#values #leHex').text(hexSpaces(le.toString(16)));
-						$('#values #leKiB').text(tgmk(le));
+						showValues(buffer);
 					});
 				}
 				colorDef($('#selectionName'), definition, true, true, true, true);
 			}
+			else {
+				getData(position, 1, function(buffer) {
+				    showValues(buffer);
+				});
+			}
 		});
 	});
-	
+
+	function showValues(buffer) {
+		var be = unpack(buffer, true);
+		var le = unpack(buffer, false);
+		$('#values #beDec').text(be);
+		$('#values #beHex').text(hexSpaces(be.toString(16)));
+		$('#values #beKiB').text(tgmk(be));
+
+		$('#values #leDec').text(le);
+		$('#values #leHex').text(hexSpaces(le.toString(16)));
+		$('#values #leKiB').text(tgmk(le));
+	}
+
 	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
 
 	function clearSelection() {
@@ -708,12 +717,13 @@ function getDefinition(position) {
 						return;
 					}
 					else {
-					    this.resolve();
+						this.resolve();
 						return;
 					}
 				}
 			}
 		}
+		this.resolve();
 	});
 }
 
@@ -923,7 +933,7 @@ function readPage() {
 			var asciiRow = $('<div>').addClass('row');
 			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
-			for (var column = 0; column < pageColumnCount; column++, pagePosition++) {
+			for (var column = 0; column < pageColumnCount && pagePosition < buffer.length; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
 
 				var byte = buffer[pagePosition] & 0xff;
