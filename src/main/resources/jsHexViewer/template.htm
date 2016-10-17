@@ -246,6 +246,9 @@ var hover = true;
 var page = 0;
 var pageSize = 1024;
 var dataHash = 0;
+var columnCount = 32;
+var locations = [];
+var data = {};
 var dataUrl = ''; <!-- generated -->
 
 setInterval(function() {
@@ -270,21 +273,25 @@ setInterval(function() {
 	script.type = 'text/javascript';
 	script.src = dataUrl + "?time=" + (new Date().getTime());
 	head.appendChild(script);
-	
+
 	setTimeout(function() {
 		// Give the browser 250 ms to load the script file
-		if (typeof data !== 'undefined') {
+		if (typeof dataUpdate !== 'undefined') {
 			// caluculate hash over the data object.
 			// This should be sufficient for change detection.
-			var newDataHash = hash(JSON.stringify(data));
+			var newDataHash = hash(JSON.stringify(dataUpdate));
 			if (newDataHash !== dataHash) {
 				dataHash = newDataHash;
+				columnCount = columnCountUpdate;
+				locations = locationsUpdate;
+				data = dataUpdate;
+				
 				$('#updated').text(new Date());
 				dataRefresh();
 			}
 		}
-	}, 250);
-}, 500);
+	}, 500);
+}, 1000);
 
 function unpack(buffer, asBigEndian) {
 	var hex = '';
