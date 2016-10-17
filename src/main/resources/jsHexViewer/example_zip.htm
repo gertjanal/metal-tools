@@ -29,6 +29,10 @@
 		margin-right: 1px;
 	}
 
+	.spacer {
+		width: 4px;
+	}
+
 	.linenr, .columnnr, .row:first-child {
 		background-color: #292929;
 		color: #75abff;
@@ -389,30 +393,31 @@ $(function() {
 		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
 		$('#values #binary').text(binary.substring(binary.length - 8));
 
-		var definition = getDefinition(parseInt(position)); // TODO int != long
-		if (definition) {
-			$('#selectionName').text(getSingleName(definition[2]));
-			$('.fullname').append(path(definition[2]));
+		getDefinition(parseInt(position)).done(function(definition) {
+			if (definition) {
+				$('#selectionName').text(getSingleName(definition[2]));
+				$('.fullname').append(path(definition[2]));
 
-			$('#values #sizeDec').text(definition[1]);
-			$('#values #sizeHex').text(definition[1].toString(16));
-			$('#values #sizeKiB').text(tgmk(definition[1]));
+				$('#values #sizeDec').text(definition[1]);
+				$('#values #sizeHex').text(definition[1].toString(16));
+				$('#values #sizeKiB').text(tgmk(definition[1]));
 
-			if (definition[1] <= 8) {
-				getData(definition[0], definition[1], function(buffer) {
-					var be = unpack(buffer, true);
-					var le = unpack(buffer, false);
-					$('#values #beDec').text(be);
-					$('#values #beHex').text(hexSpaces(be.toString(16)));
-					$('#values #beKiB').text(tgmk(be));
+				if (definition[1] <= 8) {
+					getData(definition[0], definition[1], function(buffer) {
+						var be = unpack(buffer, true);
+						var le = unpack(buffer, false);
+						$('#values #beDec').text(be);
+						$('#values #beHex').text(hexSpaces(be.toString(16)));
+						$('#values #beKiB').text(tgmk(be));
 
-					$('#values #leDec').text(le);
-					$('#values #leHex').text(hexSpaces(le.toString(16)));
-					$('#values #leKiB').text(tgmk(le));
-				});
+						$('#values #leDec').text(le);
+						$('#values #leHex').text(hexSpaces(le.toString(16)));
+						$('#values #leKiB').text(tgmk(le));
+					});
+				}
+				colorDef($('#selectionName'), definition, true, true, true, true);
 			}
-			colorDef($('#selectionName'), definition, true, true, true, true);
-		}
+		});
 	});
 	
 	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
@@ -436,44 +441,46 @@ $(function() {
 	});
 
 	$('#hexview').on('click', '.defTab', function(e) {
+	    var tab = $(this);
 		var position = parseInt($(this).attr('position'));
-		var definition = getDefinition(position);
-		if (!deleteTabTag(position)) {
-			// Tag tab
-			tags.push(position);
-			$(this).addClass('tagged');
-			var hexValue = $('<span>');
-			colorDef(hexValue, definition, true, true, true, true);
+		getDefinition(position).done(function(definition) {
+			if (!deleteTabTag(position)) {
+				// Tag tab
+				tags.push(position);
+				tab.addClass('tagged');
+				var hexValue = $('<span>');
+				colorDef(hexValue, definition, true, true, true, true);
 
-			var legend = $('<legend>').text(getSingleName(definition[2]));
-			colorDef(legend, definition, true, true, true, true);
-			
-			$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
-				.addClass('ui-widget').addClass('ui-widget-content')
-				.append(legend)
-				.append('offset: ').append(position).append('<br>')
-				.append('page: ').append(page).append('<br>')
-				.append('path: ').append(path(definition[2])).append('<br>')
-				.append('hex: ').append(hexValue).append('<br>')
-				.append($('<button>').addClass('defTabJump').attr('page', page).text('Jump').button())
-				.append($('<button>').addClass('defTabDelete').attr('position', position).text('Delete').button()));
-			
-			var max = 12;
-			getData(definition[0], Math.min(definition[1], max), function(buffer) {
-				hexValue.empty();
-				$.each(buffer, function(index, value) {
-					var hex = toHex(value & 0xff);
-					if (index % 2 == 0 && index > 0) {
-						hexValue.append('&nbsp;');
+				var legend = $('<legend>').text(getSingleName(definition[2]));
+				colorDef(legend, definition, true, true, true, true);
+
+				$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
+					.addClass('ui-widget').addClass('ui-widget-content')
+					.append(legend)
+					.append('offset: ').append(position).append('<br>')
+					.append('page: ').append(page).append('<br>')
+					.append('path: ').append(path(definition[2])).append('<br>')
+					.append('hex: ').append(hexValue).append('<br>')
+					.append($('<button>').addClass('defTabJump').attr('page', page).text('Jump').button())
+					.append($('<button>').addClass('defTabDelete').attr('position', position).text('Delete').button()));
+
+				var max = 12;
+				getData(definition[0], Math.min(definition[1], max), function(buffer) {
+					hexValue.empty();
+					$.each(buffer, function(index, value) {
+						var hex = toHex(value & 0xff);
+						if (index % 2 == 0 && index > 0) {
+							hexValue.append('&nbsp;');
+						}
+						hexValue.append(hex);
+					});
+					if (definition[1] > max) {
+						hexValue.append('...');
 					}
-					hexValue.append(hex);
 				});
-				if (definition[1] > max) {
-					hexValue.append('...');
-				}
-			});
-		}
-		colorTab($(this), definition);
+			}
+			colorTab(tab, definition);
+		});
 	});
 	
 	function deleteTabTag(position) {
@@ -498,8 +505,9 @@ $(function() {
 		$('.defTab').each(function() {
 			var tabPosition = parseInt($(this).attr('position'));
 			if (tabPosition === position) {
-				var definition = getDefinition(position);
-				colorTab($(this), definition);
+				getDefinition(position).done(function(definition) {
+					colorTab($(this), definition);
+				});
 			}
 		});
 	});
@@ -629,42 +637,48 @@ function tgmk(x) {
 
 var lastDefinition;
 function getDefinition(position) {
-	if (lastDefinition && inRange(lastDefinition, position)) {
-		// Instead of reading all rows above to check if this is part of a multi-row def,
-		// just cache the previous definition and check again.
-		// Note that this only works for drawing the highlights, not for a mouseover event.
-		return lastDefinition;
-	}
-
-	var location = Math.floor(position / columnCount);
-	var rowIndex = $.inArray(location, locations);
-	if (rowIndex !== -1) {
-		var row = data[rowIndex];
-		for (var i = 0; i < row.length; i++) {
-			var definition = row[i];
-			if (inRange(definition, position)) {
-				lastDefinition = definition;
-				return definition;
-			}
+	return new $.Deferred(function() {
+		if (lastDefinition && inRange(lastDefinition, position)) {
+			// Instead of reading all rows above to check if this is part of a multi-row def,
+			// just cache the previous definition and check again.
+			// Note that this only works for drawing the highlights, not for a mouseover event.
+			this.resolve(lastDefinition);
+			return;
 		}
-	}
-	else {
-		// No definition found, try to find the last definition for this position.
-		// It might fall in range. This occurs when a definition is over multiple pages.
-		for (var i = 0; i < locations.length; i++) {
-			if (locations[i] > location) {
-				var row = data[Math.max(0, i - 1)];
-				var definition = row[row.length - 1];
+	
+		var location = Math.floor(position / columnCount);
+		var rowIndex = $.inArray(location, locations);
+		if (rowIndex !== -1) {
+			var row = data[rowIndex];
+			for (var i = 0; i < row.length; i++) {
+				var definition = row[i];
 				if (inRange(definition, position)) {
 					lastDefinition = definition;
-					return definition;
-				}
-				else {
+					this.resolve(definition);
 					return;
 				}
 			}
 		}
-	}
+		else {
+			// No definition found, try to find the last definition for this position.
+			// It might fall in range. This occurs when a definition is over multiple pages.
+			for (var i = 0; i < locations.length; i++) {
+				if (locations[i] > location) {
+					var row = data[Math.max(0, i - 1)];
+					var definition = row[row.length - 1];
+					if (inRange(definition, position)) {
+						lastDefinition = definition;
+						this.resolve(definition);
+						return;
+					}
+					else {
+					    this.resolve();
+						return;
+					}
+				}
+			}
+		}
+	});
 }
 
 function inRange(definition, position) {
@@ -676,7 +690,7 @@ function inRange(definition, position) {
 function isStartOrEnd(definition, position) {
 	var offset = definition[0];
 	var size = definition[1];
-	return position === offset || position === offset + size;
+	return position === offset || position === offset + size - 1;
 }
 
 function hsv2rgb(h, s, v) {
@@ -841,7 +855,6 @@ function readPage() {
 		var pagePosition = 0;
 		$('#hexview').empty();
 		$('#asciiview').empty();
-		
 
 		var hexRow = $('<div>').addClass('row').append($('<div>').addClass('linenr'));
 		$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
@@ -850,13 +863,12 @@ function readPage() {
 		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
 		for (var column = 0; column < columnCount; column++) {
-			if (column % 2 == 0) {
-				hexRow.append($('<div>').addClass('spacer'));
-			}
 			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
 			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+			if (column % 2 !== 0) {
+				hexRow.append($('<span>').addClass('spacer'));
+			}
 		}
-		
 
 		var pageColumnCount = columnCount;
 		if (buffer.length - pagePosition < columnCount) {
@@ -864,7 +876,7 @@ function readPage() {
 			pageColumnCount = buffer.length - pagePosition;
 		}
 
-		var prevParentName;
+		var promise = new $.Deferred();
 		for (var row = 0; pagePosition < buffer.length; row++) {
 			var hexNr = (pagePosition + pageOffset).toString(16);
 			var hexRow = $('<div>').addClass('row')
@@ -877,63 +889,68 @@ function readPage() {
 
 			for (var column = 0; column < pageColumnCount; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
-				var definition = getDefinition(filePosition);
-				var parentName = getParentName(definition);
 
 				var byte = buffer[pagePosition] & 0xff;
-				var hex = toHex(byte);
-
-				if (column % 2 == 0) {
-					var spacer = $('<span>').addClass('spacer').html('&nbsp;');
-					if (definition) {
-						if (!isStartOrEnd(definition, filePosition)) {
-							colorDef(spacer, definition, true, false, true, false);
-							colorSeq(spacer, parentName, true, false, true, false);
-						}
-					}
-					hexRow.append(spacer);
-				}
-
-				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(hex);
+				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(toHex(byte));
 				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
 				hexRow.append(hexByteWrapper);
-
+			
 				var character = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '\u00B7';
 				var asciiByte = $('<span>').addClass('byte').attr('position', filePosition).text(character);
 				var asciiByteWrapper = $('<span>').addClass('byteWrapper').append(asciiByte);
 				asciiRow.append(asciiByteWrapper);
 
-				if (definition) {
-					var left = filePosition === definition[0];
-					var right = filePosition === definition[0] + definition[1] - 1;
-					colorDef(hexByteWrapper, definition, true, right, true, left);
-					colorSeq(hexByteWrapper, parentName, true, right, true, left);
-
-					colorDef(asciiByteWrapper, definition, true, right, true, left);
-					colorSeq(asciiByteWrapper, parentName, true, right, true, left);
-
-					if (left) {
-						var tabAnchor = $('<div>').addClass('tabAnchor');
-						var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
-						if (tags.indexOf(definition[0]) !== -1) {
-							defTab.addClass('tagged');
-						}
-						
-						colorTab(defTab, definition[2], 'def');
-						tabAnchor.append(defTab);
-						
-						if (prevParentName !== parentName) {
-							var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
-							colorTab(seqTab, parentName, 'seq');
-							prevParentName = parentName;
-							tabAnchor.append(seqTab);
-						}
-						hexByteWrapper.append(tabAnchor);
-					}
+				var spacer;
+				if (column % 2 === 1) {
+					spacer = $('<span>').addClass('spacer');
+					hexRow.append(spacer);
 				}
+				
+				promise.then(highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper));
 			}
 		}
+		promise.resolve();
 		$('html').removeClass('wait'); // Remove wait cursor
+	});
+}
+
+var prevParentName;
+function highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper) {
+	return getDefinition(filePosition).done(function(definition) {
+		if (definition) {
+			var parentName = getParentName(definition);
+			if (spacer && !isStartOrEnd(definition, filePosition)) {
+				colorDef(spacer, definition, true, false, true, false);
+				colorSeq(spacer, parentName, true, false, true, false);
+			}
+
+			var left = filePosition === definition[0];
+			var right = filePosition === definition[0] + definition[1] - 1;
+			colorDef(hexByteWrapper, definition, true, right, true, left);
+			colorSeq(hexByteWrapper, parentName, true, right, true, left);
+
+			colorDef(asciiByteWrapper, definition, true, right, true, left);
+			colorSeq(asciiByteWrapper, parentName, true, right, true, left);
+
+			if (left) {
+				var tabAnchor = $('<div>').addClass('tabAnchor');
+				var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
+				if (tags.indexOf(definition[0]) !== -1) {
+					defTab.addClass('tagged');
+				}
+				
+				colorTab(defTab, definition[2], 'def');
+				tabAnchor.append(defTab);
+				
+				if (prevParentName !== parentName) {
+					var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
+					colorTab(seqTab, parentName, 'seq');
+					prevParentName = parentName;
+					tabAnchor.append(seqTab);
+				}
+				hexByteWrapper.append(tabAnchor);
+			}
+		}
 	});
 }
 
