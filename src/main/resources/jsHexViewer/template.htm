@@ -29,6 +29,10 @@
 		margin-right: 1px;
 	}
 
+	.spacer {
+		width: 4px;
+	}
+
 	.linenr, .columnnr, .row:first-child {
 		background-color: #292929;
 		color: #75abff;
@@ -633,7 +637,7 @@ function tgmk(x) {
 
 var lastDefinition;
 function getDefinition(position) {
-	var deferred = new $.Deferred(function() {
+	return new $.Deferred(function() {
 		if (lastDefinition && inRange(lastDefinition, position)) {
 			// Instead of reading all rows above to check if this is part of a multi-row def,
 			// just cache the previous definition and check again.
@@ -674,8 +678,7 @@ function getDefinition(position) {
 				}
 			}
 		}
-    });
-	return deferred.promise();
+	});
 }
 
 function inRange(definition, position) {
@@ -860,13 +863,12 @@ function readPage() {
 		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
 		for (var column = 0; column < columnCount; column++) {
-			if (column % 2 === 0 && column !== 0) {
-				hexRow.append($('<div>').addClass('spacer'));
-			}
 			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
 			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+			if (column % 2 !== 0) {
+				hexRow.append($('<span>').addClass('spacer'));
+			}
 		}
-		
 
 		var pageColumnCount = columnCount;
 		if (buffer.length - pagePosition < columnCount) {
@@ -900,11 +902,11 @@ function readPage() {
 
 				var spacer;
 				if (column % 2 === 1) {
-					spacer = $('<span>').addClass('spacer').html('&nbsp;');
+					spacer = $('<span>').addClass('spacer');
 					hexRow.append(spacer);
 				}
 				
-				promise.then(addByte(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper));
+				promise.then(highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper));
 			}
 		}
 		promise.resolve();
@@ -913,44 +915,42 @@ function readPage() {
 }
 
 var prevParentName;
-function addByte(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper) {
-	promise.then(function() {
-		return getDefinition(filePosition).done(function(definition) {
-			if (definition) {
-				var parentName = getParentName(definition);
-				if (spacer && !isStartOrEnd(definition, filePosition)) {
-					colorDef(spacer, definition, true, false, true, false);
-					colorSeq(spacer, parentName, true, false, true, false);
-				}
-
-				var left = filePosition === definition[0];
-				var right = filePosition === definition[0] + definition[1] - 1;
-				colorDef(hexByteWrapper, definition, true, right, true, left);
-				colorSeq(hexByteWrapper, parentName, true, right, true, left);
-
-				colorDef(asciiByteWrapper, definition, true, right, true, left);
-				colorSeq(asciiByteWrapper, parentName, true, right, true, left);
-
-				if (left) {
-					var tabAnchor = $('<div>').addClass('tabAnchor');
-					var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
-					if (tags.indexOf(definition[0]) !== -1) {
-						defTab.addClass('tagged');
-					}
-					
-					colorTab(defTab, definition[2], 'def');
-					tabAnchor.append(defTab);
-					
-					if (prevParentName !== parentName) {
-						var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
-						colorTab(seqTab, parentName, 'seq');
-						prevParentName = parentName;
-						tabAnchor.append(seqTab);
-					}
-					hexByteWrapper.append(tabAnchor);
-				}
+function highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper) {
+	return getDefinition(filePosition).done(function(definition) {
+		if (definition) {
+			var parentName = getParentName(definition);
+			if (spacer && !isStartOrEnd(definition, filePosition)) {
+				colorDef(spacer, definition, true, false, true, false);
+				colorSeq(spacer, parentName, true, false, true, false);
 			}
-		});
+
+			var left = filePosition === definition[0];
+			var right = filePosition === definition[0] + definition[1] - 1;
+			colorDef(hexByteWrapper, definition, true, right, true, left);
+			colorSeq(hexByteWrapper, parentName, true, right, true, left);
+
+			colorDef(asciiByteWrapper, definition, true, right, true, left);
+			colorSeq(asciiByteWrapper, parentName, true, right, true, left);
+
+			if (left) {
+				var tabAnchor = $('<div>').addClass('tabAnchor');
+				var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
+				if (tags.indexOf(definition[0]) !== -1) {
+					defTab.addClass('tagged');
+				}
+				
+				colorTab(defTab, definition[2], 'def');
+				tabAnchor.append(defTab);
+				
+				if (prevParentName !== parentName) {
+					var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
+					colorTab(seqTab, parentName, 'seq');
+					prevParentName = parentName;
+					tabAnchor.append(seqTab);
+				}
+				hexByteWrapper.append(tabAnchor);
+			}
+		}
 	});
 }
 
