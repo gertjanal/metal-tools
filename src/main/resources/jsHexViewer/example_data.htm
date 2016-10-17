@@ -426,26 +426,30 @@ $(function() {
 				$('#selectionName').text(getSingleName(definition[2]));
 				$('.fullname').append(path(definition[2]));
 
-				$('#values #sizeDec').text(definition[1]);
-				$('#values #sizeHex').text(definition[1].toString(16));
-				$('#values #sizeKiB').text(tgmk(definition[1]));
-
+				setValuesSize(definition[1]);
 				if (definition[1] <= 8) {
 					getData(definition[0], definition[1], function(buffer) {
-						showValues(buffer);
+					    setValuesValue(buffer);
 					});
 				}
 				colorDef($('#selectionName'), definition, true, true, true, true);
 			}
 			else {
+				setValuesSize(1);
 				getData(position, 1, function(buffer) {
-				    showValues(buffer);
+				    setValuesValue(buffer);
 				});
 			}
 		});
 	});
 
-	function showValues(buffer) {
+	function setValuesSize(size) {
+		$('#values #sizeDec').text(size);
+		$('#values #sizeHex').text(size.toString(16));
+		$('#values #sizeKiB').text(tgmk(size));
+	}
+
+	function setValuesValue(buffer) {
 		var be = unpack(buffer, true);
 		var le = unpack(buffer, false);
 		$('#values #beDec').text(be);
