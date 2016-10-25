@@ -21,7 +21,7 @@
 	.byteWrapper, .spacer, .spacerRow {
 		cursor: text;
 	}
-
+	
 	.byteWrapper {
 		text-align: center;
 		margin-left: 1px;
@@ -63,7 +63,12 @@
 		text-align: right;
 	}
 
-	.selected {
+	.byte.selected,
+	.byte::-moz-selection {
+		background-color: #096ac8;
+		color: white;
+	}
+	.byte::selection {
 		background-color: #096ac8;
 		color: white;
 	}
