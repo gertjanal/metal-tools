@@ -38,6 +38,7 @@ import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
+import io.parsingdata.metal.formats.vhdx.VHDX;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.EnvironmentFactory;
 import io.parsingdata.metal.util.InMemoryByteStream;
@@ -97,6 +98,22 @@ public class JsHexViewerTest {
         assertTrue(result.succeeded);
 
         assertGenerate(result, "example_zip");
+    }
+
+    @Test
+    public void testGenerateVHDX() throws Exception {
+        byte[] data;
+        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/NTFSdynamic.vhdx");
+             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            IOUtils.copy(input, output);
+            data = output.toByteArray();
+        }
+
+        final Environment env = new Environment(new InMemoryByteStream(data));
+        final ParseResult result = VHDX.VHDX.parse(env, le());
+        assertTrue(result.succeeded);
+
+        assertGenerate(result, "example_vhdx");
     }
 
     private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
