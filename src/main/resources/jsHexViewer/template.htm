@@ -2,16 +2,25 @@
 <head>
 <link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
 <link rel="stylesheet" href="libs/hue/hue.css">
+<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Hind+Vadodara">
 <style>
 	html.wait, html.wait * {
 		cursor: wait !important;
 	}
 
+	body,
+	.ui-widget,
+	.ui-widget input,
+	.ui-widget select,
+	.ui-widget button,
+	.ui-widget textarea {
+		font-family: 'Hind Vadodara', sans-serif;
+	}
+	
 	body {
-		font-family: Verdana;
-		margin: 0px;
-		background-color: rgb(51, 51, 51);
 		font-size: 11px;
+		background-color: rgb(51, 51, 51);
+		margin: 0px;
 	}
 
 	.byteWrapper, .linenr, .columnnr, .spacer {
@@ -91,7 +100,7 @@
 	}
 
 	.spacerRow {
-		height: 5px;
+		height: 2px;
 	}
 
 	#hexview, #asciiview {
@@ -158,8 +167,8 @@
 
 	#left-component.fontNormal .tab {
 		font-size: 9px;
-		height: 12px;
-		top: -30px;
+		height: 13px;
+		top: -32px;
 	}
 	
 	#left-component.fontSmaller .tab {
