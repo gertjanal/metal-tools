@@ -53,10 +53,12 @@ public class Region {
         def("EntryCount", UINT32),
         nod("Reserved", con(UINT32)));
 
-    private static final Token REGION_TABLE_ENTRY = cho(
-        regionTableEntry("bat", "2dc27766-f623-4200-9d64-115e9bfd4a08", nod(con(0))),
-        regionTableEntry("metadata", "8b7ca206-4790-4b9a-b8fe-575f050f886e", METADATA_TABLE_HEADER),
-        nod(con(GUID + UINT64 + UINT32 + UINT32))); // Unknown region, allowed according to spec
+    private static Token regionTableEntry(final boolean resolveData) {
+        return cho(
+            regionTableEntry("bat", "2dc27766-f623-4200-9d64-115e9bfd4a08", nod(con(0))),
+            regionTableEntry("metadata", "8b7ca206-4790-4b9a-b8fe-575f050f886e", resolveData ? METADATA_TABLE_HEADER : nod(con(0))),
+            nod(con(GUID + UINT64 + UINT32 + UINT32))); // Unknown region, allowed according to spec
+    }
 
     private static Token regionTableEntry(final String name, final String guid, final Token token) {
         return seq(name,
@@ -78,7 +80,9 @@ public class Region {
                 last(ref(name + ".FileOffset"))));
     }
 
-    public static final Token REGION = seq(
-        REGION_TABLE_HEADER,
-        repn(REGION_TABLE_ENTRY, last(ref("regionTableHeader.EntryCount"))));
+    public static Token region(final boolean resolveData) {
+        return seq(
+            REGION_TABLE_HEADER,
+            repn(regionTableEntry(resolveData), last(ref("regionTableHeader.EntryCount"))));
+    }
 }

@@ -28,7 +28,7 @@ import static io.parsingdata.metal.Shorthand.sub;
 import static io.parsingdata.metal.formats.vhdx.FileIdentifier.FILE_IDENTIFIER;
 import static io.parsingdata.metal.formats.vhdx.Header.header;
 import static io.parsingdata.metal.formats.vhdx.Log.LOGS;
-import static io.parsingdata.metal.formats.vhdx.Region.REGION;
+import static io.parsingdata.metal.formats.vhdx.Region.region;
 
 import io.parsingdata.metal.token.Token;
 
@@ -43,13 +43,13 @@ public class VHDX {
         seq(
             sub("header", header(expTrue()), con(0x10000)), // 64KiB
             sub("oldHeader", header(ltNum(last(ref("header.SequenceNumber")))), con(0x20000)), // 128KiB
-            sub("region", REGION, con(0x30000)), // 192 KiB
-            sub("oldRegion", REGION, con(0x40000))), // 256 KiB
+            sub("region", region(true), con(0x30000)), // 192 KiB
+            sub("oldRegion", region(false), con(0x40000))), // 256 KiB
         seq(
             sub("oldHeader", header(expTrue()), con(0x10000)), // 64KiB
             sub("header", header(gtNum(last(ref("oldHeader.SequenceNumber")))), con(0x20000)), // 128KiB
-            sub("oldRegion", REGION, con(0x30000)), // 192 KiB
-            sub("region", REGION, con(0x40000)))); // 256 KiB
+            sub("oldRegion", region(false), con(0x30000)), // 192 KiB
+            sub("region", region(true), con(0x40000)))); // 256 KiB
 
     public static final Token VHDX = seq(
         FILE_IDENTIFIER,
