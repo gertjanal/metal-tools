@@ -89,6 +89,10 @@
 		height: 5px;
 	}
 
+	.row.emptyRow .byte {
+		font-size: 8px;
+	}
+
 	#hexview, #asciiview {
 		display: table;
 		color: white;
@@ -939,10 +943,12 @@ function readPage() {
 			var asciiRow = $('<div>').addClass('row');
 			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
+			var emptyRow = new Boolean(true);
 			for (var column = 0; column < pageColumnCount && pagePosition < buffer.length; column++, pagePosition++) {
 				var filePosition = pageOffset + pagePosition;
 
 				var byte = buffer[pagePosition] & 0xff;
+				emptyRow = emptyRow && byte === 0;
 				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(toHex(byte));
 				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
 				hexRow.append(hexByteWrapper);
@@ -958,7 +964,10 @@ function readPage() {
 					hexRow.append(spacer);
 				}
 				
-				promise.then(highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper));
+				promise.then(highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper, emptyRow));
+			}
+			if (emptyRow) {
+				hexRow.find('.byte').text('**');
 			}
 		}
 		promise.resolve();
@@ -967,7 +976,7 @@ function readPage() {
 }
 
 var prevParentName;
-function highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper) {
+function highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper, hexRow, asciiRow) {
 	return getDefinition(filePosition).done(function(definition) {
 		if (definition) {
 			var parentName = getParentName(definition);
