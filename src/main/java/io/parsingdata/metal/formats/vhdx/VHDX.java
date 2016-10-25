@@ -25,6 +25,7 @@ import static io.parsingdata.metal.Shorthand.ltNum;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
+import static io.parsingdata.metal.formats.vhdx.Bat.BAT;
 import static io.parsingdata.metal.formats.vhdx.FileIdentifier.FILE_IDENTIFIER;
 import static io.parsingdata.metal.formats.vhdx.Header.header;
 import static io.parsingdata.metal.formats.vhdx.Log.LOGS;
@@ -54,5 +55,6 @@ public class VHDX {
     public static final Token VHDX = seq(
         FILE_IDENTIFIER,
         HEADERS_REGIONS,
-        LOGS); // BAT is not needed as it is calculated on-read in the VHDXstream code
+        LOGS,
+        BAT);
 }
