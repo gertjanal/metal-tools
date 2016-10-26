@@ -31,6 +31,8 @@ import static io.parsingdata.metal.formats.vhdx.Header.header;
 import static io.parsingdata.metal.formats.vhdx.Log.LOGS;
 import static io.parsingdata.metal.formats.vhdx.Region.region;
 
+import io.parsingdata.metal.encoding.ByteOrder;
+import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.token.Token;
 
 /**
@@ -40,6 +42,7 @@ import io.parsingdata.metal.token.Token;
  * @author Netherlands Forensic Institute.
  */
 public class VHDX {
+    private static final Encoding ENC = new Encoding(ByteOrder.LITTLE_ENDIAN);
     private static final Token HEADERS_REGIONS = cho(
         seq(
             sub("header", header(expTrue()), con(0x10000)), // 64KiB
@@ -52,7 +55,7 @@ public class VHDX {
             sub("oldRegion", region(false), con(0x30000)), // 192 KiB
             sub("region", region(true), con(0x40000)))); // 256 KiB
 
-    public static final Token VHDX = seq(
+    public static final Token VHDX = seq(ENC,
         FILE_IDENTIFIER,
         HEADERS_REGIONS,
         LOGS,
