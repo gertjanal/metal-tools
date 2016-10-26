@@ -24,11 +24,12 @@ import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.util.EncodingFactory.le;
+import static io.parsingdata.metal.util.EnvironmentFactory.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -40,8 +41,6 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.formats.vhdx.VHDX;
 import io.parsingdata.metal.token.Token;
-import io.parsingdata.metal.util.EnvironmentFactory;
-import io.parsingdata.metal.util.InMemoryByteStream;
 
 public class JsHexViewerTest {
 
@@ -52,7 +51,7 @@ public class JsHexViewerTest {
 
     @Test
     public void testGenerateData() throws Exception {
-        final Environment env = EnvironmentFactory.stream(7, 'G', 'e', 'r', 't', 'j', 'a', 'n');
+        final Environment env = stream(7, 'G', 'e', 'r', 't', 'j', 'a', 'n');
         final ParseResult result = STRING.parse(env, le());
 
         assertTrue(result.succeeded);
@@ -70,14 +69,7 @@ public class JsHexViewerTest {
 
     @Test
     public void testGeneratePng() throws Exception {
-        byte[] data;
-        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/screenshot_data.png");
-             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            IOUtils.copy(input, output);
-            data = output.toByteArray();
-        }
-
-        final Environment env = new Environment(new InMemoryByteStream(data));
+        final Environment env = environment("/jsHexViewer/screenshot_data.png");
         final ParseResult result = PNG.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
@@ -86,14 +78,7 @@ public class JsHexViewerTest {
 
     @Test
     public void testGenerateZip() throws Exception {
-        byte[] data;
-        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/data.zip");
-             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            IOUtils.copy(input, output);
-            data = output.toByteArray();
-        }
-
-        final Environment env = new Environment(new InMemoryByteStream(data));
+        final Environment env = environment("/jsHexViewer/data.zip");
         final ParseResult result = ZIP.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
@@ -102,18 +87,15 @@ public class JsHexViewerTest {
 
     @Test
     public void testGenerateVHDX() throws Exception {
-        byte[] data;
-        try (final InputStream input = getClass().getResourceAsStream("/jsHexViewer/NTFSdynamic.vhdx");
-             final ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            IOUtils.copy(input, output);
-            data = output.toByteArray();
-        }
-
-        final Environment env = new Environment(new InMemoryByteStream(data));
+        final Environment env = environment("/jsHexViewer/NTFSdynamic.vhdx");
         final ParseResult result = VHDX.VHDX.parse(env, le());
         assertTrue(result.succeeded);
 
         assertGenerate(result, "example_vhdx");
+    }
+
+    private Environment environment(final String resource) throws IOException, URISyntaxException {
+        return stream(getClass().getResource(resource).toURI());
     }
 
     private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
