@@ -29,5 +29,6 @@ public void generate() throws Exception {
     if (!result.succeeded) {
         fail("Parse failed");
     }
+    JsHexViewer.generate(result.environment.order, "zip");
 }
 ```
