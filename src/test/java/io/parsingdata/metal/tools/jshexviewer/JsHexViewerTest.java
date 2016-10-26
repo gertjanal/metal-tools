@@ -88,7 +88,7 @@ public class JsHexViewerTest {
     @Test
     public void testGenerateVHDX() throws Exception {
         final Environment env = environment("/jsHexViewer/NTFSdynamic.vhdx");
-        final ParseResult result = VHDX.VHDX.parse(env, le());
+        final ParseResult result = VHDX.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
         assertGenerate(result, "example_vhdx");

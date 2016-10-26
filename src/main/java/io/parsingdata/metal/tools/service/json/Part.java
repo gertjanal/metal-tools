@@ -1,4 +1,4 @@
-package io.parsingdata.metal.tools.service;
+package io.parsingdata.metal.tools.service.json;
 
 import java.math.BigInteger;
 import java.util.UUID;

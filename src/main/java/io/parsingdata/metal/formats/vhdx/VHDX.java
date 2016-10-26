@@ -55,7 +55,7 @@ public class VHDX {
             sub("oldRegion", region(false), con(0x30000)), // 192 KiB
             sub("region", region(true), con(0x40000)))); // 256 KiB
 
-    public static final Token VHDX = seq(ENC,
+    public static final Token FORMAT = seq(ENC,
         FILE_IDENTIFIER,
         HEADERS_REGIONS,
         LOGS,

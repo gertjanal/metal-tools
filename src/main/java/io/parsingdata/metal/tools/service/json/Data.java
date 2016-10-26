@@ -1,4 +1,4 @@
-package io.parsingdata.metal.tools.service;
+package io.parsingdata.metal.tools.service.json;
 
 public class Data extends Part {
     private byte[] _buffer;

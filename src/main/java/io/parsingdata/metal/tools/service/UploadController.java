@@ -1,7 +1,5 @@
 package io.parsingdata.metal.tools.service;
 
-import static io.parsingdata.metal.Shorthand.cho;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -21,21 +19,25 @@ import org.springframework.web.bind.annotation.RestController;
 import io.parsingdata.metal.data.ByteStream;
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseResult;
-import io.parsingdata.metal.format.PNG;
-import io.parsingdata.metal.format.ZIP;
-import io.parsingdata.metal.formats.vhdx.VHDX;
-import io.parsingdata.metal.token.Token;
+import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.tools.jshexviewer.JsHexViewer;
+import io.parsingdata.metal.tools.service.json.CreateFile;
+import io.parsingdata.metal.tools.service.json.Data;
+import io.parsingdata.metal.tools.service.json.Part;
 
 @RestController
 public class UploadController {
-    private static final Token FILES = cho(PNG.FORMAT, ZIP.FORMAT, VHDX.VHDX);
     private final Map<Part, byte[]> _queue = new HashMap<>();
     private final Map<UUID, CreateFile> _files = new HashMap<>();
 
     @Autowired
     private SimpMessagingTemplate _messagingTemplate;
 
+    /**
+     * Initiate a new data upload.
+     * @param request Request with file name and size
+     * @return a upload session uuid
+     */
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public UUID start(@RequestBody final CreateFile request) {
         final UUID id = UUID.randomUUID();
@@ -44,6 +46,10 @@ public class UploadController {
         return id;
     }
 
+    /**
+     * Start the parsing of a upload session, let this controller call the client for bytes.
+     * @param id the upload uuid
+     */
     @MessageMapping("/data/{id}/start")
     public void ready(@DestinationVariable final UUID id) {
         final Thread t = new Thread(new Runnable() {
@@ -65,9 +71,9 @@ public class UploadController {
                         do {
                             try {
                                 Thread.sleep(10);
-                            }
-                            catch (final InterruptedException e) {
+                            } catch (final InterruptedException e) {
                                 e.printStackTrace();
+                                return 0;
                             }
                         } while ((data = _queue.remove(part)) == null);
                         System.out.println("Received buffer " + offset + ", " + data.length);
@@ -80,7 +86,7 @@ public class UploadController {
                 final Environment env = new Environment(stream);
 
                 try {
-                    final ParseResult result = FILES.parse(env, null);
+                    final ParseResult result = Tokens.SUPPORTED.parse(env, new Encoding());
                     System.out.println("Read " + _read + " bytes of " + _files.get(id).getSize());
                     if (result.succeeded) {
                         System.out.println("generating for " + id);
@@ -88,17 +94,22 @@ public class UploadController {
                         JsHexViewer.generate(result.environment.order, id.toString(), new File(root, "static"), false);
                     }
                     _messagingTemplate.convertAndSend("/topic/data/" + id + "/done", result.succeeded);
-                }
-                catch (final Exception e1) {
-                    e1.printStackTrace();
+                } catch (final Throwable t) {
+                    t.printStackTrace();
+                    _messagingTemplate.convertAndSend("/topic/data/" + id + "/done", false);
                 }
             }
         });
         t.start();
     }
 
+    /**
+     * Receive buffer response from client.
+     * @param id The id of the processing upload
+     * @param data The requested buffer
+     */
     @MessageMapping("/data/{id}/response")
-    public void greeting(@DestinationVariable final UUID id, final Data data) throws Exception {
+    public void greeting(@DestinationVariable final UUID id, final Data data) {
         _queue.put(new Part(data, id), data.getBuffer());
     }
 }

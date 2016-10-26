@@ -21,27 +21,25 @@ function start(fileInput) {
                     window.location = '/' + id + '.htm';
                 }
                 else {
-                    alert("Parse failed");
+                    alert('Parse failed');
                 }
             });
 
             stompClient.subscribe('/topic/data/' + id + "/request", function (message) {
                 var request = JSON.parse(message.body);
                 var offset = parseInt(request.offset, 16);
-                console.log('requested ' + request.offset + ', so ' + offset +  ' and size ' + request.size);
                 var size = request.size;
 
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     var buffer = e.target.result.split(',')[1];
-                    console.log('sending buffer ' + buffer);
                     var data = {
                         offset: request.offset,
                         size: request.size,
                         buffer: buffer
                     }
                     $('#progressbar').progressbar( "option", "value", offset);
-                    console.log('ready, sending data... ' + JSON.stringify(data));
+                    $('#status').text('Processing data request: offset ' + offset + ', size ' + size);
                     stompClient.send("/metal/data/" + id + "/response", {}, JSON.stringify(data));
                 };
                 var slice = file.slice(offset, offset + size);
