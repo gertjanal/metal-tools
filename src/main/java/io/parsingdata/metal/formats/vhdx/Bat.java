@@ -22,15 +22,23 @@ import static io.parsingdata.metal.Shorthand.con;
 import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.div;
 import static io.parsingdata.metal.Shorthand.last;
-import static io.parsingdata.metal.Shorthand.mod;
 import static io.parsingdata.metal.Shorthand.mul;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.sub;
 import static io.parsingdata.metal.formats.vhdx.Constants.UINT64;
+import static io.parsingdata.metal.formats.vhdx.Metadata.BLOCK_SIZE_NAME;
+import static io.parsingdata.metal.formats.vhdx.Metadata.LOGICAL_SECTOR_SIZE_NAME;
+import static io.parsingdata.metal.formats.vhdx.Metadata.VIRTUAL_DISK_SIZE_NAME;
+import static io.parsingdata.metal.formats.vhdx.Region.FILE_OFFSET_NAME;
 
+import io.parsingdata.metal.data.Environment;
+import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.expression.comparison.ComparisonExpression;
+import io.parsingdata.metal.expression.value.ConstantFactory;
+import io.parsingdata.metal.expression.value.OptionalValue;
+import io.parsingdata.metal.expression.value.UnaryValueExpression;
 import io.parsingdata.metal.expression.value.Value;
 import io.parsingdata.metal.expression.value.ValueExpression;
 import io.parsingdata.metal.token.Token;
@@ -42,7 +50,6 @@ import io.parsingdata.metal.token.Token;
  * @author Netherlands Forensic Institute.
  */
 public class Bat {
-
     private static final int PAYLOAD_BLOCK_NOT_PRESENT = 0;
     private static final int PAYLOAD_BLOCK_UNDEFINED = 1;
     private static final int PAYLOAD_BLOCK_ZERO = 2;
@@ -65,44 +72,63 @@ public class Bat {
         def("payload_block_fully_present", UINT64, state(PAYLOAD_BLOCK_FULLY_PRESENT)),
         def("payload_block_partially_present", UINT64, state(PAYLOAD_BLOCK_PARTIALLY_PRESENT)));
 
+
     private static final ValueExpression CHUNCK_RATIO = div(
         mul(
             con(1 << 23), // 2^23
-            last(ref("LogicalSectorSize"))),
-        last(ref("BlockSize")));
+            last(ref(LOGICAL_SECTOR_SIZE_NAME))),
+        last(ref(BLOCK_SIZE_NAME)));
 
-    // ceil(VirtualDiskSize / BlockSize) == (VirtualDiskSize + (BlockSize - (VirtualDiskSize % BlockSize)) / BlockSize)
-    private static final ValueExpression DATA_BLOCKS_COUNT = div(
-        add(
-            sub(
-                last(ref("BlockSize")),
-                mod(last(ref("VirtualDiskSize")), last(ref("BlockSize")))),
-            last(ref("VirtualDiskSize"))),
-        last(ref("BlockSize")));
+    private static final ValueExpression DATA_BLOCKS_COUNT = ceil(
+        div(
+            last(ref(VIRTUAL_DISK_SIZE_NAME)),
+            last(ref(BLOCK_SIZE_NAME))));
 
-    // ceil (DataBlocksCount / Chunk Ratio) == (DataBlocksCount + (ChunckRatio - (DataBlocksCount % ChunckRatio)) / ChunkRatio
-    private static final ValueExpression SECTOR_BITMAP_BLOCKSCOUNT = div(
-        add(
-            CHUNCK_RATIO,
-            sub(CHUNCK_RATIO,
-                mod(DATA_BLOCKS_COUNT, CHUNCK_RATIO))),
-        CHUNCK_RATIO);
+    private static final ValueExpression SECTOR_BITMAP_BLOCKSCOUNT = ceil(
+        div(
+            DATA_BLOCKS_COUNT,
+            CHUNCK_RATIO));
 
-    public static final ValueExpression TOTAL_BAT_ENTRIES = mul(
+    public static final ValueExpression TOTAL_BAT_ENTRIES_DYNAMIC = add(
+        DATA_BLOCKS_COUNT,
+        floor(
+            div(
+                sub(DATA_BLOCKS_COUNT, con(1)),
+                CHUNCK_RATIO)));
+
+    public static final ValueExpression TOTAL_BAT_ENTRIES_DIFFERENCING = mul(
         SECTOR_BITMAP_BLOCKSCOUNT,
         add(CHUNCK_RATIO, con(1)));
 
     public static final Token BAT = sub(
         repn(
             BAT_ENTRY,
-            TOTAL_BAT_ENTRIES),
-        last(ref("bat.FileOffset")));
+            TOTAL_BAT_ENTRIES_DYNAMIC),
+        last(ref(FILE_OFFSET_NAME)));
 
     private static Expression state(final int state) {
         return new ComparisonExpression(null, con(state)) {
             @Override
             public boolean compare(final Value left, final Value right) {
                 return right.asNumeric().longValue() == (left.asNumeric().longValue() & 0x07); // First 3 bits
+            }
+        };
+    }
+
+    private static ValueExpression ceil(final ValueExpression operand) {
+        return new UnaryValueExpression(operand) {
+            @Override
+            public OptionalValue eval(final Value value, final Environment env, final Encoding enc) {
+                return OptionalValue.of(ConstantFactory.createFromNumeric((long) Math.ceil(value.asNumeric().doubleValue()), enc));
+            }
+        };
+    }
+
+    private static ValueExpression floor(final ValueExpression operand) {
+        return new UnaryValueExpression(operand) {
+            @Override
+            public OptionalValue eval(final Value value, final Environment env, final Encoding enc) {
+                return OptionalValue.of(ConstantFactory.createFromNumeric((long) Math.floor(value.asNumeric().doubleValue()), enc));
             }
         };
     }

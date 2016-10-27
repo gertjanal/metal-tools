@@ -22,11 +22,14 @@ import static io.parsingdata.metal.Shorthand.con;
 import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.div;
 import static io.parsingdata.metal.Shorthand.eq;
+import static io.parsingdata.metal.Shorthand.eqNum;
 import static io.parsingdata.metal.Shorthand.gtNum;
 import static io.parsingdata.metal.Shorthand.last;
 import static io.parsingdata.metal.Shorthand.mul;
 import static io.parsingdata.metal.Shorthand.nod;
+import static io.parsingdata.metal.Shorthand.not;
 import static io.parsingdata.metal.Shorthand.offset;
+import static io.parsingdata.metal.Shorthand.pre;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
@@ -165,7 +168,9 @@ public class Log {
                 LOG_DATA_DESCRIPTOR),
             last(ref("DescriptorCount"))));
 
-    public static final Token LOGS = sub("log",
+    public static final Token LOGS = pre(
+        sub("log",
         LOG,
-        last(ref("header.LogOffset")));
+            last(ref("header.LogOffset"))),
+        not(eqNum(last(ref("header.LogGuid")), con(0))));
 }
