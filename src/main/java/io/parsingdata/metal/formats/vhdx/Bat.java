@@ -32,13 +32,16 @@ import static io.parsingdata.metal.formats.vhdx.Metadata.LOGICAL_SECTOR_SIZE_NAM
 import static io.parsingdata.metal.formats.vhdx.Metadata.VIRTUAL_DISK_SIZE_NAME;
 import static io.parsingdata.metal.formats.vhdx.Region.FILE_OFFSET_NAME;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.expression.comparison.ComparisonExpression;
+import io.parsingdata.metal.expression.value.BinaryValueExpression;
 import io.parsingdata.metal.expression.value.ConstantFactory;
 import io.parsingdata.metal.expression.value.OptionalValue;
-import io.parsingdata.metal.expression.value.UnaryValueExpression;
 import io.parsingdata.metal.expression.value.Value;
 import io.parsingdata.metal.expression.value.ValueExpression;
 import io.parsingdata.metal.token.Token;
@@ -72,29 +75,25 @@ public class Bat {
         def("payload_block_fully_present", UINT64, state(PAYLOAD_BLOCK_FULLY_PRESENT)),
         def("payload_block_partially_present", UINT64, state(PAYLOAD_BLOCK_PARTIALLY_PRESENT)));
 
-
     private static final ValueExpression CHUNCK_RATIO = div(
         mul(
             con(1 << 23), // 2^23
             last(ref(LOGICAL_SECTOR_SIZE_NAME))),
         last(ref(BLOCK_SIZE_NAME)));
 
-    private static final ValueExpression DATA_BLOCKS_COUNT = ceil(
-        div(
-            last(ref(VIRTUAL_DISK_SIZE_NAME)),
-            last(ref(BLOCK_SIZE_NAME))));
+    private static final ValueExpression DATA_BLOCKS_COUNT = divCeil(
+        last(ref(VIRTUAL_DISK_SIZE_NAME)),
+        last(ref(BLOCK_SIZE_NAME)));
 
-    private static final ValueExpression SECTOR_BITMAP_BLOCKSCOUNT = ceil(
-        div(
-            DATA_BLOCKS_COUNT,
-            CHUNCK_RATIO));
+    private static final ValueExpression SECTOR_BITMAP_BLOCKSCOUNT = divCeil(
+        DATA_BLOCKS_COUNT,
+        CHUNCK_RATIO);
 
     public static final ValueExpression TOTAL_BAT_ENTRIES_DYNAMIC = add(
         DATA_BLOCKS_COUNT,
-        floor(
-            div(
-                sub(DATA_BLOCKS_COUNT, con(1)),
-                CHUNCK_RATIO)));
+        divFloor(
+            sub(DATA_BLOCKS_COUNT, con(1)),
+            CHUNCK_RATIO));
 
     public static final ValueExpression TOTAL_BAT_ENTRIES_DIFFERENCING = mul(
         SECTOR_BITMAP_BLOCKSCOUNT,
@@ -115,20 +114,32 @@ public class Bat {
         };
     }
 
-    private static ValueExpression ceil(final ValueExpression operand) {
-        return new UnaryValueExpression(operand) {
+    private static BinaryValueExpression divFloor(final ValueExpression left, final ValueExpression right) {
+        return new BinaryValueExpression(left, right) {
+
             @Override
-            public OptionalValue eval(final Value value, final Environment env, final Encoding enc) {
-                return OptionalValue.of(ConstantFactory.createFromNumeric((long) Math.ceil(value.asNumeric().doubleValue()), enc));
+            public OptionalValue eval(final Value left, final Value right, final Environment env, final Encoding enc) {
+                if (right.asNumeric().equals(BigInteger.ZERO)) {
+                    return OptionalValue.empty();
+                }
+                final BigDecimal leftDecimal = new BigDecimal(left.asNumeric());
+                final BigDecimal rightDecimal = new BigDecimal(right.asNumeric());
+                return OptionalValue.of(ConstantFactory.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_FLOOR).toBigInteger(), enc));
             }
         };
     }
 
-    private static ValueExpression floor(final ValueExpression operand) {
-        return new UnaryValueExpression(operand) {
+    private static BinaryValueExpression divCeil(final ValueExpression left, final ValueExpression right) {
+        return new BinaryValueExpression(left, right) {
+
             @Override
-            public OptionalValue eval(final Value value, final Environment env, final Encoding enc) {
-                return OptionalValue.of(ConstantFactory.createFromNumeric((long) Math.floor(value.asNumeric().doubleValue()), enc));
+            public OptionalValue eval(final Value left, final Value right, final Environment env, final Encoding enc) {
+                if (right.asNumeric().equals(BigInteger.ZERO)) {
+                    return OptionalValue.empty();
+                }
+                final BigDecimal leftDecimal = new BigDecimal(left.asNumeric());
+                final BigDecimal rightDecimal = new BigDecimal(right.asNumeric());
+                return OptionalValue.of(ConstantFactory.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_CEILING).toBigInteger(), enc));
             }
         };
     }
