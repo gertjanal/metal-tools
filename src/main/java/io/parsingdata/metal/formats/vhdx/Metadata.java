@@ -48,6 +48,10 @@ import io.parsingdata.metal.token.Token;
  * @author Netherlands Forensic Institute.
  */
 public class Metadata {
+    public static final String LOGICAL_SECTOR_SIZE_NAME = "region.metadata.metadataTable.logicalSectorSize.data.LogicalSectorSize";
+    public static final String VIRTUAL_DISK_SIZE_NAME = "region.metadata.metadataTable.virtualDiskSize.data.VirtualDiskSize";
+    public static final String BLOCK_SIZE_NAME = "region.metadata.metadataTable.fileParameters.data.BlockSize";
+
     private static Token metadataTableEntry(final Expression predicate, final Token data) {
         return seq(
             // The ItemId field specifies a 128-bit identifier for the metadata item. The ItemId and IsUser value pair for an entry must be unique within the table.

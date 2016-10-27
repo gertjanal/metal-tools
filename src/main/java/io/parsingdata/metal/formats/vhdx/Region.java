@@ -42,6 +42,8 @@ import io.parsingdata.metal.token.Token;
  * @author Netherlands Forensic Institute.
  */
 public class Region {
+    public static final String FILE_OFFSET_NAME = "region.bat.FileOffset";
+
     private static final Token REGION_TABLE_HEADER = seq("regionTableHeader",
         // The Signature field must be 0x69676572 (“regi” as ASCII).
         def("Signature", UINT32, eq(con("regi"))),
@@ -80,7 +82,15 @@ public class Region {
                 last(ref(name + ".FileOffset"))));
     }
 
-    public static Token region(final boolean resolveData) {
+    public static Token region() {
+        return region(true);
+    }
+
+    public static Token oldRegion() {
+        return region(false);
+    }
+
+    private static Token region(final boolean resolveData) {
         return seq(
             REGION_TABLE_HEADER,
             repn(regionTableEntry(resolveData), last(ref("regionTableHeader.EntryCount"))));
