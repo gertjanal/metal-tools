@@ -40,6 +40,7 @@ import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
+import io.parsingdata.metal.util.InMemoryByteStream;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
@@ -87,15 +88,16 @@ public class JsHexViewerTest {
 
 	@Test
 	public void testGenerateVHDX() throws Exception {
-		final Environment env = stream(VHDX.class.getResource("/vhdx/NTFSdynamic.vhdx").toURI());
+		final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
 		final ParseResult result = VHDX.FORMAT.parse(env, le());
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_vhdx");
 	}
 
-	private Environment environment(final String resource) throws IOException, URISyntaxException {
-		return stream(getClass().getResource(resource).toURI());
+	private Environment environment(final String name) throws IOException, URISyntaxException {
+		final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
+		return new Environment(new InMemoryByteStream(data));
 	}
 
 	private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
