@@ -16,11 +16,13 @@
 		<junit.version>4.11</junit.version>
 		<metal.version>4.0.1</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
+		<spring.boot.version>1.4.1.RELEASE</spring.boot.version>
 	</properties>
 
 	<modules>
 		<module>metal-tools-formats</module>
 		<module>metal-tools-jshexviewer</module>
+		<module>metal-tools-service</module>
 	</modules>
 
 	<dependencies>

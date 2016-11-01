@@ -47,9 +47,8 @@ import io.parsingdata.metal.expression.value.ValueExpression;
 import io.parsingdata.metal.token.Token;
 
 /**
- * Metal tokens for VHDX Block Allocation Table. Based on VHDX Format
- * Specification v1.00:
- * https://www.microsoft.com/en-us/download/details.aspx?id=34750
+ * Metal tokens for VHDX Block Allocation Table.
+ * Based on VHDX Format Specification v1.00: https://www.microsoft.com/en-us/download/details.aspx?id=34750
  *
  * @author Gertjan Al.
  */
@@ -114,9 +113,7 @@ public class Bat {
 		return new ComparisonExpression(null, con(state)) {
 			@Override
 			public boolean compare(final Value left, final Value right) {
-				return right.asNumeric().longValue() == (left.asNumeric().longValue() & 0x07); // First
-																								// 3
-																								// bits
+				return right.asNumeric().longValue() == (left.asNumeric().longValue() & 0x07); // First 3 bits
 			}
 		};
 	}
@@ -131,8 +128,7 @@ public class Bat {
 				}
 				final BigDecimal leftDecimal = new BigDecimal(left.asNumeric());
 				final BigDecimal rightDecimal = new BigDecimal(right.asNumeric());
-				return OptionalValue.of(ConstantFactory
-					.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_FLOOR).toBigInteger(), enc));
+				return OptionalValue.of(ConstantFactory.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_FLOOR).toBigInteger(), enc));
 			}
 		};
 	}
@@ -147,8 +143,7 @@ public class Bat {
 				}
 				final BigDecimal leftDecimal = new BigDecimal(left.asNumeric());
 				final BigDecimal rightDecimal = new BigDecimal(right.asNumeric());
-				return OptionalValue.of(ConstantFactory
-					.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_CEILING).toBigInteger(), enc));
+				return OptionalValue.of(ConstantFactory.createFromNumeric(leftDecimal.divide(rightDecimal, BigDecimal.ROUND_CEILING).toBigInteger(), enc));
 			}
 		};
 	}
