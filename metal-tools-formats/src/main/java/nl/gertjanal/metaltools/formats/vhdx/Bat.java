@@ -47,7 +47,8 @@ import io.parsingdata.metal.expression.value.ValueExpression;
 import io.parsingdata.metal.token.Token;
 
 /**
- * Metal tokens for VHDX Block Allocation Table. Based on VHDX Format Specification v1.00: https://www.microsoft.com/en-us/download/details.aspx?id=34750
+ * Metal tokens for VHDX Block Allocation Table.
+ * Based on VHDX Format Specification v1.00: https://www.microsoft.com/en-us/download/details.aspx?id=34750
  *
  * @author Gertjan Al.
  */
