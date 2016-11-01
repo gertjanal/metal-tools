@@ -1,0 +1,1169 @@
+<html>
+<head>
+<link rel="stylesheet" href="libs/jquery-ui-1.12.1/jquery-ui.min.css">
+<link rel="stylesheet" href="libs/hue/hue.css">
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Hind+Vadodara">
+<style>
+	html.wait, html.wait * {
+		cursor: wait !important;
+	}
+
+	body,
+	.ui-widget,
+	.ui-widget input,
+	.ui-widget select,
+	.ui-widget button,
+	.ui-widget textarea {
+		font-family: 'Hind Vadodara', sans-serif;
+	}
+	
+	body {
+		font-size: 11px;
+		background-color: rgb(51, 51, 51);
+		margin: 0px;
+	}
+
+	.byteWrapper, .linenr, .columnnr, .spacer {
+		display: table-cell;
+	}
+
+	.byteWrapper, .spacer, .spacerRow {
+		cursor: text;
+	}
+	
+	.byteWrapper {
+		text-align: center;
+		margin-left: 1px;
+		margin-right: 1px;
+	}
+	#left-component.fontNormal .byteWrapper {
+		min-width: 14px;
+	}
+	#left-component.fontSmaller .byteWrapper {
+		min-width: 8px;
+	}
+
+	#left-component.fontNormal .spacer {
+		width: 4px;
+	}
+	
+	#left-component.fontSmaller .spacer {
+		width: 2px;
+	}
+
+	.linenr, .columnnr, .row:first-child {
+		background-color: #292929;
+		color: #75abff;
+	}
+	.columnnr {
+		text-align: center;
+		height: 30px;
+	}
+	#left-component.fontNormal .columnnr {
+		font-size: 10px;
+	}
+	#left-component.fontSmaller .columnnr {
+		font-size: 8px;
+	}
+
+	.linenr {
+		padding-right: 4px;
+		margin-right: 10px;
+		text-align: right;
+	}
+
+	.byte.selected,
+	.byte::-moz-selection {
+		background-color: #096ac8;
+		color: white;
+	}
+	.byte::selection {
+		background-color: #096ac8;
+		color: white;
+	}
+
+	#left-component.fontNormal .row {
+		font-size: 16px;
+	}
+	
+	#left-component.fontSmaller .row {
+		font-size: 12px;
+	}
+
+	#selectionName {
+		font-size: 16px;
+		font-weight: bold;
+	}
+
+	.row {
+		display: table-row;
+	}
+
+	.spacerRow {
+		height: 2px;
+	}
+
+	#hexview, #asciiview {
+		display: table;
+		color: white;
+	}
+	
+	#hexview {
+		float: left;
+		padding-right: 10px;
+		border-right: 2px solid grey;
+	}
+
+	#asciiview {
+		padding-left: 10px;
+	}
+
+	#left-component {
+		right: 300px;
+		margin-right: 5px;
+	}
+
+	#divider {
+		right: 300px;
+		width: 2px;
+		background-color: #096ac8;
+	}
+
+	#right-component {
+		width: 300px;
+		overflow: hidden;
+	}
+
+	.tabAnchor {
+		display: block;
+		position: relative;
+		width: 0px;
+		height: 100%;
+		top: 0px;
+		left: 0px;
+	}
+
+	.split-pane-component.highlight-def .defTab {
+		display: block;
+	}
+	
+	.split-pane-component.highlight-seq .seqTab {
+		display: block;
+	}
+
+	.tab {
+		display: none;
+		position: absolute;
+		text-align: left;
+		left: -1px;
+		margin: 0px;
+		padding: 0px;
+		cursor: pointer;
+		-webkit-user-select: none;   /* Chrome/Safari/Opera */
+		-moz-user-select: none;      /* Firefox */
+		-ms-user-select: none;       /* Internet Explorer/Edge */
+		user-select: none;           /* Non-prefixed version, currently not supported by any browser */
+	}
+
+	#left-component.fontNormal .tab {
+		font-size: 9px;
+		height: 13px;
+		top: -32px;
+	}
+	
+	#left-component.fontSmaller .tab {
+		font-size: 8px;
+		height: 10px;
+		top: -24px;
+	}
+
+	#hexviewWrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	#accordion fieldset, #accordion fieldset legend, #accordion button {
+		font-size: 12px;
+	}
+
+	#pagesOfInterest, #hotspots {
+		overflow-x: hidden !important;
+	}
+
+	fieldset {
+		margin-bottom: 4px;
+	}
+
+	fieldset input[type=text] {
+		width: calc(100% - 80px);
+	}
+
+	fieldset button, button#next {
+		float: right;
+	}
+
+	ol, ul {
+		padding-left: 14px;
+	}
+
+	#pagesOfInterest button, #hotspots button {
+		font-size: 10px;
+		width: 126px;
+	}
+
+	.ui-accordion .ui-accordion-content {
+		padding: 1em;
+	}
+
+	h3.ui-accordion-header {
+		border-top-left-radius: 0px;
+	}
+
+	.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+		border-left: none;
+	}
+
+	.split-pane {
+		position: relative;
+		height: 100%;
+		width: 100%;
+		z-index: 0;
+	}
+
+	.split-pane-component {
+		overflow: hidden;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		overflow: auto;
+		left: auto;
+		right: 0;
+		z-index: 1;
+	}
+	
+	.split-pane.fixed-right > .split-pane-component:first-child {
+		left: 0;
+		right: auto;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider {
+		position: absolute;
+		height: 100%;
+		top: 0;
+		cursor: col-resize;
+		z-index: 2;
+	}
+	
+	.split-pane.fixed-right > .split-pane-divider > .split-pane-divider-inner {
+		position: absolute;
+		top: 0;
+		left: -5px;
+		box-sizing: content-box;
+		width: 100%;
+		height: 100%;
+		padding: 0 5px;
+	}
+	
+	.split-pane-resize-shim {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 10000;
+		display: none;
+	}
+
+	.split-pane.fixed-right > .split-pane-resize-shim {
+		cursor: col-resize;
+	}
+</style>
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="libs/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="libs/splitpane-0.9.3/split-pane.js"></script>
+<script>
+var tags = [];
+var hover = true;
+var page = 0;
+var pageSize = 1024;
+var dataHash = 0;
+var columnCount = 32;
+var locations = [];
+var data = {};
+var dataUrl = 'example_data.js';
+
+setInterval(function() {
+	// This hexviewer is mostly used without a webserver; just locally run
+	// However, we want the latest definitions from the parseGraph to be shown here,
+	// without reloading the page or re-selecting the source file via the file input form.
+	// ajax calls can only be made to webserver locations, so not an option.
+	// Best workaround found in this case was to save the definition variables columnCount,
+	// data and locations to a separate js file and load this script file every n ms by
+	// removing and adding it to the <head> tag.
+	var head = document.getElementsByTagName('head')[0];
+	var children = head.children;
+	for (var i = 0; i < children.length; i++) {
+		if (children[i].class === 'data') {
+			// Removed previous script data element
+			head.removeChild(children[i]);
+		}
+	}
+
+	var script = document.createElement('script');
+	script.class = 'data';
+	script.type = 'text/javascript';
+	script.src = dataUrl + "?time=" + (new Date().getTime());
+	head.appendChild(script);
+
+	setTimeout(function() {
+		// Give the browser 250 ms to load the script file
+		if (typeof dataUpdate !== 'undefined') {
+			// caluculate hash over the data object.
+			// This should be sufficient for change detection.
+			var newDataHash = hash(JSON.stringify(dataUpdate));
+			if (newDataHash !== dataHash) {
+				dataHash = newDataHash;
+				columnCount = columnCountUpdate;
+				locations = locationsUpdate;
+				data = dataUpdate;
+				
+				$('#updated').text(new Date());
+				dataRefresh();
+			}
+		}
+	}, 500);
+}, 1000);
+
+function unpack(buffer, asBigEndian) {
+	var hex = '';
+	$.each(buffer, function(index, value) {
+		var byte = value.toString(16);
+		byte = byte.length == 1 ? '0' + byte : byte;
+		if (asBigEndian) {
+			hex += byte;
+		}
+		else {
+			hex = byte + hex;
+		}
+	});
+	return parseInt('0x' + hex, 16);
+}
+
+function hash(value) {
+    var hash = 0, i, chr, len;
+    if (value.length === 0) return hash;
+    for (i = 0, len = value.length; i < len; i++) {
+      chr   = value.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function dataRefresh() {
+	var prevPage;
+	var prevTitle;
+	var definitionCounts = 0;
+	var hotspots = {};
+	$('#pagesOfInterest').empty();
+	$.each(locations, function(index, value) {
+		var page = Math.floor(value / (pageSize / columnCount));
+		if (page !== prevPage) {
+			var firstDefinition = data[index][0];
+			title = firstDefinition[2];
+
+			var split = title.split('.');
+			var start = 0;
+			if (prevTitle !== undefined) {
+				start = getMatchingIndex(split, prevTitle);
+			}
+
+			$('#pagesOfInterest').append($('<button>').html('Page ' + page + '<br>' + split[start]).attr('page', page).button());
+			prevTitle = split;
+
+			if (prevPage !== undefined) {
+				if (hotspots[definitionCounts]) {
+					hotspots[definitionCounts].push(prevPage);
+				}
+				else {
+					hotspots[definitionCounts] = [prevPage];
+				}
+				definitionCounts = 0;
+			}
+			prevPage = page;
+		}
+		definitionCounts += data[index].length;
+	});
+	$('#hotspots').empty();
+	addHotspots(hotspots, 30);
+	
+	// Done drawing UI, open data
+	readSingleFile($('#fileInput'));
+}
+
+$(function() {
+	$('button').button();
+	$('input[type=text]').addClass("ui-corner-all");
+	$('div.split-pane').splitPane();
+	$('fieldset').addClass('ui-widget').addClass('ui-widget-content');
+
+	$('#accordion').accordion({
+		heightStyle: 'fill'
+	});
+
+	$('body').on('mouseenter', '.byte', function() {
+		if (!hover) {
+			return;
+		}
+
+		clearSelection();
+		var position = parseInt($(this).attr('position'));
+		$('.byte[position=' + position +']').each(function(index, value) {
+			$(value).addClass('selected');
+		});
+
+		$('#values span').empty();
+		$('#filePositionDec').text(position);
+		$('#filePositionHex').text(toHex(position));
+		$('#filePositionKiB').text(tgmk(position));
+
+		var binary = '00000000' + (parseInt($(this).text(), 16) >>> 0).toString(2);
+		$('#values #binary').text(binary.substring(binary.length - 8));
+
+		getDefinition(position).done(function(definition) {
+			if (definition) {
+				$('#selectionName').text(getSingleName(definition[2]));
+				$('.fullname').append(path(definition[2]));
+
+				setValuesSize(definition[1]);
+				if (definition[1] <= 8) {
+					getData(definition[0], definition[1], function(buffer) {
+					    setValuesValue(buffer);
+					});
+				}
+				colorDef($('#selectionName'), definition, true, true, true, true);
+			}
+			else {
+				setValuesSize(1);
+				getData(position, 1, function(buffer) {
+				    setValuesValue(buffer);
+				});
+			}
+		});
+	});
+
+	function setValuesSize(size) {
+		$('#values #sizeDec').text(size);
+		$('#values #sizeHex').text(size.toString(16));
+		$('#values #sizeKiB').text(tgmk(size));
+	}
+
+	function setValuesValue(buffer) {
+		var be = unpack(buffer, true);
+		var le = unpack(buffer, false);
+		$('#values #beDec').text(be);
+		$('#values #beHex').text(hexSpaces(be.toString(16)));
+		$('#values #beKiB').text(tgmk(be));
+
+		$('#values #leDec').text(le);
+		$('#values #leHex').text(hexSpaces(le.toString(16)));
+		$('#values #leKiB').text(tgmk(le));
+	}
+
+	$('body').on('keydown', '.numeric', function(e){-1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190])||/65|67|86|88/.test(e.keyCode)&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()});
+
+	function clearSelection() {
+	    $('.byte').each(function(index, value){
+			$(value).removeClass('selected');
+		});
+		$('#selectionName').removeClass().empty(); // Remove css highlighting and value
+		$('.fullname').empty();
+		$('#filePositionDec').empty();
+		$('#filePositionHex').empty();
+		$('#filePositionKiB').empty();
+	}
+
+	$('#hexview').on('click', '.byte', function(e) {
+		if (!hover) {
+			clearSelection();
+		}
+		hover = !hover;
+	});
+
+	$('#hexview').on('click', '.defTab', function(e) {
+	    var tab = $(this);
+		var position = parseInt($(this).attr('position'));
+		getDefinition(position).done(function(definition) {
+			if (!deleteTabTag(position)) {
+				// Tag tab
+				tags.push(position);
+				tab.addClass('tagged');
+				var hexValue = $('<span>');
+				colorDef(hexValue, definition, true, true, true, true);
+
+				var legend = $('<legend>').text(getSingleName(definition[2]));
+				colorDef(legend, definition, true, true, true, true);
+
+				$('#tabTags').append($('<fieldset>').addClass('tagLabel' + position)
+					.addClass('ui-widget').addClass('ui-widget-content')
+					.append(legend)
+					.append('offset: ').append(position).append('<br>')
+					.append('page: ').append(page).append('<br>')
+					.append('path: ').append(path(definition[2])).append('<br>')
+					.append('hex: ').append(hexValue).append('<br>')
+					.append($('<button>').addClass('defTabJump').attr('page', page).text('Jump').button())
+					.append($('<button>').addClass('defTabDelete').attr('position', position).text('Delete').button()));
+
+				var max = 12;
+				getData(definition[0], Math.min(definition[1], max), function(buffer) {
+					hexValue.empty();
+					$.each(buffer, function(index, value) {
+						var hex = toHex(value & 0xff);
+						if (index % 2 == 0 && index > 0) {
+							hexValue.append('&nbsp;');
+						}
+						hexValue.append(hex);
+					});
+					if (definition[1] > max) {
+						hexValue.append('...');
+					}
+				});
+			}
+			colorTab(tab, definition);
+		});
+	});
+	
+	function deleteTabTag(position) {
+		var index = tags.indexOf(position);
+		if (index === -1) {
+			return false;
+		}
+		tags.splice(index, 1);
+		$('fieldset.tagLabel' + position).remove();
+		$('.defTab[position=' + position + ']').removeClass('tagged');
+		return true;
+	}
+	
+	$('#accordion').on('click', '.defTabJump', function() {
+		page = parseInt($(this).attr('page'));
+		setPage();
+	});
+
+	$('#accordion').on('click', '.defTabDelete', function() {
+		var position = parseInt($(this).attr('position'));
+		deleteTabTag(position);
+		$('.defTab').each(function() {
+			var tabPosition = parseInt($(this).attr('position'));
+			if (tabPosition === position) {
+				getDefinition(position).done(function(definition) {
+					colorTab($(this), definition);
+				});
+			}
+		});
+	});
+
+	$('#prev').click(function(e) {
+		page -= 1;
+		setPage();
+	}).button('disable');
+
+	$('#next').click(function(e) {
+		page += 1;
+		setPage();
+	});
+
+	$('#pagesOfInterest, #hotspots').on('click', 'button', function() {
+		$('#jumpPage').val($(this).attr('page'));
+		$('#goPage').trigger('click');
+	});
+
+	$('#goPage').click(function() {
+		page = parseInt($('#jumpPage').val());
+		setPage();
+	});
+
+	$('#goOffsetDec').click(function() {
+		var offset = parseInt($('#jumpOffsetDec').val());
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$('#goOffsetHex').click(function() {
+		var offset = parseInt($('#jumpOffsetHex').val(), 16);
+		page = Math.floor(offset / pageSize);
+		setPage();
+	});
+
+	$(document).on('keydown', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code === 33 && page > 0) {
+			page--;
+			setPage();
+		}
+		else if (code === 34) {
+			page++;
+			setPage();
+		}
+		else if (code === 16) {
+			// Shift key down
+			$('#left-component').addClass('highlight-seq').removeClass('highlight-def');
+		}
+	}).on('keyup', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code === 16) {
+			// Shift key up
+			$('#left-component').addClass('highlight-def').removeClass('highlight-seq');
+		}
+	}).on('keypress', function(e) {
+		var code = (e.keyCode ? e.keyCode : e.which);
+		if (code === 45) {
+			// Minus sign
+			$('#left-component').addClass('fontSmaller').removeClass('fontNormal');
+		}
+		else if (code === 43) {
+			// Plus sign
+			$('#left-component').addClass('fontNormal').removeClass('fontSmaller');
+		}
+	});
+
+	$(window).on('hashchange', function() {
+		readPage();
+	});
+});
+
+function getMatchingIndex(a, b) {
+	for (var i = 0; i < Math.min(a.length, b.length); i++) {
+		if (a[i] !== b[i]) {
+			return i;
+		}
+	}
+	return 0;
+}
+
+function addHotspots(hotspots, max) {
+	var definitionCounts = Object.keys(hotspots);
+	definitionCounts.sort(function(a, b) {
+		return parseInt(a) < parseInt(b);
+	});
+	for (var i = 0, k = 0; i < definitionCounts.length; i++) {
+		var definitionCount = definitionCounts[i];
+		for (var j = 0; j < hotspots[definitionCount].length; j++, k++) {
+			var page = hotspots[definitionCount][j];
+			$('#hotspots').append($('<button>').html('Page ' + page + '<br>' + definitionCount + ' definition' + (definitionCount > 1 ? 's' : '')).attr('page', page).button());
+		}
+		if (k >= max) {
+			// Added max buttons or more (equal hotspots are also added)
+			return;
+		}
+	}
+}
+
+function path(path) {
+	var list = $('<ol>');
+	$.each(path.split('.'), function(index, value) {
+	    list.append($('<li>').text(value));
+	});
+	return list;
+}
+
+function getSingleName(name) {
+	return name.lastIndexOf('.') === -1 ? name : name.substring(name.lastIndexOf('.') + 1);
+}
+
+function getParentName(definition) {
+	return definition ? ((definition[2].lastIndexOf('.') !== -1 ? definition[2].substring(0, definition[2].lastIndexOf('.')) : definition[2])) : undefined;
+}
+
+function tgmk(x) {
+	if (!isFinite(x)) {
+		return x;
+	}
+	var n = 0;
+	while (x > 1024 && n < 6) {
+		x /= 1024;
+		n++;
+	}
+	if (n > 0) {
+		x  = x.toFixed(1);
+		x += ' ';
+		x += ' KMGTP'.charAt(n);
+		x += 'iB';
+	}
+	else {
+		x += ' bytes';
+	}
+	return x;
+}
+
+var lastDefinition;
+function getDefinition(position) {
+	return new $.Deferred(function() {
+		if (lastDefinition && inRange(lastDefinition, position)) {
+			// Instead of reading all rows above to check if this is part of a multi-row def,
+			// just cache the previous definition and check again.
+			// Note that this only works for drawing the highlights, not for a mouseover event.
+			this.resolve(lastDefinition);
+			return;
+		}
+	
+		var location = Math.floor(position / columnCount);
+		var rowIndex = $.inArray(location, locations);
+		if (rowIndex !== -1) {
+			var row = data[rowIndex];
+			for (var i = 0; i < row.length; i++) {
+				var definition = row[i];
+				if (inRange(definition, position)) {
+					lastDefinition = definition;
+					this.resolve(definition);
+					return;
+				}
+			}
+		}
+		else {
+			// No definition found, try to find the last definition for this position.
+			// It might fall in range. This occurs when a definition is over multiple pages.
+			for (var i = 0; i < locations.length; i++) {
+				if (locations[i] > location) {
+					var row = data[Math.max(0, i - 1)];
+					var definition = row[row.length - 1];
+					if (inRange(definition, position)) {
+						lastDefinition = definition;
+						this.resolve(definition);
+						return;
+					}
+					else {
+						this.resolve();
+						return;
+					}
+				}
+			}
+		}
+		this.resolve();
+	});
+}
+
+function inRange(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position >= offset && position < offset + size;
+}
+
+function isStartOrEnd(definition, position) {
+	var offset = definition[0];
+	var size = definition[1];
+	return position === offset || position === offset + size - 1;
+}
+
+function hsv2rgb(h, s, v) {
+	var r, g, b;
+	var i;
+	var f, p, q, t;
+	s /= 100;
+	v /= 100;
+	h /= 60;
+	i = Math.floor(h);
+	f = h - i;
+	p = v * (1 - s);
+	q = v * (1 - s * f);
+	t = v * (1 - s * (1 - f));
+	switch(i) {
+		case 0: r = v; g = t; b = p; break;
+		case 1: r = q; g = v; b = p; break;
+		case 2: r = p; g = v; b = t; break;
+		case 3: r = p; g = q; b = v; break;
+		case 4: r = t; g = p; b = v; break;
+		default: r = v; g = p; b = q;
+	}
+	return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+}
+
+var flip = true;
+var lastColor = Math.floor((Math.random() * 180) + 1);
+var colors = {};
+function getHue(str) {
+	if (!(str in colors)) {
+		lastColor = (lastColor + 13) % 180;
+		colors[str] = flip ? lastColor : 360 - lastColor;
+		flip = !flip;
+	}
+	return colors[str];
+}
+
+function getParameter(name) {
+	var parameters = window.location.search.substring(1).split("&");
+	for (var i = 0; i < parameters.length; i++) {
+		var pair = parameters[i].split("=");
+		if (pair.length === 2 && pair[0] === name) {
+			return pair[1];
+		}
+	}
+}
+
+var file;
+function readSingleFile(fileInput) {
+	var fileParameter = getParameter('file');
+	if (!file && fileParameter) {
+		// Load file from url
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', fileParameter, true);
+		xhr.responseType = 'blob';
+		xhr.withCredentials = true;
+		xhr.onload = function(e) {
+			file = xhr.response;
+			updateFileInfo();
+			readPage();
+			firstFileLoad();
+		};
+		xhr.send();
+		return false;
+	}
+
+	// Load file from browse input
+	var files = $(fileInput).prop('files');
+	if (!files || files.length != 1) {
+		return false;
+	}
+	file = files[0];
+	if (!file) {
+		return false;
+	}
+	updateFileInfo();
+	readPage();
+	return true;
+}
+
+function firstFileLoad() {
+	$('#accordion').accordion('option', 'active', 2);
+}
+
+function updateFileInfo() {
+	$('#fileInfoName').text(file.name);
+	$('#fileInfoSizeDec').text(file.size);
+	$('#fileInfoSizeKiB').text(tgmk(file.size));
+	$('#fileInfoPages').text(Math.floor(file.size / pageSize));
+}
+
+function toHex(value) {
+	var hex = value.toString(16);
+	hex = (hex.length === 1) ? '0' + hex : hex;
+	return hex;
+}
+
+function hexSpaces(hex) {
+	if (!hex || hex.length == 0) {
+		return hex;
+	}
+	var value = '';
+	var i = hex.length;
+	for (; i >= 0; i -= 4){
+		value = hex.substring(i, i + 4) + ' ' + value;
+	}
+	if (i < 0) {
+		value = hex.substring(0, i + 4) + ' ' + value;
+	}
+	return value;
+}
+
+function getData(offset, size, callback) {
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var buffer = new Uint8Array(e.target.result);
+		callback(buffer);
+	};
+	var slice = file.slice(offset, offset + size);
+	reader.readAsArrayBuffer(slice);
+}
+
+function resetPage() {
+	page = 0;
+	location.hash = 'page' + page;
+}
+
+function setPage() {
+	location.hash = 'page' + page;
+}
+
+function readPage() {
+    $('html').addClass('wait'); // Show wait cursor
+	var hash = location.hash.replace('#', '');
+	hash = hash == '' ? 'page0' : hash;
+	
+	if (hash.indexOf('page') !== 0) {
+		console.log('unknown page number in location hash');
+		return;
+	}
+	
+	page = parseInt(hash.substring('page'.length));
+	if (page < 0){
+		page = 0;
+		setPage();
+		return;
+	}
+	
+	var pageOffset = page * pageSize;
+	if (page > 0) {
+		$('#prev').button('enable');
+	}
+	else {
+		$('#prev').button('disable');
+	}
+	$('#jumpPage').val(page);
+	$('#jumpOffsetDec').val(pageOffset);
+	$('#jumpOffsetHex').val(pageOffset.toString(16));
+	$('#tgmk').val(tgmk(pageOffset));
+
+	getData(pageOffset, pageSize, function(buffer) {
+		var pagePosition = 0;
+		$('#hexview').empty();
+		$('#asciiview').empty();
+
+		var hexRow = $('<div>').addClass('row').append($('<div>').addClass('linenr'));
+		$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+	
+		var asciiRow = $('<div>').addClass('row');
+		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+		for (var column = 0; column < columnCount; column++) {
+			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
+			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
+			if (column % 2 !== 0) {
+				hexRow.append($('<span>').addClass('spacer'));
+			}
+		}
+
+		var pageColumnCount = columnCount;
+		if (buffer.length - pagePosition < columnCount) {
+			// Less columns when there is not enough data to show
+			pageColumnCount = buffer.length - pagePosition;
+		}
+
+		var promise = new $.Deferred();
+		for (var row = 0; pagePosition < buffer.length; row++) {
+			var hexNr = (pagePosition + pageOffset).toString(16);
+			var hexRow = $('<div>').addClass('row')
+				.append($('<div>').addClass('linenr').text(hexNr));
+
+			$('#hexview').append(hexRow).append($('<div>').addClass('spacerRow row').append($('<div>').addClass('linenr')));
+
+			var asciiRow = $('<div>').addClass('row');
+			$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
+
+			for (var column = 0; column < pageColumnCount && pagePosition < buffer.length; column++, pagePosition++) {
+				var filePosition = pageOffset + pagePosition;
+
+				var byte = buffer[pagePosition] & 0xff;
+				var hexByte = $('<span>').addClass('byte').attr('position', filePosition).text(toHex(byte));
+				var hexByteWrapper = $('<span>').addClass('byteWrapper').append(hexByte);
+				hexRow.append(hexByteWrapper);
+			
+				var character = byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '\u00B7';
+				var asciiByte = $('<span>').addClass('byte').attr('position', filePosition).text(character);
+				var asciiByteWrapper = $('<span>').addClass('byteWrapper').append(asciiByte);
+				asciiRow.append(asciiByteWrapper);
+
+				var spacer;
+				if (column % 2 === 1) {
+					spacer = $('<span>').addClass('spacer');
+					hexRow.append(spacer);
+				}
+				
+				promise.then(highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper));
+			}
+		}
+		promise.resolve();
+		$('html').removeClass('wait'); // Remove wait cursor
+	});
+}
+
+var prevParentName;
+function highlightPromise(promise, filePosition, pagePosition, buffer, column, hexByteWrapper, spacer, asciiByteWrapper) {
+	return getDefinition(filePosition).done(function(definition) {
+		if (definition) {
+			var parentName = getParentName(definition);
+			if (spacer && !isStartOrEnd(definition, filePosition)) {
+				colorDef(spacer, definition, true, false, true, false);
+				colorSeq(spacer, parentName, true, false, true, false);
+			}
+
+			var left = filePosition === definition[0];
+			var right = filePosition === definition[0] + definition[1] - 1;
+			colorDef(hexByteWrapper, definition, true, right, true, left);
+			colorSeq(hexByteWrapper, parentName, true, right, true, left);
+
+			colorDef(asciiByteWrapper, definition, true, right, true, left);
+			colorSeq(asciiByteWrapper, parentName, true, right, true, left);
+
+			if (left) {
+				var tabAnchor = $('<div>').addClass('tabAnchor');
+				var defTab = $('<div>').addClass('tab defTab').text(getSingleName(definition[2])).attr('position', filePosition);
+				if (tags.indexOf(definition[0]) !== -1) {
+					defTab.addClass('tagged');
+				}
+				
+				colorTab(defTab, definition[2], 'def');
+				tabAnchor.append(defTab);
+				
+				if (prevParentName !== parentName) {
+					var seqTab = $('<div>').addClass('tab seqTab').text(parentName).attr('position', filePosition);
+					colorTab(seqTab, parentName, 'seq');
+					prevParentName = parentName;
+					tabAnchor.append(seqTab);
+				}
+				hexByteWrapper.append(tabAnchor);
+			}
+		}
+	});
+}
+
+function colorTab(element, name, type) {
+	var hue = getHue(name);
+	colorElement(element, hue, type, true, true, false, true);
+}
+
+function colorDef(element, definition, top, right, bottom, left) {
+	var hue = getHue(definition[2]);
+	colorElement(element, hue, 'def', top, right, bottom, left);
+}
+
+function colorSeq(element, name, top, right, bottom, left) {
+	var hue = getHue(name);
+	colorElement(element, hue, 'seq', top, right, bottom, left);
+}
+
+function colorElement(element, hue, type, top, right, bottom, left) {
+	if (top) {
+		element.addClass('hue' + hue + '-' + type + '-top');
+	}
+	if (left) {
+		element.addClass('hue' + hue + '-' + type + '-left');
+	}
+	if (bottom) {
+		element.addClass('hue' + hue + '-' + type + '-bottom');
+	}
+	if (right) {
+		element.addClass('hue' + hue + '-' + type + '-right');
+	}
+}
+</script>
+<body>
+	<div class="page-container">
+		<div class="split-pane fixed-right">
+			<div class="split-pane-component highlight-def fontNormal" id="left-component">
+				<div id="hexviewWrapper">
+					<div id="hexview"></div>
+					<div id="asciiview"></div>
+				</div>
+			</div>
+			<div class="split-pane-divider" id="divider"></div>
+			<div class="split-pane-component highlight-def" id="right-component">
+				<div id="accordion">
+					<h3>Source</h3>
+					<div>
+						<fieldset>
+							<legend>Browse</legend>
+							Select the source data this page was generated with:<br>
+							<input type="file" id="fileInput" onChange="resetPage(); readSingleFile(this); firstFileLoad()"/><br>
+						</fieldset>
+						<fieldset>
+							<legend>Size of <span id="fileInfoName"></span></legend>
+							dec: <span id="fileInfoSizeDec">0</span> bytes<br>
+							kib: <span id="fileInfoSizeKiB"></span><br>
+						</fieldset>
+						<fieldset>
+							<legend>Last definition update</legend>
+							Updated: <span id="updated"></span><br>
+						</fieldset>
+					</div>
+					<h3>Page</h3>
+					<div>
+						<fieldset>
+							<legend>Info</legend>
+							<span id="fileInfoPages"></span> pages
+						</fieldset>
+						<fieldset>
+							<legend>Jump to page</legend>
+							<input type="text" size="4" id="jumpPage" class="numeric" value="0"><button id="goPage">Jump</button>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to decimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetDec" class="numeric" value="0"><button id="goOffsetDec">Jump</button><br>
+						</fieldset>
+						<fieldset>
+							<legend>Jump to hexadecimal offset</legend>
+							<input type="text" size="8" id="jumpOffsetHex"><button id="goOffsetHex">Jump</button>
+						</fieldset>
+						<button id="prev">Previous</button>&nbsp;<button id="next">Next</button>
+					</div>
+					<h3>Selection <span id="selectionName"></span></h3>
+					<div>
+						<div id="values">
+							<fieldset>
+								<legend>Size</legend>
+								dec: <span id="sizeDec"></span><br>
+								hex: <span id="sizeHex"></span><br>
+								kib: <span id="sizeKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Offset</legend>
+								dec: <span id="filePositionDec"></span><br>
+								hex: <span id="filePositionHex"></span><br>
+								kib: <span id="filePositionKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Big Endian</legend>
+								dec: <span id="beDec"></span><br>
+								hex: <span id="beHex"></span><br>
+								kib: <span id="beKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Little Endian</legend>
+								dec: <span id="leDec"></span><br>
+								hex: <span id="leHex"></span><br>
+								kib: <span id="leKiB"></span>
+							</fieldset>
+							<fieldset>
+								<legend>Binary</legend>
+								bin: <span id="binary"></span><br>
+							</fieldset>
+							<fieldset>
+								<legend>Path</legend>
+								<span class="fullname"></span>
+							</fieldset>
+						</div>
+					</div>
+					<h3>Pages of interest</h3>
+					<div id="pagesOfInterest">Pages of interest:<br></div>
+					<h3>Tab tags</h3>
+					<div id="tabTags"></div>
+					<h3>Hotspots</h3>
+					<div id="hotspots"></div>
+					<h3>Help</h3>
+					<div>
+						<fieldset>
+							<legend>Shortkeys</legend>
+							<ul>
+								<li>Page down: Next page
+								<li>Page up: Previous page
+								<li>Hold shift: peek sequence instead of definition
+								<li>Minus sign: zoom out layout
+								<li>Plus sign: zoom in layout
+							</ul>
+						</fieldset>
+						<fieldset>
+							<legend>Hints</legend>
+							<ul>
+								<li>Click a byte to keep selection. Click any byte to release selection.
+							</ul>
+						</fieldset>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
