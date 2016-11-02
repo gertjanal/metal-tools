@@ -31,9 +31,9 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
  */
 public class Tokens {
 
-    public static final Token SUPPORTED = cho(
-            PNG.FORMAT,
-            ZIP.FORMAT,
-            JPEG.FORMAT,
-            VHDX.FORMAT);
+	public static final Token SUPPORTED = cho(
+		PNG.FORMAT,
+		ZIP.FORMAT,
+		JPEG.FORMAT,
+		VHDX.format(true));
 }

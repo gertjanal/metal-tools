@@ -29,21 +29,21 @@ public class VHDXTest {
 	@Test
 	public void testNTFSdynamic() throws Exception {
 		final Environment environment = ResourceEnvironment.environment("/vhdx/NTFSdynamic.vhdx");
-		final ParseResult result = VHDX.FORMAT.parse(environment, le());
+		final ParseResult result = VHDX.format(true).parse(environment, le());
 		assertTrue(result.succeeded);
 	}
 
 	@Test
 	public void testNTFSfixed() throws Exception {
 		final Environment environment = ResourceEnvironment.environment("/vhdx/NTFSfixed.vhdx");
-		final ParseResult result = VHDX.FORMAT.parse(environment, le());
+		final ParseResult result = VHDX.format(true).parse(environment, le());
 		assertTrue(result.succeeded);
 	}
 
 	@Test
 	public void testWindows10() throws Exception {
 		final Environment environment = ResourceEnvironment.environment("/vhdx/MSEdge-Win10_preview_truncated.vhdx");
-		final ParseResult result = VHDX.FORMAT.parse(environment, le());
+		final ParseResult result = VHDX.format(false).parse(environment, le());
 		assertTrue(result.succeeded);
 	}
 }

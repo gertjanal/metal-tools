@@ -45,7 +45,7 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
+    private static final boolean RENEW = false;
 	private static final Token STRING = seq(
 		def("length", 1),
 		def("text", ref("length")));
@@ -89,7 +89,7 @@ public class JsHexViewerTest {
 	@Test
 	public void testGenerateVHDX() throws Exception {
 		final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
-		final ParseResult result = VHDX.FORMAT.parse(env, le());
+        final ParseResult result = VHDX.format(true).parse(env, le());
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_vhdx");

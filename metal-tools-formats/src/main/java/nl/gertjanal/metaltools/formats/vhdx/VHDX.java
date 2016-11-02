@@ -25,7 +25,7 @@ import static io.parsingdata.metal.Shorthand.ltNum;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
-import static nl.gertjanal.metaltools.formats.vhdx.Bat.BAT;
+import static nl.gertjanal.metaltools.formats.vhdx.Bat.bat;
 import static nl.gertjanal.metaltools.formats.vhdx.FileIdentifier.FILE_IDENTIFIER;
 import static nl.gertjanal.metaltools.formats.vhdx.Header.header;
 import static nl.gertjanal.metaltools.formats.vhdx.Log.LOGS;
@@ -57,5 +57,12 @@ public class VHDX {
 			sub("oldRegion", oldRegion(), con(0x30000)), // 192 KiB
 			sub("region", region(), con(0x40000)))); // 256 KiB
 
-	public static final Token FORMAT = seq(LITTLE_ENDIAN, FILE_IDENTIFIER, HEADERS_REGIONS, LOGS, BAT);
+	public static Token format(final boolean resolveData) {
+		return seq(
+			LITTLE_ENDIAN,
+			FILE_IDENTIFIER,
+			HEADERS_REGIONS,
+			LOGS,
+			bat(resolveData));
+	}
 }
