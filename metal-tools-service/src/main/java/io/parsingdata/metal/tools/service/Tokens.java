@@ -35,5 +35,5 @@ public class Tokens {
 		PNG.FORMAT,
 		ZIP.FORMAT,
 		JPEG.FORMAT,
-		VHDX.format(true));
+		VHDX.format(false));
 }

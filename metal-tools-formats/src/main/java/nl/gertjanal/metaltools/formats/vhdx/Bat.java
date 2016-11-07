@@ -23,6 +23,7 @@ import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.div;
 import static io.parsingdata.metal.Shorthand.last;
 import static io.parsingdata.metal.Shorthand.mul;
+import static io.parsingdata.metal.Shorthand.nod;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
@@ -81,7 +82,10 @@ public class Bat {
 		return seq(
 			PAYLOAD_BLOCK_FULLY_PRESENT,
 			sub(
-				def("payload_block", last(ref(BLOCK_SIZE_NAME))),
+				seq(
+					def("payload_block_start", 1),
+					nod(sub(last(ref(BLOCK_SIZE_NAME)), con(2))),
+					def("payload_block_end", 1)),
 				mul(
 					dataOffset(last(ref("payload_block_fully_present"))),
 					con(0x100000))));

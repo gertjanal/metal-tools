@@ -79,7 +79,6 @@ public class UploadController {
 
 					@Override
 					public int read(final long offset, final byte[] buffer) throws IOException {
-						System.out.println("Requesting buffer " + offset + ", " + buffer.length);
 						final Slice part = new Slice(BigInteger.valueOf(offset), buffer.length, id);
 						byte[] data = _queue.remove(part);
 						if (data == null) {
@@ -94,7 +93,6 @@ public class UploadController {
 								return 0;
 							}
 						} while ((data = _queue.remove(part)) == null);
-						System.out.println("Received buffer " + offset + ", " + data.length);
 						System.arraycopy(data, 0, buffer, 0, data.length);
 						_read += data.length;
 						return data.length;
