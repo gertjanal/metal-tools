@@ -21,9 +21,13 @@ import static io.parsingdata.metal.Shorthand.cho;
 import static io.parsingdata.metal.Shorthand.con;
 import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.div;
+import static io.parsingdata.metal.Shorthand.gtNum;
 import static io.parsingdata.metal.Shorthand.last;
+import static io.parsingdata.metal.Shorthand.ltNum;
+import static io.parsingdata.metal.Shorthand.mod;
 import static io.parsingdata.metal.Shorthand.mul;
 import static io.parsingdata.metal.Shorthand.nod;
+import static io.parsingdata.metal.Shorthand.pre;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
@@ -115,11 +119,47 @@ public class Bat {
 		SECTOR_BITMAP_BLOCKSCOUNT,
 		add(CHUNCK_RATIO, con(1)));
 
+	public static final Token SECTOR_BITMAP = cho(
+		// This state indicates that this sector bitmap block’s contents are undefined and that the block is not allocated in the file.
+		// For a fixed or dynamic VHDX file, all sector bitmap block entries must be in this state.
+		// For a differencing VHDX file, a sector bitmap block entry must not be in this state if
+		// any of the associated payload block entries are in the PAYLOAD_BLOCK_PARTIALLY_PRESENT state.
+		def("sector_bitmap_block_not_present", UINT64, state(0)),
+
+		// This state indicates that the sector bitmap block contents are defined in the file at a location pointed to by the FileOffsetMB field.
+		// For a fixed or dynamic VHDX file, a sector bitmap block entry must not be in this state.
+		// For differencing VHDX file, a sector bitmap block entry must be set to the SB_BLOCK_ PRESENT state if any associated payload blocks
+		// are the PAYLOAD_BLOCK_ PARTIALLY_PRESENT state. The sector bitmap block contents are defined in the file at the location specified
+		// by the FileOffsetMB field.
+		def("sector_bitmap_block_present", UINT64, state(6)));
+
 	public static Token bat(final boolean resolveData) {
+		// The block allocation table consists of bat entries.
+		// After n entries (n == chunk ratio), a block is added describing if the previous blocks should be used (in case of a differencing disk).
+		// Differencing disks are a overlay / snapshot on top of another parent vhdx,
+		// for example a vhdx with an application on top of a vhdx operating system.
 		return sub(
-			repn(
-				batEntry(resolveData),
-				TOTAL_BAT_ENTRIES_DYNAMIC),
+			seq(
+				pre(
+					// The bat consists of n entries > chunk ratio
+					seq(
+						repn(
+							seq(
+								repn(
+									batEntry(resolveData),
+									CHUNCK_RATIO),
+								SECTOR_BITMAP),
+							divFloor(TOTAL_BAT_ENTRIES_DYNAMIC, CHUNCK_RATIO)),
+						repn(
+							batEntry(resolveData),
+							mod(TOTAL_BAT_ENTRIES_DYNAMIC, CHUNCK_RATIO))),
+					gtNum(TOTAL_BAT_ENTRIES_DYNAMIC, CHUNCK_RATIO)),
+				pre(
+					// The bat consists of n entries < chunk ratio (no sector bitmaps)
+					repn(
+						batEntry(resolveData),
+						TOTAL_BAT_ENTRIES_DYNAMIC),
+					ltNum(TOTAL_BAT_ENTRIES_DYNAMIC, CHUNCK_RATIO))),
 			last(ref(FILE_OFFSET_NAME)));
 	}
 
