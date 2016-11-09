@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,16 +65,26 @@ public class JsHexViewer {
 	}
 
 	public static void generate(final ParseGraph graph, final String fileName) throws URISyntaxException, IOException {
-		final File root = new File(JsHexViewer.class.getResource("/").toURI());
-		generate(graph, fileName, root, true);
+		generate(graph, null, fileName);
 	}
 
-	public static void generate(final ParseGraph graph, final String fileName, final File dir, final boolean copyLibs)
-		throws URISyntaxException, IOException {
+	public static void generate(final ParseGraph graph, final InputStream data, final String fileName) throws URISyntaxException, IOException {
+		final File root = new File(JsHexViewer.class.getResource("/").toURI());
+		generate(graph, data, fileName, root, true);
+	}
+
+	public static void generate(final ParseGraph graph, final InputStream data, final String fileName, final File dir, final boolean copyLibs) throws URISyntaxException, IOException {
+		// Generate highlights
 		try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName + ".js"))) {
-			IOUtils.write(generateJs(graph), fos, StandardCharsets.UTF_8);
+			IOUtils.write(generateJs(graph), fos);
 		}
 
+		// Save content
+		try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName))) {
+			IOUtils.copy(data, fos);
+		}
+
+		// Generate html
 		final File file = new File(dir, fileName + ".htm");
 		try (FileWriter out = new FileWriter(file);
 			InputStream in = JsHexViewer.class.getResourceAsStream("/jsHexViewer/template.htm");
@@ -95,6 +104,7 @@ public class JsHexViewer {
 			}
 		}
 
+		// Copy html libs
 		if (copyLibs) {
 			copyLibs(dir);
 		}
