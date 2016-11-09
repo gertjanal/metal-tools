@@ -786,10 +786,12 @@ var flip = true;
 var lastColor = Math.floor((Math.random() * 180) + 1);
 var colors = {};
 function getHue(str) {
-	if (!(str in colors)) {
+    console.log(str);
+	if (!colors.hasOwnProperty(str)) {
 		lastColor = (lastColor + 13) % 180;
 		colors[str] = flip ? lastColor : 360 - lastColor;
 		flip = !flip;
+		console.log('new color ' + str + ': ' + colors[str])
 	}
 	return colors[str];
 }

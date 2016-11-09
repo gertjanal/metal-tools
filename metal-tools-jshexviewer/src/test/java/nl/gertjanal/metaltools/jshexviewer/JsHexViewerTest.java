@@ -45,7 +45,7 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-    private static final boolean RENEW = false;
+	private static final boolean RENEW = false;
 	private static final Token STRING = seq(
 		def("length", 1),
 		def("text", ref("length")));

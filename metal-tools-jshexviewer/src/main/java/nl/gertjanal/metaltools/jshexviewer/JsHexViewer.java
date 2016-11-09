@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,12 +77,14 @@ public class JsHexViewer {
 	public static void generate(final ParseGraph graph, final InputStream data, final String fileName, final File dir, final boolean copyLibs) throws URISyntaxException, IOException {
 		// Generate highlights
 		try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName + ".js"))) {
-			IOUtils.write(generateJs(graph), fos);
+			IOUtils.write(generateJs(graph), fos, StandardCharsets.UTF_8);
 		}
 
 		// Save content
-		try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName))) {
-			IOUtils.copy(data, fos);
+		if (data != null) {
+			try (FileOutputStream fos = new FileOutputStream(new File(dir, fileName))) {
+				IOUtils.copy(data, fos);
+			}
 		}
 
 		// Generate html
