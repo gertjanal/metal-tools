@@ -72,7 +72,11 @@
 		text-align: right;
 	}
 
-	.byte.selected,
+	/* Note: the following three css blocks can not be merged because of browser incapabilities */
+	.byte.selected {
+		background-color: #096ac8;
+		color: white;
+	}
 	.byte::-moz-selection {
 		background-color: #096ac8;
 		color: white;
