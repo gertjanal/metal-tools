@@ -13,8 +13,15 @@ import nl.gertjanal.metaltools.formats.ResourceEnvironment;
 public class RARTest {
 
 	@Test
-	public void testRAR() throws Exception {
-		final Environment environment = ResourceEnvironment.environment("/rar/example.rar");
+	public void testRAR4() throws Exception {
+		final Environment environment = ResourceEnvironment.environment("/rar/example4.x.rar");
+		final ParseResult result = RAR.FORMAT.parse(environment, le());
+		assertTrue(result.succeeded);
+	}
+
+	@Test
+	public void testRAR5() throws Exception {
+		final Environment environment = ResourceEnvironment.environment("/rar/example5.40.rar");
 		final ParseResult result = RAR.FORMAT.parse(environment, le());
 		assertTrue(result.succeeded);
 	}

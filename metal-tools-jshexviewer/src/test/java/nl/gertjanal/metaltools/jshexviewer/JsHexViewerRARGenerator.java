@@ -42,7 +42,7 @@ public class JsHexViewerRARGenerator {
 
 	@Test
 	public void generate() throws Exception {
-		final Environment env = environment("/rar/example.rar");
+		final Environment env = environment("/rar/example4.x.rar");
 		final ParseResult result = RAR.FORMAT.parse(env, le());
 		assertTrue(result.succeeded);
 		JsHexViewer.generate(result.environment.order, "rar");
