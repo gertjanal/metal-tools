@@ -7,7 +7,8 @@ import io.parsingdata.metal.token.Token;
 
 /**
  * The RAR archive format.
- * {@link
+ * RAR 5.0: {@link http://www.rarlab.com/technote.htm}
+ * RAR 4.x: {@link http://www.forensicswiki.org/wiki/RAR}
  *
  * @author Netherlands Forensic Institute.
  */
