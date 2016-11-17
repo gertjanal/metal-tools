@@ -13,6 +13,7 @@
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
 
 		<commons-io.version>2.5</commons-io.version>
+		<jackson.version>2.8.5</jackson.version>
 		<junit.version>4.11</junit.version>
 		<metal.version>4.0.1</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
@@ -63,6 +64,11 @@
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${commons-io.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
