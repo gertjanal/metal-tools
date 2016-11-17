@@ -40,60 +40,60 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsTreeTest {
 
-    private static final boolean RENEW = false;
+	private static final boolean RENEW = false;
 
-    @Test
-    public void testGeneratePng() throws Exception {
-        final Environment env = environment("/screenshot_data.png");
-        final ParseResult result = PNG.FORMAT.parse(env, le());
-        assertTrue(result.succeeded);
+	@Test
+	public void testGeneratePng() throws Exception {
+		final Environment env = environment("/screenshot_data.png");
+		final ParseResult result = PNG.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_png");
-    }
+		assertGenerate(result, "example_png");
+	}
 
-    @Test
-    public void testGenerateZip() throws Exception {
-        final Environment env = environment("/data.zip");
-        final ParseResult result = ZIP.FORMAT.parse(env, le());
-        assertTrue(result.succeeded);
+	@Test
+	public void testGenerateZip() throws Exception {
+		final Environment env = environment("/data.zip");
+		final ParseResult result = ZIP.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_zip");
-    }
+		assertGenerate(result, "example_zip");
+	}
 
-    @Test
-    public void testGenerateVHDX() throws Exception {
-        final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
-        final ParseResult result = VHDX.format(true).parse(env, le());
-        assertTrue(result.succeeded);
+	@Test
+	public void testGenerateVHDX() throws Exception {
+		final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
+		final ParseResult result = VHDX.format(true).parse(env, le());
+		assertTrue(result.succeeded);
 
-        assertGenerate(result, "example_vhdx");
-    }
+		assertGenerate(result, "example_vhdx");
+	}
 
-    private Environment environment(final String name) throws IOException, URISyntaxException {
-        final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
-        return new Environment(new InMemoryByteStream(data));
-    }
+	private Environment environment(final String name) throws IOException, URISyntaxException {
+		final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
+		return new Environment(new InMemoryByteStream(data));
+	}
 
-    private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
-        JsTree.generate(result.environment.order, fileName);
+	private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
+		JsTree.generate(result.environment.order, fileName);
 
-        if (RENEW) {
-            export(fileName);
-        }
-        final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".htm"), StandardCharsets.UTF_8);
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsTree/" + fileName + ".htm"), StandardCharsets.UTF_8);
-        assertEquals(expected, generated);
-    }
+		if (RENEW) {
+			export(fileName);
+		}
+		final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".htm"), StandardCharsets.UTF_8);
+		final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsTree/" + fileName + ".htm"), StandardCharsets.UTF_8);
+		assertEquals(expected, generated);
+	}
 
-    private void export(final String fileName) throws Exception {
-        exportFile(fileName + ".htm");
-        fail("Export should not be used in production");
-    }
+	private void export(final String fileName) throws Exception {
+		exportFile(fileName + ".htm");
+		fail("Export should not be used in production");
+	}
 
-    private void exportFile(final String fileName) throws Exception {
-        final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsTree/" + fileName);
-        try (FileOutputStream fos = new FileOutputStream(export)) {
-            IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
-        }
-    }
+	private void exportFile(final String fileName) throws Exception {
+		final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsTree/" + fileName);
+		try (FileOutputStream fos = new FileOutputStream(export)) {
+			IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
+		}
+	}
 }
