@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<link rel="stylesheet" href="libs/hue/hue.css">
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Hind+Vadodara">
+		<style type="text/css">
+			body {
+				margin: 0px;
+				font-family: 'Hind Vadodara', sans-serif;
+				background-color: rgb(51, 51, 51);
+			}
+			
+			svg {
+				pointer-events: all;
+				cursor: grab;
+			}
+			
+			g.node {
+				cursor: pointer;
+			}
+			
+			.node text {
+				stroke-width: 1px;
+				font-size: 11px;
+				fill: black;
+			}
+			
+			path.link {
+				fill: none;
+				stroke: #292929; /*#292929*/
+				stroke-width: 6px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="box"></div>
+		<script type="text/javascript" src="libs/tree/tree.js"></script>
+		<script type="text/javascript">
+loadData({"name":"Seq: ZIP","children":[{"name":"Rep: files","children":[{"name":"Cho","children":[{"name":"Seq: localstoredfile","children":[{"name":"Seq","children":[{"name":"Def: filesignature"},{"name":"Def: extractversion"},{"name":"Def: bitflag"},{"name":"Def: compressionmethod"},{"name":"Def: lastmodtime"},{"name":"Def: lastmoddate"},{"name":"Def: crc32"},{"name":"Def: compressedsize"},{"name":"Def: uncompressedsize"},{"name":"Def: filenamesize"},{"name":"Def: extrafieldsize"},{"name":"Def: filename"},{"name":"Def: extrafield"}]},{"name":"Def: compresseddata"}]}]}]},{"name":"Rep: direntries","children":[{"name":"Seq: direntry","children":[{"name":"Def: dirsignature"},{"name":"Def: makeversion"},{"name":"Def: extractversion"},{"name":"Def: bitflag"},{"name":"Def: compressionmethod"},{"name":"Def: lastmodtime"},{"name":"Def: lastmoddate"},{"name":"Def: crc32"},{"name":"Def: compressedsize"},{"name":"Def: uncompressedsize"},{"name":"Def: filenamesize"},{"name":"Def: extrafieldsize"},{"name":"Def: filecommentsize"},{"name":"Def: filedisk"},{"name":"Def: intfileattr"},{"name":"Def: extfileattr"},{"name":"Def: offset"},{"name":"Def: filename"},{"name":"Def: extrafield"},{"name":"Def: filecomment"}]}]},{"name":"Seq: endofdir","children":[{"name":"Def: endofdirsignature"},{"name":"Def: disknumber"},{"name":"Def: dirdisk"},{"name":"Def: numlocaldirs"},{"name":"Def: numtotaldirs"},{"name":"Def: dirsize"},{"name":"Def: diroffset"},{"name":"Def: commentsize"},{"name":"Def: comment"}]}]});
+		</script>
+	</body>
+</html>
+

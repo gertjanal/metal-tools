@@ -1,8 +1,13 @@
 <html>
 	<head>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<link rel="stylesheet" href="libs/hue/hue.css">
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Hind+Vadodara">
 		<style type="text/css">
 			body {
 				margin: 0px;
+				font-family: 'Hind Vadodara', sans-serif;
+				background-color: rgb(51, 51, 51);
 			}
 			
 			svg {
@@ -22,16 +27,17 @@
 			
 			path.link {
 				fill: none;
-				stroke: black;
-				stroke-width: 1px;
+				stroke: #292929; /*#292929*/
+				stroke-width: 6px;
 			}
 		</style>
-		<script src="https://d3js.org/d3.v3.min.js"></script>
-		<link rel="stylesheet" href="libs/hue/hue.css">
 	</head>
 	<body>
 		<div id="box"></div>
-		<script type="text/javascript" src="tree.js"></script>
+		<script type="text/javascript" src="libs/tree/tree.js"></script>
+		<script type="text/javascript">
+			loadData({}); /* generated */
+		</script>
 	</body>
 </html>
 

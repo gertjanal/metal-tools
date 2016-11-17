@@ -5,9 +5,9 @@ for(var i = 0; i <= 360; i++) {
 	var background = hsv2rgb(i, 50, 80);
 	var border = hsv2rgb(i, 100, 100);
 	document.write(
-	'.node.hue' + i + ' text{' +
+	'.node.hue' + i + ' rect{' +
 		'fill:' + background + ';' +
-		'/*stroke:' + border + ';*/' +
+		'stroke:' + border + ';' +
 	'}<br>');
 }
 
@@ -32,7 +32,7 @@ function hsv2rgb(h, s, v) {
 		case 4: r = t; g = p; b = v; break;
 		default: r = v; g = p; b = q;
 	}
-	return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+	return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
 }
 
 </script>

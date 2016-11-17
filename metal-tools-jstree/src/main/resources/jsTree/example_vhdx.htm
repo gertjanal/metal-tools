@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<link rel="stylesheet" href="libs/hue/hue.css">
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Hind+Vadodara">
+		<style type="text/css">
+			body {
+				margin: 0px;
+				font-family: 'Hind Vadodara', sans-serif;
+				background-color: rgb(51, 51, 51);
+			}
+			
+			svg {
+				pointer-events: all;
+				cursor: grab;
+			}
+			
+			g.node {
+				cursor: pointer;
+			}
+			
+			.node text {
+				stroke-width: 1px;
+				font-size: 11px;
+				fill: black;
+			}
+			
+			path.link {
+				fill: none;
+				stroke: #292929; /*#292929*/
+				stroke-width: 6px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="box"></div>
+		<script type="text/javascript" src="libs/tree/tree.js"></script>
+		<script type="text/javascript">
+loadData({"name":"Seq","children":[{"name":"Seq: fileIdentifier","children":[{"name":"Def: Signature"},{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Def: Creator"},{"name":"Def: nod"}]}]}]},{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Sub: oldHeader","children":[{"name":"Seq","children":[{"name":"Def: Signature"},{"name":"Def: Checksum"},{"name":"Def: SequenceNumber"},{"name":"Def: FileWriteGuid"},{"name":"Def: DataWriteGuid"},{"name":"Def: LogGuid"},{"name":"Def: LogVersion"},{"name":"Def: Version"},{"name":"Def: LogLength"},{"name":"Def: LogOffset"}]}]},{"name":"Sub: header","children":[{"name":"Seq","children":[{"name":"Def: Signature"},{"name":"Def: Checksum"},{"name":"Def: SequenceNumber"},{"name":"Def: FileWriteGuid"},{"name":"Def: DataWriteGuid"},{"name":"Def: LogGuid"},{"name":"Def: LogVersion"},{"name":"Def: Version"},{"name":"Def: LogLength"},{"name":"Def: LogOffset"}]}]},{"name":"Sub: oldRegion","children":[{"name":"Seq","children":[{"name":"Seq: regionTableHeader","children":[{"name":"Def: Signature"},{"name":"Def: Checksum"},{"name":"Def: EntryCount"},{"name":"Def: Signature"},{"name":"Def: Checksum"},{"name":"Def: EntryCount"}]},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq: metadata","children":[{"name":"Def: Guid"},{"name":"Def: FileOffset"},{"name":"Def: Length"},{"name":"Def: Required"},{"name":"Sub"}]},{"name":"Seq: bat","children":[{"name":"Def: Guid"},{"name":"Def: FileOffset"},{"name":"Def: Length"},{"name":"Def: Required"},{"name":"Sub"}]}]},{"name":"Cho"}]}]}]},{"name":"Sub: region","children":[{"name":"Seq","children":[{"name":"Seq: regionTableHeader"},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq: metadata","children":[{"name":"Def: Guid"},{"name":"Def: FileOffset"},{"name":"Def: Length"},{"name":"Def: Required"},{"name":"Sub","children":[{"name":"Seq: metadataTable","children":[{"name":"Def: metadataTableAnchor"},{"name":"Def: Signature"},{"name":"Def: EntryCount"},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Str: page38Data","children":[{"name":"Seq","children":[{"name":"Def: ItemId"},{"name":"Def: Offset"},{"name":"Def: Length"},{"name":"Def: Is"},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: Page83Data"}]}]}]}]},{"name":"Str: physicalSectorSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId"},{"name":"Def: Offset"},{"name":"Def: Length"},{"name":"Def: Is"},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: PhysicalSectorSize"}]}]}]}]},{"name":"Str: logicalSectorSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId"},{"name":"Def: Offset"},{"name":"Def: Length"},{"name":"Def: Is"},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: LogicalSectorSize"}]}]}]}]},{"name":"Str: virtualDiskSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId"},{"name":"Def: Offset"},{"name":"Def: Length"},{"name":"Def: Is"},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: VirtualDiskSize"}]}]}]}]},{"name":"Str: fileParameters","children":[{"name":"Seq","children":[{"name":"Def: ItemId"},{"name":"Def: Offset"},{"name":"Def: Length"},{"name":"Def: Is"},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Seq","children":[{"name":"Def: BlockSize"},{"name":"Def: LeaveBlocksAllocated_HasParent"}]}]}]}]}]}]},{"name":"Cho"},{"name":"Cho"},{"name":"Cho"},{"name":"Cho"}]}]}]}]},{"name":"Seq: bat","children":[{"name":"Def: Guid"},{"name":"Def: FileOffset"},{"name":"Def: Length"},{"name":"Def: Required"},{"name":"Sub"}]}]},{"name":"Cho"}]}]}]}]}]},{"name":"Sub","children":[{"name":"Seq","children":[{"name":"Pre","children":[{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Def: payload_block_fully_present"},{"name":"Sub","children":[{"name":"Seq","children":[{"name":"Def: payload_block_start"},{"name":"Def: payload_block_end"}]}]}]}]}]}]}]}]}]});
+		</script>
+	</body>
+</html>
+
