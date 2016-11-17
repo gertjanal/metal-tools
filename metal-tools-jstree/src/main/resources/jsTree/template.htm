@@ -7,21 +7,23 @@
 			
 			svg {
 				pointer-events: all;
+				cursor: grab;
+			}
+			
+			g.node {
+				cursor: pointer;
 			}
 			
 			.node text {
+				stroke-width: 1px;
 				font-size: 11px;
-				fill: white;
-			}
-			
-			.node.hue20 text {
-				fill: green;
+				fill: black;
 			}
 			
 			path.link {
 				fill: none;
-				stroke: white;
-				stroke-width: 1.5px;
+				stroke: black;
+				stroke-width: 1px;
 			}
 		</style>
 		<script src="https://d3js.org/d3.v3.min.js"></script>

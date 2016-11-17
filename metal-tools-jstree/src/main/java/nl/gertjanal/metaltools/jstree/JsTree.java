@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +24,8 @@ public class JsTree {
         final Map<String, Object> root = new LinkedHashMap<>();
         step(graph, root, new HashMap<>());
         final ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(((List<?>) root.get("children")).get(0));
+        //return objectMapper.writeValueAsString(((List<?>) root.get("children")).get(0));
+        return objectMapper.writeValueAsString(root);
     }
 
     private static void step(final ParseItem item, final Map<String, Object> self, final Map<Token, LinkedList<Map<String, Object>>> collection) {
@@ -59,6 +59,11 @@ public class JsTree {
         }
 
         children.push(head);
+
+        if (item.asGraph().tail.getDefinition() != item.getDefinition()) {
+            children.push(tail);
+        }
+
         step(item.asGraph().tail, tail, collection);
         step(item.asGraph().head, head, collection);
     }
