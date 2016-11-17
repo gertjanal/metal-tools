@@ -36,6 +36,7 @@ import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsTreeTest {
@@ -72,7 +73,7 @@ public class JsTreeTest {
     @Test
     public void testGenerateRAR() throws Exception {
         final Environment env = environment("/rar/example4.x.rar");
-        final ParseResult result = VHDX.format(true).parse(env, le());
+        final ParseResult result = RAR.FORMAT.parse(env, le());
         assertTrue(result.succeeded);
 
         assertGenerate(result, "example_rar");
