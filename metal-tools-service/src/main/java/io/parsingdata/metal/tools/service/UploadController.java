@@ -107,7 +107,7 @@ public class UploadController {
 					if (result.succeeded) {
 						System.out.println("generating for " + id);
 						final File root = new File(JsHexViewer.class.getResource("/").toURI());
-						JsHexViewer.generate(result.environment.order, id.toString(), new File(root, "static"), false);
+						JsHexViewer.generate(result.environment.order, null, id.toString(), new File(root, "static"), false);
 					}
 					_messagingTemplate.convertAndSend("/topic/data/" + id + "/done", result.succeeded);
 				} catch (final Throwable t) {

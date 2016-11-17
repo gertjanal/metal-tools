@@ -1,0 +1,39 @@
+<body>
+<script type="text/javascript">
+
+for(var i = 0; i <= 360; i++) {
+	var background = hsv2rgb(i, 50, 80);
+	var border = hsv2rgb(i, 100, 100);
+	document.write(
+	'.node.hue' + i + ' rect{' +
+		'fill:' + background + ';' +
+		'stroke:' + border + ';' +
+	'}<br>');
+}
+
+
+function hsv2rgb(h, s, v) {
+	var r, g, b;
+	var i;
+	var f, p, q, t;
+	s /= 100;
+	v /= 100;
+	h /= 60;
+	i = Math.floor(h);
+	f = h - i;
+	p = v * (1 - s);
+	q = v * (1 - s * f);
+	t = v * (1 - s * (1 - f));
+	switch(i) {
+		case 0: r = v; g = t; b = p; break;
+		case 1: r = q; g = v; b = p; break;
+		case 2: r = p; g = v; b = t; break;
+		case 3: r = p; g = q; b = v; break;
+		case 4: r = t; g = p; b = v; break;
+		default: r = v; g = p; b = q;
+	}
+	return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
+}
+
+</script>
+</body>
