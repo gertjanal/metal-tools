@@ -8,24 +8,24 @@
 			svg {
 				pointer-events: all;
 			}
-			.node circle {
-				cursor: pointer;
-				fill: #fff;
-				stroke: steelblue;
-				stroke-width: 1.5px;
-			}
 			
 			.node text {
 				font-size: 11px;
+				fill: white;
+			}
+			
+			.node.hue20 text {
+				fill: green;
 			}
 			
 			path.link {
 				fill: none;
-				stroke: #ccc;
+				stroke: white;
 				stroke-width: 1.5px;
 			}
 		</style>
 		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<link rel="stylesheet" href="libs/hue/hue.css">
 	</head>
 	<body>
 		<div id="box"></div>

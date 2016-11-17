@@ -18,7 +18,7 @@ var vis = d3.select("#box").append("svg:svg")
 	.attr("width", w)
 	.attr("height", h)
 	.style("overflow", "scroll")
-	.style("background-color","#EEEEEE")
+	.style("background-color","rgb(51, 51, 51)")
   .append("svg:g")
 	.attr("class","drawarea")
   .append("svg:g")
@@ -47,7 +47,7 @@ function update(source) {
 	
 	// Enter any new nodes at the parent's previous position.
 	var nodeEnter = node.enter().append("svg:g")
-    	.attr("class", "node")
+    	.attr("class", function(d){ return 'node hue' + getHue(d.name);})
     	.attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
     	.on("click", function(d) { toggle(d); update(d); });
 	
@@ -143,6 +143,20 @@ function zoom() {
 	d3.select(".drawarea")
 		.attr("transform", "translate(" + translation + ")" +
 			  " scale(" + scale + ")");
+}
+
+var flip = true;
+var lastColor = Math.floor((Math.random() * 180) + 1);
+var colors = {};
+function getHue(str) {
+    console.log(str);
+    if (!colors.hasOwnProperty(str)) {
+        lastColor = (lastColor + 13) % 180;
+        colors[str] = flip ? lastColor : 360 - lastColor;
+        flip = !flip;
+        console.log('new color ' + str + ': ' + colors[str])
+    }
+    return colors[str];
 }
 
 loadData({"name":"Seq","children":[{"name":"Seq: fileIdentifier","children":[{"name":"Def: Signature","value":"dmhkeGZpbGU="},{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Def: Creator","value":"TQBpAGMAcgBvAHMAbwBmAHQAIABXAGkAbgBkAG8AdwBzACAANgAuADMALgA5ADYAMAAwAC4AMQA3ADMAOQA2AA=="},{"name":"Def: nod","value":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}]}]}]},{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Sub: oldHeader","children":[{"name":"Seq","children":[{"name":"Def: Signature","value":"aGVhZA=="},{"name":"Def: Checksum","value":"aSZacA=="},{"name":"Def: SequenceNumber","value":"CAAAAAAAAAA="},{"name":"Def: FileWriteGuid","value":"F03jOIaHcUy+5i0Ve65eXQ=="},{"name":"Def: DataWriteGuid","value":"BmjCDfHcR0CF+tcNp9+3PA=="},{"name":"Def: LogGuid","value":"AAAAAAAAAAAAAAAAAAAAAA=="},{"name":"Def: LogVersion","value":"AAA="},{"name":"Def: Version","value":"AQA="},{"name":"Def: LogLength","value":"AAAQAA=="},{"name":"Def: LogOffset","value":"AAAQAAAAAAA="}]}]},{"name":"Sub: header","children":[{"name":"Seq","children":[{"name":"Def: Signature","value":"aGVhZA=="},{"name":"Def: Checksum","value":"Hrqi8g=="},{"name":"Def: SequenceNumber","value":"CQAAAAAAAAA="},{"name":"Def: FileWriteGuid","value":"F03jOIaHcUy+5i0Ve65eXQ=="},{"name":"Def: DataWriteGuid","value":"BmjCDfHcR0CF+tcNp9+3PA=="},{"name":"Def: LogGuid","value":"AAAAAAAAAAAAAAAAAAAAAA=="},{"name":"Def: LogVersion","value":"AAA="},{"name":"Def: Version","value":"AQA="},{"name":"Def: LogLength","value":"AAAQAA=="},{"name":"Def: LogOffset","value":"AAAQAAAAAAA="}]}]},{"name":"Sub: oldRegion","children":[{"name":"Seq","children":[{"name":"Seq: regionTableHeader","children":[{"name":"Def: Signature","value":"cmVnaQ=="},{"name":"Def: Checksum","value":"roxrxg=="},{"name":"Def: EntryCount","value":"AgAAAA=="},{"name":"Def: Signature","value":"cmVnaQ=="},{"name":"Def: Checksum","value":"roxrxg=="},{"name":"Def: EntryCount","value":"AgAAAA=="}]},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq: metadata","children":[{"name":"Def: Guid","value":"BqJ8i5BHmku4/ldfBQ+Ibg=="},{"name":"Def: FileOffset","value":"AAAgAAAAAAA="},{"name":"Def: Length","value":"AAAQAA=="},{"name":"Def: Required","value":"AQAAAA=="},{"name":"Sub"}]},{"name":"Seq: bat","children":[{"name":"Def: Guid","value":"ZnfCLSP2AEKdZBFem/1KCA=="},{"name":"Def: FileOffset","value":"AAAwAAAAAAA="},{"name":"Def: Length","value":"AAAQAA=="},{"name":"Def: Required","value":"AQAAAA=="},{"name":"Sub"}]}]},{"name":"Cho"}]}]}]},{"name":"Sub: region","children":[{"name":"Seq","children":[{"name":"Seq: regionTableHeader"},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq: metadata","children":[{"name":"Def: Guid","value":"BqJ8i5BHmku4/ldfBQ+Ibg=="},{"name":"Def: FileOffset","value":"AAAgAAAAAAA="},{"name":"Def: Length","value":"AAAQAA=="},{"name":"Def: Required","value":"AQAAAA=="},{"name":"Sub","children":[{"name":"Seq: metadataTable","children":[{"name":"Def: metadataTableAnchor","value":""},{"name":"Def: Signature","value":"bWV0YWRhdGE="},{"name":"Def: EntryCount","value":"BQA="},{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Str: page38Data","children":[{"name":"Seq","children":[{"name":"Def: ItemId","value":"qxLKvuayI0WT78MJ4ADHRg=="},{"name":"Def: Offset","value":"GAABAA=="},{"name":"Def: Length","value":"EAAAAA=="},{"name":"Def: Is","value":"BgAAAA=="},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: Page83Data","value":"067pWwDdJESLYR4kKC4yOA=="}]}]}]}]},{"name":"Str: physicalSectorSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId","value":"x0ijzV1EcUScyemIUlHFVg=="},{"name":"Def: Offset","value":"FAABAA=="},{"name":"Def: Length","value":"BAAAAA=="},{"name":"Def: Is","value":"BgAAAA=="},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: PhysicalSectorSize","value":"ABAAAA=="}]}]}]}]},{"name":"Str: logicalSectorSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId","value":"Hb9BgW+pCUe6R/IzqPqrXw=="},{"name":"Def: Offset","value":"EAABAA=="},{"name":"Def: Length","value":"BAAAAA=="},{"name":"Def: Is","value":"BgAAAA=="},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: LogicalSectorSize","value":"AAIAAA=="}]}]}]}]},{"name":"Str: virtualDiskSize","children":[{"name":"Seq","children":[{"name":"Def: ItemId","value":"JEKlLxvNdkiyEV2+2Dv0uA=="},{"name":"Def: Offset","value":"CAABAA=="},{"name":"Def: Length","value":"CAAAAA=="},{"name":"Def: Is","value":"BgAAAA=="},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Def: VirtualDiskSize","value":"AAAAAQAAAAA="}]}]}]}]},{"name":"Str: fileParameters","children":[{"name":"Seq","children":[{"name":"Def: ItemId","value":"N2ehyjb6Q02ztjPwqkTnaw=="},{"name":"Def: Offset","value":"AAABAA=="},{"name":"Def: Length","value":"CAAAAA=="},{"name":"Def: Is","value":"BAAAAA=="},{"name":"Pre","children":[{"name":"Sub: data","children":[{"name":"Seq","children":[{"name":"Def: BlockSize","value":"AAAAAg=="},{"name":"Def: LeaveBlocksAllocated_HasParent","value":"AAAAAA=="}]}]}]}]}]}]},{"name":"Cho"},{"name":"Cho"},{"name":"Cho"},{"name":"Cho"}]}]}]}]},{"name":"Seq: bat","children":[{"name":"Def: Guid","value":"ZnfCLSP2AEKdZBFem/1KCA=="},{"name":"Def: FileOffset","value":"AAAwAAAAAAA="},{"name":"Def: Length","value":"AAAQAA=="},{"name":"Def: Required","value":"AQAAAA=="},{"name":"Sub"}]}]},{"name":"Cho"}]}]}]}]}]},{"name":"Sub","children":[{"name":"Seq","children":[{"name":"Pre","children":[{"name":"RepN","children":[{"name":"Cho","children":[{"name":"Seq","children":[{"name":"Def: payload_block_fully_present","value":"BgBAAAAAAAA="},{"name":"Sub","children":[{"name":"Seq","children":[{"name":"Def: payload_block_start","value":"Mw=="},{"name":"Def: payload_block_end","value":"AA=="}]}]}]}]}]}]}]}]}]}); /* generated */
