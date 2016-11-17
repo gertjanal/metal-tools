@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,6 +41,7 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
@@ -93,6 +94,15 @@ public class JsHexViewerTest {
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_vhdx");
+	}
+
+	@Test
+	public void testGenerateRAR() throws Exception {
+		final Environment env = environment("/rar/example4.x.rar");
+		final ParseResult result = RAR.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
+
+		assertGenerate(result, "example_rar");
 	}
 
 	private Environment environment(final String name) throws IOException, URISyntaxException {

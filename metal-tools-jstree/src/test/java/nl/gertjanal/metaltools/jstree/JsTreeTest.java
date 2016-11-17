@@ -69,6 +69,15 @@ public class JsTreeTest {
         assertGenerate(result, "example_vhdx");
     }
 
+    @Test
+    public void testGenerateRAR() throws Exception {
+        final Environment env = environment("/rar/example4.x.rar");
+        final ParseResult result = VHDX.format(true).parse(env, le());
+        assertTrue(result.succeeded);
+
+        assertGenerate(result, "example_rar");
+    }
+
     private Environment environment(final String name) throws IOException, URISyntaxException {
         final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
         return new Environment(new InMemoryByteStream(data));
