@@ -1,9 +1,6 @@
-var realWidth = window.innerWidth;
-var realHeight = window.innerHeight;
-
-var m = [40, 240, 40, 240],
-	w = realWidth,
-	h = realHeight,
+var offset = 100,
+	w = window.innerWidth,
+	h = window.innerHeight,
 	i = 0,
 	root;
 
@@ -18,7 +15,7 @@ var vis = d3.select('#box').append('svg:svg')
 	.append('svg:g')
 		.attr('class','drawarea')
 		.append('svg:g')
-			.attr('transform', 'translate(' + m[3] + ',' + m[0] + ')');
+			.attr('transform', 'translate(' + offset + ', 0)');
 
 function loadData(json) {
 	root = json;
@@ -121,7 +118,8 @@ function toggle(d) {
 	if (d.children) {
 		d._children = d.children;
 		d.children = null;
-	} else {
+	}
+	else {
 		d.children = d._children;
 		d._children = null;
 	}
@@ -132,15 +130,14 @@ function zoom() {
 		translation = d3.event.translate,
 		tbound = -h * scale,
 		bbound = h * scale,
-		lbound = (-w + m[1]) * scale,
-		rbound = (w - m[3]) * scale;
+		lbound = -w * scale,
+		rbound = w * scale;
 	// limit translation to thresholds
 	translation = [
 		Math.max(Math.min(translation[0], rbound), lbound),
 		Math.max(Math.min(translation[1], bbound), tbound)
 	];
-	d3.select('.drawarea')
-		.attr('transform', 'translate(' + translation + ') scale(' + scale + ')');
+	d3.select('.drawarea').attr('transform', 'translate(' + translation + ') scale(' + scale + ')');
 }
 
 var flip = true;
