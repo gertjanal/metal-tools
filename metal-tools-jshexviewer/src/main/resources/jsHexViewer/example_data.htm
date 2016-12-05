@@ -639,6 +639,16 @@ $(function() {
 	$(window).on('hashchange', function() {
 		readPage();
 	});
+	
+	if (getParameter("noside")) {
+		$('#divider').css('display', 'none');
+		$('#right-component').css('display', 'none');
+		
+		$('#left-component').css('width', '100%');
+		$('#left-component').css('right', 'auto');
+		$('#left-component').css('margin-left', 'auto');
+		$('#left-component').css('margin-right', 'auto');
+	}
 });
 
 function getMatchingIndex(a, b) {
