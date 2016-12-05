@@ -639,6 +639,11 @@ $(function() {
 	$(window).on('hashchange', function() {
 		readPage();
 	});
+	
+	if (getParameter("noside")) {
+		$('#divider').css('display', 'none');
+		$('#right-component').css('display', 'none');
+	}
 });
 
 function getMatchingIndex(a, b) {
