@@ -116,10 +116,8 @@ public class JsHexViewerTest {
 		if (RENEW) {
 			export(fileName);
 		}
-		final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".js"),
-			StandardCharsets.UTF_8);
-		final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName + ".js"),
-			StandardCharsets.UTF_8);
+		final String generated = IOUtils.toString(getClass().getResourceAsStream("/" + fileName + ".js"), StandardCharsets.UTF_8);
+		final String expected = IOUtils.toString(getClass().getResourceAsStream("/jsHexViewer/" + fileName + ".js"), StandardCharsets.UTF_8);
 		assertEquals(expected, generated);
 	}
 
@@ -130,8 +128,7 @@ public class JsHexViewerTest {
 	}
 
 	private void exportFile(final String fileName) throws Exception {
-		final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(),
-			"/src/main/resources/jsHexViewer/" + fileName);
+		final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsHexViewer/" + fileName);
 		try (FileOutputStream fos = new FileOutputStream(export)) {
 			IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
 		}
