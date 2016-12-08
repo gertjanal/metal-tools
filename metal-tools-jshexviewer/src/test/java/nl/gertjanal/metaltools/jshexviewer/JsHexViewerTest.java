@@ -16,6 +16,10 @@
 
 package nl.gertjanal.metaltools.jshexviewer;
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.impl.FileVolumeManager;
+import com.github.junrar.rarfile.FileHeader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -41,12 +45,15 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.util.zip.CRC32;
 import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
+	private static final boolean RENEW = true;
 	private static final Token STRING = seq(
 		def("length", 1),
 		def("text", ref("length")));
@@ -98,12 +105,63 @@ public class JsHexViewerTest {
 
 	@Test
 	public void testGenerateRAR() throws Exception {
-		final Environment env = environment("/rar/example4.x.rar");
+            String filename = "/rar/multifolder.rar";
+            //String filename = "/rar/example4.x.rar";
+            File f = new File(getClass().getResource(filename).toURI());
+		final Environment env = environment(filename);
 		final ParseResult result = RAR.FORMAT.parse(env, le());
+                unrarBytes(f);
+              /*  ParseGraph graph = result.environment.order;
+                ParseValueList list = ByName.getAllValues(graph, "FILE");
+                ParseValue value = list.head;
+                byte[] bytes = value.getValue();*/
+                
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_rar");
 	}
+        
+        private void unrarBytes(File f){
+            Archive a = null;
+            try {
+                a = new Archive(new FileVolumeManager(f));
+            } catch (RarException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (a != null) {
+                a.getMainHeader().print();
+                FileHeader fh = a.nextFileHeader();
+                while (fh != null) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try {
+                        File out = new File("/home/rogiel/fs/test/"
+                                + fh.getFileNameString().trim());
+                        System.out.println(out.getAbsolutePath());
+                        a.extractFile(fh, baos);
+                        baos.close();
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (RarException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    fh = a.nextFileHeader();
+                    CRC32 crc = new CRC32();
+                    byte[] bs = baos.toByteArray();
+                    crc.update(bs);
+                    String s = new String(bs);
+                    System.out.println(s + " has crc:" + crc.getValue());
+                }
+            }
+        }
 
 	private Environment environment(final String name) throws IOException, URISyntaxException {
 		final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
