@@ -11,6 +11,7 @@ import static io.parsingdata.metal.Shorthand.not;
 import static io.parsingdata.metal.Shorthand.offset;
 import static io.parsingdata.metal.Shorthand.pre;
 import static io.parsingdata.metal.Shorthand.ref;
+import static io.parsingdata.metal.Shorthand.rep;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
 
@@ -94,7 +95,7 @@ public class RAR {
 		seq(
 			MARKER_BLOCK,
 			MAIN_HEAD,
-			FILE_HEADER,
+			rep(FILE_HEADER),
 			FOOTER
 		));
 
