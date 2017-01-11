@@ -30,13 +30,12 @@ import static io.parsingdata.metal.Shorthand.pre;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
-import static io.parsingdata.metal.Shorthand.str;
 import static io.parsingdata.metal.Shorthand.sub;
+import static io.parsingdata.metal.expression.value.GUID.guid;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.GUID;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.UINT16;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.UINT32;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.UINT64;
-import static nl.gertjanal.metaltools.formats.vhdx.Constants.guid;
 
 import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.token.Token;
@@ -53,7 +52,12 @@ public class Metadata {
 	public static final String BLOCK_SIZE_NAME = "region.metadata.metadataTable.fileParameters.data.BlockSize";
 
 	private static Token metadataTableEntry(final Expression predicate, final Token data) {
-		return seq(
+		return metadataTableEntry("", predicate, data);
+	}
+	
+	private static Token metadataTableEntry(final String name, final Expression predicate, final Token data) {
+		return seq(name,
+
 			// The ItemId field specifies a 128-bit identifier for the metadata
 			// item. The ItemId and IsUser value pair for an entry must be
 			// unique within the table.
@@ -197,14 +201,12 @@ public class Metadata {
 			last(ref("KeyValueCount"))));
 
 	private static final Token METADATA_TABLE_ENTRY = cho(
-		str("fileParameters", metadataTableEntry(guid("caa16737-fa36-4d43-b3b6-33f0aa44e76b"), FILE_PARAMETERS)),
-		str("virtualDiskSize", metadataTableEntry(guid("2fa54224-cd1b-4876-b211-5dbed83bf4b8"), VIRTUAL_DISK_SIZE)),
-		str("page38Data", metadataTableEntry(guid("beca12ab-b2e6-4523-93ef-c309e000c746"), PAGE83_DATA)),
-		str("logicalSectorSize",
-			metadataTableEntry(guid("8141bf1d-a96f-4709-ba47-f233a8faab5f"), DISK_LOGICAL_SECTOR_SIZE)),
-		str("physicalSectorSize",
-			metadataTableEntry(guid("cda348c7-445d-4471-9cc9-e9885251c556"), DISK_PHYSICAL_SECTOR_SIZE)),
-		str("parentLocator", metadataTableEntry(guid("a8d35f2d-b30b-454d-abf7-d3d84834ab0c"), PARENT_LOCATOR_HEADER)),
+		metadataTableEntry("fileParameters", eq(guid("caa16737-fa36-4d43-b3b6-33f0aa44e76b")), FILE_PARAMETERS),
+		metadataTableEntry("virtualDiskSize", eq(guid("2fa54224-cd1b-4876-b211-5dbed83bf4b8")), VIRTUAL_DISK_SIZE),
+		metadataTableEntry("page38Data", eq(guid("beca12ab-b2e6-4523-93ef-c309e000c746")), PAGE83_DATA),
+		metadataTableEntry("logicalSectorSize", eq(guid("8141bf1d-a96f-4709-ba47-f233a8faab5f")), DISK_LOGICAL_SECTOR_SIZE),
+		metadataTableEntry("physicalSectorSize", eq(guid("cda348c7-445d-4471-9cc9-e9885251c556")), DISK_PHYSICAL_SECTOR_SIZE),
+		metadataTableEntry("parentLocator", eq(guid("a8d35f2d-b30b-454d-abf7-d3d84834ab0c")), PARENT_LOCATOR_HEADER),
 
 		metadataTableEntry(expTrue(), nod(con(0))));
 

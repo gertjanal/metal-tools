@@ -27,10 +27,10 @@ import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
+import static io.parsingdata.metal.expression.value.GUID.guid;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.GUID;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.UINT32;
 import static nl.gertjanal.metaltools.formats.vhdx.Constants.UINT64;
-import static nl.gertjanal.metaltools.formats.vhdx.Constants.guid;
 import static nl.gertjanal.metaltools.formats.vhdx.Metadata.METADATA_TABLE_HEADER;
 
 import io.parsingdata.metal.token.Token;
@@ -72,7 +72,7 @@ public class Region {
 		return seq(name,
 			// The Guid field specifies a 128-bit identifier for the object and
 			// must be unique within the table.
-			def("Guid", GUID, guid(guid)),
+			def("Guid", GUID, eq(guid(guid))),
 
 			// The FileOffset and Length fields specify the 64-bit byte offset
 			// and 32-bit byte length of the object within the file.
