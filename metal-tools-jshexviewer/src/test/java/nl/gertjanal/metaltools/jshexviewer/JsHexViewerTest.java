@@ -43,6 +43,7 @@ import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
 import nl.gertjanal.metaltools.formats.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
+import nl.gertjanal.metaltools.formats.vhdx.Bat;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
@@ -62,8 +63,7 @@ public class JsHexViewerTest {
 		// Write the data so it can be loaded manually in the viewer
 		final File root = new File(getClass().getResource("/").toURI());
 		try (FileOutputStream out = new FileOutputStream(new File(root, "data"))) {
-			final byte[] buffer = new byte[8];
-			env.input.read(0, buffer);
+			final byte[] buffer = env.source.slice(0, 8).getData();
 			out.write(buffer);
 		}
 

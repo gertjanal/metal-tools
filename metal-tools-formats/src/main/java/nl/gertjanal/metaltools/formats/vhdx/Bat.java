@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import io.parsingdata.metal.data.Environment;
-import io.parsingdata.metal.data.OptionalValueList;
+import io.parsingdata.metal.data.ImmutableList;
 import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.expression.comparison.ComparisonExpression;
@@ -176,13 +176,13 @@ public class Bat {
 		return new ValueExpression() {
 
 			@Override
-			public OptionalValueList eval(final Environment env, final Encoding enc) {
-				final OptionalValueList values = value.eval(env, enc);
+			public ImmutableList<OptionalValue> eval(final Environment env, final Encoding enc) {
+				final ImmutableList<OptionalValue> values = value.eval(env, enc);
 				if (values.isEmpty()) {
-					return OptionalValueList.EMPTY;
+					return values;
 				}
 				final long fileOffset = values.head.get().asNumeric().longValue() >> 20;
-				return OptionalValueList.create(OptionalValue.of(createFromNumeric(fileOffset, enc)));
+				return ImmutableList.create(OptionalValue.of(createFromNumeric(fileOffset, enc)));
 			}
 		};
 	}
