@@ -24,7 +24,6 @@
 		<dependency>
 			<groupId>io.parsingdata</groupId>
 			<artifactId>metal-formats</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
