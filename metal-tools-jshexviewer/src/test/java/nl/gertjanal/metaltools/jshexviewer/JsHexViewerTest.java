@@ -108,7 +108,7 @@ public class JsHexViewerTest {
 
 	@Test
 	public void testGenerateMP4() throws Exception {
-		final Environment env = environment("/mp4/test.mp4");
+		final Environment env = environment("/mp4/big_buck_bunny_720p_1mb.mp4");
 		final ParseResult result = MP4.FORMAT.parse(env, le());
 		assertTrue(result.succeeded);
 
