@@ -37,6 +37,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 
+import io.parsingdata.metal.data.ByteStreamSource;
 import io.parsingdata.metal.data.ParseGraph;
 import io.parsingdata.metal.data.ParseItem;
 import io.parsingdata.metal.data.ParseValue;
@@ -154,7 +155,9 @@ public class JsHexViewer {
 		if (!item.isGraph()) {
 			if (item.getDefinition() instanceof Def) {
 				final ParseValue value = item.asValue();
-				getList(map, new Definition(value));
+				if(value.slice.source instanceof ByteStreamSource) {
+					getList(map, new Definition(value));
+				}
 			}
 			return;
 		}
@@ -182,7 +185,7 @@ public class JsHexViewer {
 
 		public Definition(final ParseValue value) {
 			_name = value.name;
-			_offset = value.getOffset();
+			_offset = value.slice.offset;
 			_size = value.getValue().length;
 		}
 

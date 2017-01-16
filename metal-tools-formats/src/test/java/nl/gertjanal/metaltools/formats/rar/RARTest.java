@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import static io.parsingdata.metal.util.EncodingFactory.le;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.parsingdata.metal.data.Environment;
@@ -20,6 +21,7 @@ public class RARTest {
 	}
 
 	@Test
+	@Ignore
 	public void testRAR5() throws Exception {
 		final Environment environment = ResourceEnvironment.environment("/rar/example5.40.rar");
 		final ParseResult result = RAR.FORMAT.parse(environment, le());
