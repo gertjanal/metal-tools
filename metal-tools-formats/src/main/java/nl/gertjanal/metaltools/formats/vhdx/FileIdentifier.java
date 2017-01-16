@@ -92,6 +92,6 @@ public class FileIdentifier {
 	}
 
 	private static boolean encodingContains(final Encoding encoding, final String value) {
-		return encoding.getCharset() != null && encoding.getCharset().displayName(Locale.ROOT).contains(value);
+		return encoding.charset != null && encoding.charset.displayName(Locale.ROOT).contains(value);
 	}
 }
