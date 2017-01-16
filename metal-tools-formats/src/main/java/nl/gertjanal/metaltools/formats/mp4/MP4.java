@@ -1,4 +1,4 @@
-package nl.gertjanal.metaltools.formats;
+package nl.gertjanal.metaltools.formats.mp4;
 
 import static io.parsingdata.metal.Shorthand.add;
 import static io.parsingdata.metal.Shorthand.cho;
@@ -16,7 +16,6 @@ import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.rep;
 import static io.parsingdata.metal.Shorthand.repn;
 import static io.parsingdata.metal.Shorthand.seq;
-import static io.parsingdata.metal.Shorthand.str;
 import static io.parsingdata.metal.Shorthand.sub;
 
 import io.parsingdata.metal.encoding.ByteOrder;
@@ -29,26 +28,49 @@ public class MP4 {
 	private static final Encoding BE = new Encoding(ByteOrder.BIG_ENDIAN);
 	private static final Encoding LE = new Encoding(ByteOrder.LITTLE_ENDIAN);
 
-	public static final Token ATOM = atom(null);
-	public static final Token ATOM8 = atom8(null);
-	public static final Token ATOM16 = atom16(null);
+	public static final Token ATOM = atom(null, null);
+	public static final Token ATOM8 = atom8(null, null);
+	public static final Token ATOM16 = atom16(null, null);
 
-	private static Token atom16(final String name) {
-		return seq(name == null ? "atom" : "atom." + name,
+	private static Token atom16(final String name, final String type) {
+		return seq(atomName(name, type),
 			def("anchor", 0),
 			def("marker", 4, eqNum(con(1))),
-			def("name", 4, name(name)),
+			def("name", 4, name(type)),
 			def("size", 8));
 	}
 
-	private static Token atom(final String name) {
+	private static Token atom(final String name, final String type) {
 		return cho(
-			atom8(name),
-			atom16(name));
+			atom8(name, type),
+			atom16(name, type));
 	}
 
-	private static Token atom8(final String name) {
-		return cho(name == null ? "atom" : "atom." + name,
+	private static Token atom(final String type) {
+		return atom(null, type);
+	}
+
+	private static String atomName(final String name, final String type) {
+		final StringBuilder builder = new StringBuilder();
+		if (name != null) {
+			builder.append(name);
+		}
+		if (name != null && type != null) {
+			builder.append('.');
+		}
+		builder.append("atom");
+		if (type != null) {
+			builder.append('.').append(type);
+		}
+		return builder.toString();
+	}
+
+	private static Token atom8(final String type) {
+		return atom8(null, type);
+	}
+
+	private static Token atom8(final String name, final String type) {
+		return cho(atomName(name, type),
 			seq(
 				def("anchor", 0),
 				def("eof", 4, eqNum(con(0))), // TODO size up to end of file, including token
@@ -123,12 +145,12 @@ public class MP4 {
 			STSD,
 			STSC,
 			seq(
-				str("seek", ATOM16),
+				atom16("seek", null),
 				pre(
 					nod(sub(last(ref("seek.atom.size")), con(16))),
 					not(IS_CONTAINER_ATOM))),
 			seq(
-				str("seek", ATOM8),
+				atom8("seek", null),
 				pre(
 					nod(sub(last(ref("seek.atom.size")), con(8))),
 					not(IS_CONTAINER_ATOM)))),

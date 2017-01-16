@@ -41,14 +41,13 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
-import nl.gertjanal.metaltools.formats.MP4;
+import nl.gertjanal.metaltools.formats.mp4.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
-import nl.gertjanal.metaltools.formats.vhdx.Bat;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
+	private static final boolean RENEW = true;
 	private static final Token STRING = seq(
 		def("length", 1),
 		def("text", ref("length")));
