@@ -23,66 +23,66 @@ import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.token.Token;
 
+/**
+ * Partial MP4 format implementation to find the video stream.
+ *
+ * @author Gertjan Al.
+ */
 public class MP4 {
 
 	private static final Encoding BE = new Encoding(ByteOrder.BIG_ENDIAN);
 	private static final Encoding LE = new Encoding(ByteOrder.LITTLE_ENDIAN);
 
 	public static final Token ATOM = atom(null, null);
-	public static final Token ATOM8 = atom8(null, null);
-	public static final Token ATOM16 = atom16(null, null);
 
-	private static Token atom16(final String name, final String type) {
-		return seq(atomName(name, type),
+	private static Token atom16(final String name, final String predicate) {
+		return seq(atomName(name, predicate),
 			def("anchor", 0),
 			def("marker", 4, eqNum(con(1))),
-			def("name", 4, name(type)),
+			def("name", 4, type(predicate)),
 			def("size", 8));
 	}
 
-	private static Token atom(final String name, final String type) {
+	private static Token atom(final String name, final String predicate) {
 		return cho(
-			atom8(name, type),
-			atom16(name, type));
+			atom8(name, predicate),
+			atom16(name, predicate));
 	}
 
 	private static Token atom(final String type) {
 		return atom(null, type);
 	}
 
-	private static String atomName(final String name, final String type) {
+	private static String atomName(final String name, final String predicate) {
 		final StringBuilder builder = new StringBuilder();
 		if (name != null) {
-			builder.append(name);
-		}
-		if (name != null && type != null) {
-			builder.append('.');
+			builder.append(name).append('.');
 		}
 		builder.append("atom");
-		if (type != null) {
-			builder.append('.').append(type);
+		if (predicate != null) {
+			builder.append('.').append(predicate);
 		}
 		return builder.toString();
 	}
 
-	private static Token atom8(final String type) {
-		return atom8(null, type);
+	private static Token atom8(final String predicate) {
+		return atom8(null, predicate);
 	}
 
-	private static Token atom8(final String name, final String type) {
-		return cho(atomName(name, type),
+	private static Token atom8(final String name, final String predicate) {
+		return cho(atomName(name, predicate),
 			seq(
 				def("anchor", 0),
 				def("eof", 4, eqNum(con(0))), // TODO size up to end of file, including token
-				def("name", 4, name(name))),
+				def("name", 4, type(predicate))),
 			seq(
 				def("anchor", 0),
 				def("size", 4, not(eqNum(con(1)))),
-				def("name", 4, name(name))));
+				def("name", 4, type(predicate))));
 	}
 
-	private static Expression name(final String name) {
-		return name == null ? null : eq(con(name, LE));
+	private static Expression type(final String predicate) {
+		return predicate == null ? null : eq(con(predicate, LE));
 	}
 
 	private static final Expression IS_CONTAINER_ATOM = or(
