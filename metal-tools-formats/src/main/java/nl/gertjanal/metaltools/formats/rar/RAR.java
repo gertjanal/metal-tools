@@ -14,7 +14,9 @@ import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.rep;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
+import static io.parsingdata.metal.encoding.ByteOrder.LITTLE_ENDIAN;
 
+import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.logical.UnaryLogicalExpression;
 import io.parsingdata.metal.token.Token;
 
@@ -23,13 +25,14 @@ import io.parsingdata.metal.token.Token;
  * RAR 5.0: {@link http://www.rarlab.com/technote.htm}
  * RAR 4.x: {@link http://www.forensicswiki.org/wiki/RAR}
  *
- * @author Netherlands Forensic Institute.
+ * @author Gertjan Al.
  */
 public class RAR {
-	public static final int BYTE = 1;
-	public static final int UINT16 = 16 / 8;
-	public static final int UINT32 = 32 / 8;
-	public static final int UINT64 = 64 / 8;
+	private static final Encoding ENC = new Encoding(LITTLE_ENDIAN);
+	private static final int BYTE = 1;
+	private static final int UINT16 = 16 / 8;
+	private static final int UINT32 = 32 / 8;
+	private static final int UINT64 = 64 / 8;
 
 	private static final Token MAIN_HEAD = seq(
 		def("HEAD_CRC", UINT16),
@@ -90,7 +93,7 @@ public class RAR {
 		def("EXT_TIME", sub(last(ref("HEAD_SIZE")), sub(offset(last(ref("Anchor"))), offset(last(ref("HEAD_CRC")))))),
 		def("FILE", last(ref("PACK_SIZE")))); // eqNum(crc32(self), last(ref("FILE_CRC"))))); only works for Storing files.
 
-	public static final Token FORMAT = cho(
+	public static final Token FORMAT = cho(ENC,
 		def("rar 5 signature", 8, eq(con(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00))),
 		seq(
 			MARKER_BLOCK,

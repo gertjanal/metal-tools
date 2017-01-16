@@ -41,8 +41,8 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.mp4.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
-import nl.gertjanal.metaltools.formats.vhdx.Bat;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
@@ -71,38 +71,37 @@ public class JsHexViewerTest {
 
 	@Test
 	public void testGeneratePng() throws Exception {
-		final Environment env = environment("/screenshot_data.png");
-		final ParseResult result = PNG.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
-
+		final ParseResult result = parse("/screenshot_data.png", PNG.FORMAT);
 		assertGenerate(result, "example_png");
 	}
 
 	@Test
 	public void testGenerateZip() throws Exception {
-		final Environment env = environment("/data.zip");
-		final ParseResult result = ZIP.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
-
+		final ParseResult result = parse("/data.zip", ZIP.FORMAT);
 		assertGenerate(result, "example_zip");
 	}
 
 	@Test
 	public void testGenerateVHDX() throws Exception {
-		final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
-		final ParseResult result = VHDX.format(true).parse(env, le());
-		assertTrue(result.succeeded);
-
+		final ParseResult result = parse("/vhdx/NTFSdynamic.vhdx", VHDX.format(true));
 		assertGenerate(result, "example_vhdx");
 	}
 
 	@Test
 	public void testGenerateRAR() throws Exception {
-		final Environment env = environment("/rar/example4.x.rar");
-		final ParseResult result = RAR.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
-
+		final ParseResult result = parse("/rar/example4.x.rar", RAR.FORMAT);
 		assertGenerate(result, "example_rar");
+	}
+
+	@Test
+	public void testGenerateMP4() throws Exception {
+		final ParseResult result = parse("/mp4/big_buck_bunny_720p_1mb.mp4", MP4.FORMAT);
+		assertGenerate(result, "example_mp4");
+	}
+
+	private ParseResult parse(final String name, final Token format) throws IOException, URISyntaxException {
+		final Environment env = environment(name);
+		return format.parse(env, null);
 	}
 
 	private Environment environment(final String name) throws IOException, URISyntaxException {
@@ -111,6 +110,7 @@ public class JsHexViewerTest {
 	}
 
 	private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
+		assertTrue(result.succeeded);
 		JsHexViewer.generate(result.environment.order, fileName);
 
 		if (RENEW) {
