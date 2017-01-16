@@ -41,6 +41,7 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
@@ -103,6 +104,15 @@ public class JsHexViewerTest {
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_rar");
+	}
+
+	@Test
+	public void testGenerateMP4() throws Exception {
+		final Environment env = environment("/mp4/test.mp4");
+		final ParseResult result = MP4.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
+
+		assertGenerate(result, "example_mp4");
 	}
 
 	private Environment environment(final String name) throws IOException, URISyntaxException {
