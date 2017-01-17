@@ -3,9 +3,9 @@ Tools for [parsingdata/metal](https://github.com/parsingdata/metal)
 
 Live demo available at: [gertjanal.github.io/metal-tools](https://gertjanal.github.io/metal-tools)
 
-## HexViewer
-First tool added is a HexViewer, written in HTML.
-This hexviewer highlights all Metal Def tokens. For example, in the test a byte array is added with a string;
+## JsHexViewer
+The package metal-tools-jshexviewer contains a HexViewer, written in HTML.
+This hexviewer highlights all Metal Def tokens from a `ParseGraph`. For example, in the test a byte array is added with a string;
 `length + data`: `stream(7, 'G', 'e', 'r', 't', 'j', 'a', 'n');`
 
 Using `JsHexViewer.generate(result.environment.order);`, the following hexviewer is generated:
@@ -24,11 +24,32 @@ Simply create a test class to call the parse of the graph and generate a hexview
 @Test
 public void generate() throws Exception {
     final Environment env = EnvironmentFactory.stream(getClass().getResource("/data.zip").toURI());
-    final Encoding enc = EncodingFactory.le();
-    final ParseResult result = ZIP.FORMAT.parse(env, enc);
+    final ParseResult result = ZIP.FORMAT.parse(env, null);
     if (!result.succeeded) {
         fail("Parse failed");
     }
     JsHexViewer.generate(result.environment.order, "zip");
+}
+```
+
+## JsTree
+The package metal-tools-jstree contains a generator for a Javascript tree, written in D3.
+This tree shows the Metal structure of a `ParseGraph`.
+
+Using `JsTree.generate(result.environment.order);`, the following tree is generated:
+![screenshot_data.png](https://raw.githubusercontent.com/gertjanal/metal-tools/master/metal-tools-jstree/src/test/resources/screenshot.png)
+
+### Usage
+Simply create a test class to call the parse of the graph and generate a hexviewer page.
+
+```java
+@Test
+public void generate() throws Exception {
+    final Environment env = EnvironmentFactory.stream(getClass().getResource("/data.zip").toURI());
+    final ParseResult result = ZIP.FORMAT.parse(env, null);
+    if (!result.succeeded) {
+        fail("Parse failed");
+    }
+    JsTree.generate(result.environment.order, "zip");
 }
 ```
