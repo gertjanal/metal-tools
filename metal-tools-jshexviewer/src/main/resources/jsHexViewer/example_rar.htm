@@ -945,7 +945,7 @@ function readPage() {
 		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
 		for (var column = 0; column < columnCount; column++) {
-			hexRow.append($('<span>').addClass('columnnr').text(column));
+			hexRow.append($('<span>').addClass('columnnr').text(column.toString(16)));
 			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
 			if (column % 2 !== 0) {
 				hexRow.append($('<span>').addClass('spacer'));
