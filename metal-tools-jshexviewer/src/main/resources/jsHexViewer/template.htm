@@ -328,7 +328,7 @@ setInterval(function() {
 	setTimeout(function() {
 		// Give the browser 250 ms to load the script file
 		if (typeof dataUpdate !== 'undefined') {
-			// caluculate hash over the data object.
+			// calculate hash over the data object.
 			// This should be sufficient for change detection.
 			var newDataHash = hash(JSON.stringify(dataUpdate));
 			if (newDataHash !== dataHash) {
@@ -945,7 +945,7 @@ function readPage() {
 		$('#asciiview').append(asciiRow).append($('<div>').addClass('spacerRow row'));
 
 		for (var column = 0; column < columnCount; column++) {
-			hexRow.append($('<span>').addClass('columnnr').text(column + 1));
+			hexRow.append($('<span>').addClass('columnnr').text(column));
 			asciiRow.append($('<span>').addClass('columnnr').text((column  % 8) + 1));
 			if (column % 2 !== 0) {
 				hexRow.append($('<span>').addClass('spacer'));
