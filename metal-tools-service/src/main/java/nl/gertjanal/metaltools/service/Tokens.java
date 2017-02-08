@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.parsingdata.metal.tools.service;
+package nl.gertjanal.metaltools.service;
 
 import static io.parsingdata.metal.Shorthand.cho;
 

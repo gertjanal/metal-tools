@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.parsingdata.metal.tools.service;
+package nl.gertjanal.metaltools.service;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

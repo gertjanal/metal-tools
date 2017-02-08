@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.parsingdata.metal.tools.service;
+package nl.gertjanal.metaltools.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +36,9 @@ import io.parsingdata.metal.data.ByteStream;
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.encoding.Encoding;
-import io.parsingdata.metal.tools.service.json.CreateFile;
-import io.parsingdata.metal.tools.service.json.Data;
-import io.parsingdata.metal.tools.service.json.Slice;
+import nl.gertjanal.metaltools.service.json.CreateFile;
+import nl.gertjanal.metaltools.service.json.Data;
+import nl.gertjanal.metaltools.service.json.Slice;
 import nl.gertjanal.metaltools.jshexviewer.JsHexViewer;
 
 @RestController

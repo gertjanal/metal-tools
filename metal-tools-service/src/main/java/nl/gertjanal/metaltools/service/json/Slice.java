@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.parsingdata.metal.tools.service.json;
+package nl.gertjanal.metaltools.service.json;
 
 import java.math.BigInteger;
 import java.util.UUID;
