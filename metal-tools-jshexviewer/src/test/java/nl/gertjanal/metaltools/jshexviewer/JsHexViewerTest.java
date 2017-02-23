@@ -41,16 +41,15 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.fat16.FAT16;
 import nl.gertjanal.metaltools.formats.mp4.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
-	private static final Token STRING = seq(
-		def("length", 1),
-		def("text", ref("length")));
+	private static final boolean RENEW = true;
+	private static final Token STRING = seq(def("length", 1), def("text", ref("length")));
 
 	@Test
 	public void testGenerateData() throws Exception {
@@ -97,6 +96,12 @@ public class JsHexViewerTest {
 	public void testGenerateMP4() throws Exception {
 		final ParseResult result = parse("/mp4/big_buck_bunny_720p_1mb.mp4", MP4.FORMAT);
 		assertGenerate(result, "example_mp4");
+	}
+
+	@Test
+	public void testGenerateFAT16() throws Exception {
+		final ParseResult result = parse("/fat16/fat16.img", FAT16.FORMAT);
+		assertGenerate(result, "example_fat16");
 	}
 
 	private ParseResult parse(final String name, final Token format) throws IOException, URISyntaxException {
