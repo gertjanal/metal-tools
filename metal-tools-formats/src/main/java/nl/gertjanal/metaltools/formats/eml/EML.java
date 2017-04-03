@@ -32,11 +32,11 @@ public class EML {
 		for(int i = 255; i >= 2; i--) {
 			final Token[] seq = new Token[i];
 			for (int j = 0; j < i; j++) {
-				seq[j] = def(name, 1, predicate);
+				seq[j] = def(name + "_char", 1, predicate);
 			}
 			cho.add(seq(seq));
 		}
-		return cho("fieldname", cho.toArray(new Token[0]));
+		return cho(name, cho.toArray(new Token[0]));
 	}
 
 	public static final Token FORMAT = seq("message/rfc2822", LE,
