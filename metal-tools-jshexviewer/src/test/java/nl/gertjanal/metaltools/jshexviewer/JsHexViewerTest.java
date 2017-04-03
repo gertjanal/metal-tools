@@ -41,6 +41,7 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.eml.EML;
 import nl.gertjanal.metaltools.formats.fat16.FAT16;
 import nl.gertjanal.metaltools.formats.mp4.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
@@ -102,6 +103,12 @@ public class JsHexViewerTest {
 	public void testGenerateFAT16() throws Exception {
 		final ParseResult result = parse("/fat16/fat16.img", FAT16.FORMAT);
 		assertGenerate(result, "example_fat16");
+	}
+
+	@Test
+	public void testGenerateRFC2822() throws Exception {
+		final ParseResult result = parse("/eml/email.eml", EML.FORMAT);
+		assertGenerate(result, "example_eml");
 	}
 
 	private ParseResult parse(final String name, final Token format) throws IOException, URISyntaxException {
