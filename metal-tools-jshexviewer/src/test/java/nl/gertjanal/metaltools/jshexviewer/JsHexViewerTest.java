@@ -49,7 +49,7 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
+	private static final boolean RENEW = true;
 	private static final Token STRING = seq(def("length", 1), def("text", ref("length")));
 
 	@Test
@@ -106,7 +106,7 @@ public class JsHexViewerTest {
 	}
 
 	@Test
-	public void testGenerateRFC2822() throws Exception {
+	public void testGenerateRFC822() throws Exception {
 		final ParseResult result = parse("/eml/email.eml", EML.FORMAT);
 		assertGenerate(result, "example_eml");
 	}
