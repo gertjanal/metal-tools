@@ -1,6 +1,7 @@
 package nl.gertjanal.metaltools.formats.fat16;
 
 import static io.parsingdata.metal.Shorthand.add;
+import static io.parsingdata.metal.Shorthand.and;
 import static io.parsingdata.metal.Shorthand.cho;
 import static io.parsingdata.metal.Shorthand.con;
 import static io.parsingdata.metal.Shorthand.def;
@@ -12,6 +13,7 @@ import static io.parsingdata.metal.Shorthand.mul;
 import static io.parsingdata.metal.Shorthand.not;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.rep;
+import static io.parsingdata.metal.Shorthand.self;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
 import static io.parsingdata.metal.encoding.ByteOrder.LITTLE_ENDIAN;
@@ -43,7 +45,7 @@ public class FAT16 {
 		def("NumFATs", BYTE),
 		def("RootEntCnt", WORD),
 		def("TotSec16", WORD),
-		def("Media", BYTE),
+		def("Media", BYTE), // f8 = hard disk; floppy disks are f0;
 		def("FATSz16", WORD),
 		def("SecPerTrk", WORD),
 		def("NumHeads", WORD),
@@ -77,7 +79,11 @@ public class FAT16 {
 		last(ref("BytsPerSec")));
 	
 	private static Token SHORT_ENTRY = seq("ShortName",
-		def("Name", 11, not(eqNum(con(0)))),
+		cho(
+			seq(
+				def("Deleted", BYTE, eq(con(0xe5))),
+				def("Name", 10, not(eqNum(con(0))))),
+			def("Name", 11, not(eqNum(con(0))))),
 		cho(
 			def("READ_ONLY", BYTE, eq(con(0x01))),
 			def("HIDDEN", BYTE, eq(con(0x02))),
@@ -99,7 +105,9 @@ public class FAT16 {
 		def("FileSize", DOUBLE_WORD));
 
 	private static Token LONG_ENTRY = seq("LongName",
-		def("Ord", BYTE, eqNum(con(0x41))), // TODO masked with 0x40
+		cho(
+			def("Deleted", BYTE, eq(con(0xe5))),
+			def("Ordinal", BYTE, eqNum(and(self, con(0x40)), con(0x40)))), // TODO masked with 0x40
 		def("Name1", 10),
 		def("Attr", BYTE, eq(con(0x0f))),
 		def("Type", BYTE, eq(con(0x00))),
@@ -115,7 +123,42 @@ public class FAT16 {
 
 	public static Token FORMAT = seq(ENC,
 		BOOT_SECTOR,
+		def("FAT_ID", BYTE, eq(last(ref("Media")))),
+		def("Remaining", BYTE, eq(con(0xff))),
+		cho(
+			def("Clean", 2, eq(con(0xff, 0xff))),
+			def("Dirty", 2, eq(con(0xff, 0xf7)))),
+				
 		sub(
 			rep(DIRECTORY_ENTRY),
-			FIRST_DATA_SECTOR));
+			FIRST_DATA_SECTOR),
+		
+		
+		// TODO: debug below
+		sub(
+			rep(DIRECTORY_ENTRY),
+			con(0x10200)),
+			
+		sub(
+			rep(DIRECTORY_ENTRY),
+			con(0x10a00)),
+
+		sub(
+			rep(DIRECTORY_ENTRY),
+			con(0x11200)),
+
+		// file in folder A
+		sub(
+			def("file in A", 0x25),
+			con(0x12a00)),
+
+		// file in folder B
+		sub(
+			def("file in B", 0x23),
+			con(0x14200)),
+
+		// file in folder C
+		sub(
+			def("file in C", 0x23),
+			con(0x15a00)));
 }
