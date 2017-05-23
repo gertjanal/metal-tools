@@ -22,6 +22,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import io.parsingdata.metal.encoding.Encoding;
 import io.parsingdata.metal.expression.value.BinaryValueExpression;
+import io.parsingdata.metal.expression.value.ValueExpression;
 import io.parsingdata.metal.token.Token;
 
 /**
@@ -34,7 +35,7 @@ public class FAT16 {
 	private static final int BYTE = 1;
 	private static final int WORD = 2;
 	private static final int DOUBLE_WORD = WORD * 2;
-	private static final Encoding ENC = new Encoding(UNSIGNED, US_ASCII, LITTLE_ENDIAN);
+	public static final Encoding ENC = new Encoding(UNSIGNED, US_ASCII, LITTLE_ENDIAN);
 
 	private static Token BOOT_SECTOR = seq("BootSector",
 		def("jmpBoot", 3),
@@ -60,24 +61,28 @@ public class FAT16 {
 		def("executable_code", 448),
 		def("executable_marker", 2, eq(con(0x55, 0xaa))));
 
-	public static BinaryValueExpression ROOT_DIR_SECTORS = div(
-		add(
+	public static ValueExpression FAT_REGION_REGION = add(
+		con(2), // first sector?
+		last(ref("RsvdSecCnt")));
+
+	public static ValueExpression ROOT_DIRECTORY_REGION = add(
+		FAT_REGION_REGION,
+		mul(
+			last(ref("NumFATs")),
+			last(ref("FATSz16"))));
+	
+	public static BinaryValueExpression ROOT_DIRECTORY_REGION_START = mul(
+		ROOT_DIRECTORY_REGION,
+		last(ref("BytsPerSec")));
+	
+	public static ValueExpression DATA_REGION_START = add(
+		ROOT_DIRECTORY_REGION,
+		div(
 			mul(
 				last(ref("RootEntCnt")),
 				con(32)),
-			sub(
-				last(ref("BytsPerSec")),
-				con(1))),
-		last(ref("BytsPerSec")));
-	
-	public static BinaryValueExpression FIRST_DATA_SECTOR = mul(
-		add(
-			last(ref("RsvdSecCnt")),
-			mul(
-				last(ref("NumFATs")),
-				last(ref("FATSz16")))),
-		last(ref("BytsPerSec")));
-	
+			last(ref("BytsPerSec"))));
+
 	private static Token SHORT_ENTRY = seq("ShortName",
 		cho(
 			seq(
@@ -107,7 +112,11 @@ public class FAT16 {
 	private static Token LONG_ENTRY = seq("LongName",
 		cho(
 			def("Deleted", BYTE, eq(con(0xe5))),
-			def("Ordinal", BYTE, eqNum(and(self, con(0x40)), con(0x40)))), // TODO masked with 0x40
+
+			// TODO masked with 0x40; (repn)
+			// see http://www.beginningtoseethelight.org/fat16/index.htm
+			// data entry diagram
+			def("Ordinal", BYTE, eqNum(and(self, con(0x40)), con(0x40)))),
 		def("Name1", 10),
 		def("Attr", BYTE, eq(con(0x0f))),
 		def("Type", BYTE, eq(con(0x00))),
@@ -128,10 +137,10 @@ public class FAT16 {
 		cho(
 			def("Clean", 2, eq(con(0xff, 0xff))),
 			def("Dirty", 2, eq(con(0xff, 0xf7)))),
-				
+		
 		sub(
 			rep(DIRECTORY_ENTRY),
-			FIRST_DATA_SECTOR),
+			ROOT_DIRECTORY_REGION_START),
 		
 		
 		// TODO: debug below
