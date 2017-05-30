@@ -186,7 +186,7 @@ public class JsHexViewer {
 		public Definition(final ParseValue value) {
 			_name = value.name;
 			_offset = value.slice.offset;
-			_size = value.getValue().length;
+			_size = value.slice.size;
 		}
 
 		@Override
