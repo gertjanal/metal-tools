@@ -36,6 +36,7 @@ import io.parsingdata.metal.data.ParseResult;
 import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.util.InMemoryByteStream;
+import nl.gertjanal.metaltools.formats.exe.pe.EXE;
 import nl.gertjanal.metaltools.formats.rar.RAR;
 import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
@@ -77,6 +78,24 @@ public class JsTreeTest {
 		assertTrue(result.succeeded);
 
 		assertGenerate(result, "example_rar");
+	}
+
+	@Test
+	public void testGenerateExeX86() throws Exception {
+		final Environment env = environment("/exe/pe/x86/notepad.exe");
+		final ParseResult result = EXE.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
+
+		assertGenerate(result, "example_exe_x86");
+	}
+
+	@Test
+	public void testGenerateExeX64() throws Exception {
+		final Environment env = environment("/exe/pe/x64/notepad.exe");
+		final ParseResult result = EXE.FORMAT.parse(env, le());
+		assertTrue(result.succeeded);
+
+		assertGenerate(result, "example_exe_x64");
 	}
 
 	private Environment environment(final String name) throws IOException, URISyntaxException {
