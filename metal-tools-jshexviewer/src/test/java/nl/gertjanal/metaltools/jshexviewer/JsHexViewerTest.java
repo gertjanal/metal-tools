@@ -42,6 +42,7 @@ import io.parsingdata.metal.format.ZIP;
 import io.parsingdata.metal.token.Token;
 import io.parsingdata.metal.util.InMemoryByteStream;
 import nl.gertjanal.metaltools.formats.eml.EML;
+import nl.gertjanal.metaltools.formats.exe.pe.EXE;
 import nl.gertjanal.metaltools.formats.fat16.FAT16;
 import nl.gertjanal.metaltools.formats.mp4.MP4;
 import nl.gertjanal.metaltools.formats.rar.RAR;
@@ -49,7 +50,7 @@ import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsHexViewerTest {
 
-	private static final boolean RENEW = false;
+	private static final boolean RENEW = true;
 	private static final Token STRING = seq(def("length", 1), def("text", ref("length")));
 
 	@Test
@@ -111,6 +112,18 @@ public class JsHexViewerTest {
 		assertGenerate(result, "example_eml");
 	}
 
+	@Test
+	public void testGenerateExePeX86() throws Exception {
+		final ParseResult result = parse("/exe/pe/x86/notepad.exe", EXE.FORMAT);
+		assertGenerate(result, "example_exe_x86");
+	}
+
+	@Test
+	public void testGenerateExePeX64() throws Exception {
+		final ParseResult result = parse("/exe/pe/x64/notepad.exe", EXE.FORMAT);
+		assertGenerate(result, "example_exe_x64");
+	}
+
 	private ParseResult parse(final String name, final Token format) throws IOException, URISyntaxException {
 		final Environment env = environment(name);
 		return format.parse(env, null);
@@ -141,6 +154,7 @@ public class JsHexViewerTest {
 
 	private void exportFile(final String fileName) throws Exception {
 		final File export = new File(new File(getClass().getResource("/").toURI()).getParentFile().getParentFile(), "/src/main/resources/jsHexViewer/" + fileName);
+		System.out.println(export.toString());
 		try (FileOutputStream fos = new FileOutputStream(export)) {
 			IOUtils.copy(getClass().getResourceAsStream("/" + fileName), fos);
 		}
