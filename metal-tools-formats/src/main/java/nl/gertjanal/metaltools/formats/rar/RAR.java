@@ -1,7 +1,6 @@
 package nl.gertjanal.metaltools.formats.rar;
 
-import static io.parsingdata.metal.Shorthand.SELF;
-import static io.parsingdata.metal.Shorthand.add;
+import static io.parsingdata.metal.Shorthand.CURRENT_OFFSET;
 import static io.parsingdata.metal.Shorthand.and;
 import static io.parsingdata.metal.Shorthand.cho;
 import static io.parsingdata.metal.Shorthand.con;
@@ -9,16 +8,16 @@ import static io.parsingdata.metal.Shorthand.def;
 import static io.parsingdata.metal.Shorthand.eq;
 import static io.parsingdata.metal.Shorthand.eqNum;
 import static io.parsingdata.metal.Shorthand.last;
-import static io.parsingdata.metal.Shorthand.not;
 import static io.parsingdata.metal.Shorthand.offset;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.rep;
 import static io.parsingdata.metal.Shorthand.seq;
 import static io.parsingdata.metal.Shorthand.sub;
+import static io.parsingdata.metal.Shorthand.when;
 import static io.parsingdata.metal.encoding.ByteOrder.LITTLE_ENDIAN;
 
 import io.parsingdata.metal.encoding.Encoding;
-import io.parsingdata.metal.expression.logical.UnaryLogicalExpression;
+import io.parsingdata.metal.expression.Expression;
 import io.parsingdata.metal.token.Token;
 
 /**
@@ -81,18 +80,16 @@ public class RAR {
 			def("Best Compression", BYTE, eq(con(0x35)))),
 		def("NAME_SIZE", UINT16),
 		def("ATTR", UINT32),
-//		pre(
-//			seq(
-//				def("HIGH_PACK_SIZE", UINT32),
-//				def("HIGH_UNP_SIZE", UINT32)),
-//			flag(0x100)),
+		when(
+			seq(
+				def("HIGH_PACK_SIZE", UINT32),
+				def("HIGH_UNP_SIZE", UINT32)),
+			flag(0x100)),
 		def("FILE_NAME", last(ref("NAME_SIZE"))),
-//		pre(
-			//def("SALT", UINT64),
-//			flag(0x400)),
-//		def("Anchor", 0),
-		//def("EXT_TIME", last(sub(last(ref("HEAD_SIZE")), sub(offset(SELF), offset(last(ref("HEAD_CRC"))))))),
-		def("EXT_TIME", last(sub(add(last(ref("HEAD_SIZE")), offset(last(ref("HEAD_CRC")))), offset(SELF)))),
+		when(
+			def("SALT", UINT64),
+			flag(0x400)),
+		def("EXT_TIME", last(sub(last(ref("HEAD_SIZE")), sub(CURRENT_OFFSET, offset(last(ref("HEAD_CRC"))))))),
 		def("FILE", last(ref("PACK_SIZE")))); // eqNum(crc32(self), last(ref("FILE_CRC"))))); only works for Storing files.
 
 	public static final Token FORMAT = cho(ENC,
@@ -100,11 +97,11 @@ public class RAR {
 		seq(
 			MARKER_BLOCK,
 			MAIN_HEAD,
-			rep(FILE_HEADER)
-//			//FOOTER
+			rep(FILE_HEADER),
+			FOOTER
 		));
 
-	private static UnaryLogicalExpression flag(final long flag) {
-		return not(eqNum(last(and(last(ref("HEAD_FLAGS")), con(flag))), con(0)));
+	private static Expression flag(final long flag) {
+		return eqNum(last(and(last(ref("HEAD_FLAGS")), con(flag))), con(flag));
 	}
 }
