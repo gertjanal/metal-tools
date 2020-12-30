@@ -24,11 +24,11 @@ Simply create a test class to call the parse of the graph and generate a hexview
 @Test
 public void generate() throws Exception {
     final Environment env = EnvironmentFactory.stream(getClass().getResource("/data.zip").toURI());
-    final ParseResult result = ZIP.FORMAT.parse(env, null);
-    if (!result.succeeded) {
+    final Optional<ParseState> result = ZIP.FORMAT.parse(env);
+    if (result.isEmpty()) {
         fail("Parse failed");
     }
-    JsHexViewer.generate(result.environment.order, "zip");
+    JsHexViewer.generate(result.get().order, "zip");
 }
 ```
 
@@ -36,7 +36,7 @@ public void generate() throws Exception {
 The package metal-tools-jstree contains a generator for a Javascript tree, written in D3.
 This tree shows the Metal structure of a `ParseGraph`.
 
-Using `JsTree.generate(result.environment.order);`, the following tree is generated:
+Using `JsTree.generate(result.get().order);`, the following tree is generated:
 ![screenshot_data.png](https://raw.githubusercontent.com/gertjanal/metal-tools/master/metal-tools-jstree/src/test/resources/screenshot.png)
 
 ### Usage
@@ -46,10 +46,10 @@ Simply create a test class to call the parse of the graph and generate a hexview
 @Test
 public void generate() throws Exception {
     final Environment env = EnvironmentFactory.stream(getClass().getResource("/data.zip").toURI());
-    final ParseResult result = ZIP.FORMAT.parse(env, null);
-    if (!result.succeeded) {
+    final Optional<ParseState> result = ZIP.FORMAT.parse(env);
+    if (result.isEmpty()) {
         fail("Parse failed");
     }
-    JsTree.generate(result.environment.order, "zip");
+    JsTree.generate(result.get().order, "zip");
 }
 ```
