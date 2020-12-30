@@ -16,9 +16,10 @@
 
 package nl.gertjanal.metaltools.jstree;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import static io.parsingdata.metal.util.EncodingFactory.le;
 import static io.parsingdata.metal.util.EnvironmentFactory.env;
@@ -32,7 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import io.parsingdata.metal.data.Environment;
 import io.parsingdata.metal.data.ParseState;
@@ -40,12 +41,12 @@ import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
 import nl.gertjanal.metaltools.formats.rar.RAR;
 
-public class JsTreeTest {
+class JsTreeTest {
 
 	private static final boolean RENEW = false;
 
 	@Test
-	public void testGeneratePng() throws Exception {
+	void testGeneratePng() throws Exception {
 		final Environment env = environment("/screenshot_data.png");
 		final Optional<ParseState> result = PNG.FORMAT.parse(env);
 		assertTrue(result.isPresent());
@@ -54,7 +55,7 @@ public class JsTreeTest {
 	}
 
 	@Test
-	public void testGenerateZip() throws Exception {
+	void testGenerateZip() throws Exception {
 		final Environment env = environment("/data.zip");
 		final Optional<ParseState> result = ZIP.FORMAT.parse(env);
 		assertTrue(result.isPresent());
@@ -63,7 +64,7 @@ public class JsTreeTest {
 	}
 
 	@Test
-	public void testGenerateRAR() throws Exception {
+	void testGenerateRAR() throws Exception {
 		final Environment env = environment("/rar/example4.x.rar");
 		final Optional<ParseState> result = RAR.FORMAT.parse(env);
 		assertTrue(result.isPresent());
