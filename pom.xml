@@ -10,21 +10,19 @@
 		<encoding>UTF-8</encoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+		<maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
 
 		<commons-io.version>2.5</commons-io.version>
-		<jackson.version>2.8.5</jackson.version>
+		<jackson.version>2.11.3</jackson.version>
 		<junit.version>4.11</junit.version>
-		<metal.version>5.0.0</metal.version>
+		<metal.version>8.0.0</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
-		<spring.boot.version>1.4.1.RELEASE</spring.boot.version>
 	</properties>
 
 	<modules>
 		<module>metal-tools-formats</module>
 		<module>metal-tools-jshexviewer</module>
 		<module>metal-tools-jstree</module>
-		<module>metal-tools-service</module>
 	</modules>
 
 	<dependencies>

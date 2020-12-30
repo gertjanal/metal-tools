@@ -1,5 +1,6 @@
 package nl.gertjanal.metaltools.formats.mp4;
 
+import static io.parsingdata.metal.Shorthand.TRUE;
 import static io.parsingdata.metal.Shorthand.add;
 import static io.parsingdata.metal.Shorthand.cho;
 import static io.parsingdata.metal.Shorthand.con;
@@ -82,7 +83,7 @@ public class MP4 {
 	}
 
 	private static Expression type(final String predicate) {
-		return predicate == null ? null : eq(con(predicate, LE));
+		return predicate == null ? TRUE : eq(con(predicate, LE));
 	}
 
 	private static final Expression IS_CONTAINER_ATOM = or(
@@ -99,17 +100,17 @@ public class MP4 {
 	public static final Token STSC = seq(
 		atom8("stsc"),
 		def("stsc.sub.anchor", 0),
-		nod(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stsc.anchor"))), offset(last(ref("atom.anchor")))))));
+		nod(last(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stsc.anchor"))), offset(last(ref("atom.anchor"))))))));
 
 	public static final Token STCO = seq(
 		atom8("stco"),
 		def("stco.sub.anchor", 0),
-		nod(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stco.anchor"))), offset(last(ref("atom.anchor")))))));
+		nod(last(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stco.anchor"))), offset(last(ref("atom.anchor"))))))));
 
 	public static final Token STSD = seq(
 		atom8("stsd"),
 		def("stsd.sub.anchor", 0),
-		nod(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stsd.anchor"))), offset(last(ref("atom.anchor")))))),
+		nod(last(sub(last(ref("seek.atom.size")), sub(offset(last(ref("atom.stsd.anchor"))), offset(last(ref("atom.anchor"))))))),
 
 		sub(
 			seq(
@@ -147,12 +148,12 @@ public class MP4 {
 			seq(
 				atom16("seek", null),
 				pre(
-					nod(sub(last(ref("seek.atom.size")), con(16))),
+					nod(last(sub(last(ref("seek.atom.size")), con(16)))),
 					not(IS_CONTAINER_ATOM))),
 			seq(
 				atom8("seek", null),
 				pre(
-					nod(sub(last(ref("seek.atom.size")), con(8))),
+					nod(last(sub(last(ref("seek.atom.size")), con(8)))),
 					not(IS_CONTAINER_ATOM)))),
 		BE);
 }

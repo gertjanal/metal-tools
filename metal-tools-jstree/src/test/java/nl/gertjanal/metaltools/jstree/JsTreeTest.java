@@ -21,24 +21,24 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static io.parsingdata.metal.util.EncodingFactory.le;
+import static io.parsingdata.metal.util.EnvironmentFactory.env;
+import static io.parsingdata.metal.util.ParseStateFactory.stream;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import io.parsingdata.metal.data.Environment;
-import io.parsingdata.metal.data.ParseResult;
+import io.parsingdata.metal.data.ParseState;
 import io.parsingdata.metal.format.PNG;
 import io.parsingdata.metal.format.ZIP;
-import io.parsingdata.metal.util.InMemoryByteStream;
-import nl.gertjanal.metaltools.formats.exe.pe.EXE;
 import nl.gertjanal.metaltools.formats.rar.RAR;
-import nl.gertjanal.metaltools.formats.vhdx.VHDX;
 
 public class JsTreeTest {
 
@@ -47,8 +47,8 @@ public class JsTreeTest {
 	@Test
 	public void testGeneratePng() throws Exception {
 		final Environment env = environment("/screenshot_data.png");
-		final ParseResult result = PNG.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
+		final Optional<ParseState> result = PNG.FORMAT.parse(env);
+		assertTrue(result.isPresent());
 
 		assertGenerate(result, "example_png");
 	}
@@ -56,55 +56,27 @@ public class JsTreeTest {
 	@Test
 	public void testGenerateZip() throws Exception {
 		final Environment env = environment("/data.zip");
-		final ParseResult result = ZIP.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
+		final Optional<ParseState> result = ZIP.FORMAT.parse(env);
+		assertTrue(result.isPresent());
 
 		assertGenerate(result, "example_zip");
 	}
 
 	@Test
-	public void testGenerateVHDX() throws Exception {
-		final Environment env = environment("/vhdx/NTFSdynamic.vhdx");
-		final ParseResult result = VHDX.format(true).parse(env, le());
-		assertTrue(result.succeeded);
-
-		assertGenerate(result, "example_vhdx");
-	}
-
-	@Test
 	public void testGenerateRAR() throws Exception {
 		final Environment env = environment("/rar/example4.x.rar");
-		final ParseResult result = RAR.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
+		final Optional<ParseState> result = RAR.FORMAT.parse(env);
+		assertTrue(result.isPresent());
 
 		assertGenerate(result, "example_rar");
 	}
 
-	@Test
-	public void testGenerateExeX86() throws Exception {
-		final Environment env = environment("/exe/pe/x86/notepad.exe");
-		final ParseResult result = EXE.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
-
-		assertGenerate(result, "example_exe_x86");
-	}
-
-	@Test
-	public void testGenerateExeX64() throws Exception {
-		final Environment env = environment("/exe/pe/x64/notepad.exe");
-		final ParseResult result = EXE.FORMAT.parse(env, le());
-		assertTrue(result.succeeded);
-
-		assertGenerate(result, "example_exe_x64");
-	}
-
 	private Environment environment(final String name) throws IOException, URISyntaxException {
-		final byte[] data = IOUtils.toByteArray(getClass().getResourceAsStream(name));
-		return new Environment(new InMemoryByteStream(data));
+		return env(stream(getClass().getResource(name).toURI()), le());
 	}
 
-	private void assertGenerate(final ParseResult result, final String fileName) throws Exception {
-		JsTree.generate(result.environment.order, fileName);
+	private void assertGenerate(final Optional<ParseState> result, final String fileName) throws Exception {
+		JsTree.generate(result.get().order, fileName);
 
 		if (RENEW) {
 			export(fileName);

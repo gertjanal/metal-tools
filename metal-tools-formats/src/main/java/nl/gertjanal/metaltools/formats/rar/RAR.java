@@ -1,5 +1,7 @@
 package nl.gertjanal.metaltools.formats.rar;
 
+import static io.parsingdata.metal.Shorthand.SELF;
+import static io.parsingdata.metal.Shorthand.add;
 import static io.parsingdata.metal.Shorthand.and;
 import static io.parsingdata.metal.Shorthand.cho;
 import static io.parsingdata.metal.Shorthand.con;
@@ -9,7 +11,6 @@ import static io.parsingdata.metal.Shorthand.eqNum;
 import static io.parsingdata.metal.Shorthand.last;
 import static io.parsingdata.metal.Shorthand.not;
 import static io.parsingdata.metal.Shorthand.offset;
-import static io.parsingdata.metal.Shorthand.pre;
 import static io.parsingdata.metal.Shorthand.ref;
 import static io.parsingdata.metal.Shorthand.rep;
 import static io.parsingdata.metal.Shorthand.seq;
@@ -40,7 +41,7 @@ public class RAR {
 		def("HEAD_FLAGS", UINT16),
 		def("HEAD_SIZE", UINT16),
 		def("RESERVED1", UINT16),
-		def("RESERVED2", UINT32));
+		def("RESERVED2", UINT32, eqNum(con(0x0))));
 
 	private static final Token MARKER_BLOCK = seq(
 		def("HEAD_CRC", UINT16, eq(con(0x52, 0x61))),
@@ -80,29 +81,30 @@ public class RAR {
 			def("Best Compression", BYTE, eq(con(0x35)))),
 		def("NAME_SIZE", UINT16),
 		def("ATTR", UINT32),
-		pre(
-			seq(
-				def("HIGH_PACK_SIZE", UINT32),
-				def("HIGH_UNP_SIZE", UINT32)),
-			flag(0x100)),
+//		pre(
+//			seq(
+//				def("HIGH_PACK_SIZE", UINT32),
+//				def("HIGH_UNP_SIZE", UINT32)),
+//			flag(0x100)),
 		def("FILE_NAME", last(ref("NAME_SIZE"))),
-		pre(
-			def("SALT", UINT64),
-			flag(0x400)),
-		def("Anchor", 0),
-		def("EXT_TIME", sub(last(ref("HEAD_SIZE")), sub(offset(last(ref("Anchor"))), offset(last(ref("HEAD_CRC")))))),
+//		pre(
+			//def("SALT", UINT64),
+//			flag(0x400)),
+//		def("Anchor", 0),
+		//def("EXT_TIME", last(sub(last(ref("HEAD_SIZE")), sub(offset(SELF), offset(last(ref("HEAD_CRC"))))))),
+		def("EXT_TIME", last(sub(add(last(ref("HEAD_SIZE")), offset(last(ref("HEAD_CRC")))), offset(SELF)))),
 		def("FILE", last(ref("PACK_SIZE")))); // eqNum(crc32(self), last(ref("FILE_CRC"))))); only works for Storing files.
 
 	public static final Token FORMAT = cho(ENC,
-		def("rar 5 signature", 8, eq(con(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00))),
+		def("rar 5 signature", UINT64, eq(con(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00))),
 		seq(
 			MARKER_BLOCK,
 			MAIN_HEAD,
-			rep(FILE_HEADER),
-			FOOTER
+			rep(FILE_HEADER)
+//			//FOOTER
 		));
 
 	private static UnaryLogicalExpression flag(final long flag) {
-		return not(eqNum(and(last(ref("HEAD_FLAGS")), con(flag)), con(0)));
+		return not(eqNum(last(and(last(ref("HEAD_FLAGS")), con(flag))), con(0)));
 	}
 }

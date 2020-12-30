@@ -14,14 +14,16 @@
 
 package nl.gertjanal.metaltools.formats;
 
+import static io.parsingdata.metal.util.EnvironmentFactory.env;
+import static io.parsingdata.metal.util.ParseStateFactory.stream;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import io.parsingdata.metal.data.Environment;
-import io.parsingdata.metal.util.EnvironmentFactory;
 
 public class ResourceEnvironment {
 	public static Environment environment(final String name) throws IOException, URISyntaxException {
-		return EnvironmentFactory.stream(ResourceEnvironment.class.getResource(name).toURI());
+		return env(stream(ResourceEnvironment.class.getResource(name).toURI()));
 	}
 }
