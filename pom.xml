@@ -10,11 +10,11 @@
 		<encoding>UTF-8</encoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
 
 		<commons-io.version>2.5</commons-io.version>
 		<jackson.version>2.11.3</jackson.version>
-		<junit.version>4.11</junit.version>
+		<junit.version>5.7.0</junit.version>
 		<metal.version>8.0.0</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
 	</properties>
@@ -27,8 +27,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -36,11 +36,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>${maven-jar-plugin.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>io.parsingdata</groupId>
 				<artifactId>metal-core</artifactId>
@@ -70,4 +65,21 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${maven-jar-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${source-plugin.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>
