@@ -13,7 +13,7 @@
 		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
 
 		<commons-io.version>2.5</commons-io.version>
-		<jackson.version>2.11.3</jackson.version>
+		<jackson.version>2.13.4.1</jackson.version>
 		<junit.version>5.7.0</junit.version>
 		<metal.version>8.0.0</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
