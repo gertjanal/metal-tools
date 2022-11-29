@@ -15,7 +15,7 @@
 		<commons-io.version>2.7</commons-io.version>
 		<jackson.version>2.12.7.1</jackson.version>
 		<junit.version>5.7.0</junit.version>
-		<metal.version>8.0.0</metal.version>
+		<metal.version>9.0.0</metal.version>
 		<source-plugin.version>2.2.1</source-plugin.version>
 	</properties>
 
