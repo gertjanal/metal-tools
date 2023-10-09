@@ -53,6 +53,7 @@ import io.parsingdata.metal.data.ParseValue;
 import io.parsingdata.metal.data.Slice;
 import io.parsingdata.metal.expression.value.CoreValue;
 import io.parsingdata.metal.token.Def;
+import io.parsingdata.metal.token.Until;
 
 /**
  * Generate a HTML page to view the Metal ParseGraph in a hex viewer.
@@ -182,7 +183,7 @@ public class JsHexViewer {
 
 	private static void step(final ParseItem item, final Map<Long, LinkedList<Definition>> map) {
 		if (!item.isGraph()) {
-			if (item.getDefinition() instanceof Def) {
+            if (item.getDefinition() instanceof Def || item.getDefinition() instanceof Until) {
 				final ParseValue value = item.asValue();
 				if(SLICE.apply(value).source instanceof ByteStreamSource) {
 					getList(map, new Definition(value));
