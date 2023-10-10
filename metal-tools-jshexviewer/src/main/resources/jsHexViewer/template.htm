@@ -411,6 +411,8 @@ function dataRefresh() {
 	readSingleFile($('#fileInput'));
 }
 
+let valueData;
+
 $(function() {
 	$('button').button();
 	$('input[type=text]').addClass("ui-corner-all");
@@ -446,6 +448,9 @@ $(function() {
 				$('.fullname').append(path(definition[2]));
 
 				setValuesSize(definition[1]);
+
+				valueData = file.slice(definition[0], definition[0] + definition[1]);
+
 				if (definition[1] <= 8) {
 					getData(definition[0], definition[1], function(buffer) {
 					    setValuesValue(buffer);
@@ -454,6 +459,7 @@ $(function() {
 				colorDef($('#selectionName'), definition, true, true, true, true);
 			}
 			else {
+				valueData = undefined;
 				setValuesSize(1);
 				getData(position, 1, function(buffer) {
 				    setValuesValue(buffer);
@@ -1065,6 +1071,20 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 		element.addClass('hue' + hue + '-' + type + '-right');
 	}
 }
+
+function downloadValue() {
+	if (valueData) {
+		const download = document.getElementById('value-download');
+		const blob = new Blob([valueData], {type: "octet/stream"});
+		const url = window.URL.createObjectURL(blob);
+
+		download.href = url;
+		download.download = 'slice';
+		download.click();
+		window.URL.revokeObjectURL(url);
+	}
+}
+
 </script>
 <body>
 	<div class="page-container">
@@ -1150,6 +1170,10 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 								<legend>Path</legend>
 								<span class="fullname"></span>
 							</fieldset>
+							<fieldset>
+								<legend>Download</legend>
+								<button onclick="downloadValue()">Download value</button>
+							</fieldset>
 						</div>
 					</div>
 					<h3>Pages of interest</h3>
@@ -1181,5 +1205,7 @@ function colorElement(element, hue, type, top, right, bottom, left) {
 			</div>
 		</div>
 	</div>
+	<a href="#" style="display: none" id="value-download"></a>
 </body>
 </html>
+
